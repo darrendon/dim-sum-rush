@@ -183,7 +183,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> 4+ of a number or a run of 4+, all from your own cart. More cards beats fewer; at equal size a set beats a run; then an equal or higher number.</p>
     <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart card, or swap a cart card with a trolley card (the taken card goes anywhere in your cart). Used trolley cards are not replaced.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
-    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
+    <p><strong>Every Server for Themselves:</strong> no sections and an open trolley. Using another player's trolley card tips them 1 point; your own is free. Fill only your own spot; swap with anyone's card. The trick winner leads; the round ends when any cart is empty and everyone else takes penalty points for their cart. Tips minus penalties, highest wins.</p>
   </div></details>
 </section>
 
@@ -293,11 +293,12 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   // ---------- State ----------
   function newGame(opts) {
     const mode = opts.mode || 'team';
+    const tipsOn = mode === 'solo' && opts.tips !== false;
     const N = opts.players.length;
     const cfg = configFor(mode, N);
     const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
     const g = {
-      mode, N, ranks: cfg.ranks, handSize: cfg.hand,
+      mode, N, ranks: cfg.ranks, handSize: cfg.hand, tipsOn, tips: opts.players.map(() => 0), tipTotals: opts.players.map(() => 0),
       players: opts.players.map((p, i) => ({
         name: p.name, bot: !!p.bot, team: mode === 'team' ? i % 2 : i,
         hand: [], slot: null, out: false, pick: null,
@@ -322,6 +323,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     for (let r = 1; r <= g.ranks; r++) for (let c = 0; c < COPIES; c++) deck.push(r);
     for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(g._rng() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
     g.players.forEach(p => { p.hand = []; p.slot = null; p.out = false; p.pick = null; });
+    if (g.tips) g.tips = g.tips.map(() => 0);
     for (let k = 0; k < g.handSize; k++) for (let i = 0; i < g.N; i++) g.players[i].hand.push(deck.pop());
     g.phase = 'faceup';
     g.trick = null;
@@ -355,6 +357,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const out = [];
     if (g.mode === 'team') {
       for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[seat].team) out.push(i);
+    } else if (g.tipsOn) {
+      for (let i = 0; i < g.N; i++) out.push(i);
     } else {
       const set = new Set([seat, (seat + 1) % g.N, (seat + g.N - 1) % g.N]);
       for (let i = 0; i < g.N; i++) if (set.has(i)) out.push(i);
@@ -424,7 +428,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     // apply
     const cards = hand.map(r => ({ r, src: 'hand' })).concat(play.slots.map(i => ({ r: g.players[i].slot, src: 'slot', owner: i })));
     if (play.hi >= 0) p.hand.splice(play.hi, hand.length);
-    for (const i of play.slots) g.players[i].slot = null;
+    for (const i of play.slots) { g.players[i].slot = null; if (g.tipsOn && i !== seat) { g.tips[i] += 1; g.log.push({ t: 'tip', to: i, from: seat }); } }
     g.trick.plays.push({ seat, cards, combo: c });
     g.trick.top = c; g.trick.topSeat = seat;
     g.log.push({ t: 'play', seat, cards: cards.map(x => x.r), combo: c });
@@ -444,6 +448,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     pass = pass || { kind: 'none' };
     if (pass.kind === 'fill') {
       if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot != null) return err('That spot is not empty');
+      if (g.tipsOn && pass.slotSeat !== seat) return err('You may only fill your own spot');
       if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
       g.players[pass.slotSeat].slot = p.hand.splice(pass.handIndex, 1)[0];
       g.log.push({ t: 'fill', seat, slotSeat: pass.slotSeat, r: g.players[pass.slotSeat].slot });
@@ -452,6 +457,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot == null) return err('That spot is empty');
       if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
       const taken = g.players[pass.slotSeat].slot;
+      if (g.tipsOn && pass.slotSeat !== seat) { g.tips[pass.slotSeat] += 1; g.log.push({ t: 'tip', to: pass.slotSeat, from: seat }); }
       const given = p.hand.splice(pass.handIndex, 1)[0];
       let at = pass.insertAt == null ? p.hand.length : pass.insertAt;
       at = Math.max(0, Math.min(p.hand.length, at));
@@ -549,8 +555,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       g.scores[loser] += pen;
       summary = { round: g.round, winnerTeam: g.roundWinner, loserTeam: loser, penalty: pen, hands: pens };
     } else {
-      g.players.forEach((p, i) => { g.scores[i] += p.hand.length; });
-      summary = { round: g.round, winner: g.roundWinner, hands: pens };
+      g.players.forEach((p, i) => { g.scores[i] += p.hand.length; if (g.tipsOn) g.tipTotals[i] += g.tips[i]; });
+      summary = { round: g.round, winner: g.roundWinner, hands: pens, tips: g.tipsOn ? g.tips.slice() : null };
     }
     g.roundHistory.push(summary);
     g.log.push({ t: 'roundEnd', summary });
@@ -569,8 +575,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       const [a, b] = g.scores;
       return { winners: a === b ? [0, 1] : a < b ? [0] : [1], scores: g.scores.slice() };
     }
-    const min = Math.min(...g.scores);
-    return { winners: g.scores.map((s, i) => s === min ? i : -1).filter(i => i >= 0), scores: g.scores.slice() };
+    const net = g.scores.map((s, i) => (g.tipsOn ? g.tipTotals[i] : 0) - s);
+    const best = Math.max(...net);
+    return { winners: net.map((s, i) => s === best ? i : -1).filter(i => i >= 0), scores: g.scores.slice(), tips: g.tipsOn ? g.tipTotals.slice() : null, net };
   }
 
   // ---------- Bots ----------
@@ -645,6 +652,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       s += nHand * 1.0;                          // shed hand cards
       s -= pl.combo.top * 0.15;                  // keep high cards for later
       s -= pl.slots.length * 0.6;                // trolley cards are shared tools; don't burn them idly
+      if (g.tipsOn) s -= pl.slots.filter(i => i !== seat).length * 1.0; // tipping a rival costs a point
       if (pl.combo.bomb) s -= leading ? 6 : (opponentsTop ? -3 : 4);
       if (handLeft.length === 0) s += 8;         // going out is great
       return s + rng() * 0.3;
@@ -672,7 +680,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const acc = accessibleSlots(g, seat);
     const rng = g._rng;
     // 1. fill an empty spot with an orphan (never our last card unless it wins the round for us)
-    const empty = acc.filter(i => g.players[i].slot == null);
+    const empty = acc.filter(i => g.players[i].slot == null && (!g.tipsOn || i === seat));
     const orphans = p.hand.map((r, i) => i).filter(i => isOrphan(p.hand, i));
     if (empty.length && p.hand.length > 1 && orphans.length) {
       // prefer middling orphan
@@ -738,7 +746,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   function viewFor(g, seat) {
     return {
       mode: g.mode, N: g.N, ranks: g.ranks, round: g.round, maxRounds: g.maxRounds,
-      scores: g.scores.slice(), roundHistory: g.roundHistory, phase: g.phase,
+      scores: g.scores.slice(), tipsOn: g.tipsOn, tips: g.tipsOn ? g.tips.slice() : null, tipTotals: g.tipsOn ? g.tipTotals.slice() : null, roundHistory: g.roundHistory, phase: g.phase,
       me: seat,
       players: g.players.map((p, i) => ({
         name: p.name, bot: p.bot, team: p.team, slot: p.slot, out: p.out,
@@ -759,11 +767,11 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   // A view is enough to compute legal plays for `me` (hand + slots). Build a shim.
   function legalPlaysFromView(v) {
     if (v.phase !== 'play' || v.trick.turn !== v.me) return [];
-    const g = { mode: v.mode, N: v.N, phase: 'play', players: v.players.map((p, i) => ({ team: p.team, slot: p.slot, out: p.out, hand: i === v.me ? p.hand : [] })), trick: { top: v.trick.top } };
+    const g = { mode: v.mode, N: v.N, tipsOn: v.tipsOn, phase: 'play', players: v.players.map((p, i) => ({ team: p.team, slot: p.slot, out: p.out, hand: i === v.me ? p.hand : [] })), trick: { top: v.trick.top } };
     return legalPlays(g, v.me);
   }
   function accessibleFromView(v, seat) {
-    const g = { mode: v.mode, N: v.N, players: v.players.map(p => ({ team: p.team })) };
+    const g = { mode: v.mode, N: v.N, tipsOn: v.tipsOn, players: v.players.map(p => ({ team: p.team })) };
     return accessibleSlots(g, seat);
   }
 
@@ -1193,7 +1201,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     if (v.mode === 'team') {
       $('t-score').innerHTML = `<span class="pill">Jade</span><span class="box">${v.scores[0]}</span><span class="pill lantern">Lantern</span><span class="box">${v.scores[1]}</span><span class="muted">penalty points</span>`;
     } else {
-      $('t-score').innerHTML = v.players.map((p, i) => `<span class="box" title="${esc(p.name)}">${esc(pname(v, i)).slice(0, 6)} ${v.scores[i]}</span>`).join('');
+      $('t-score').innerHTML = v.players.map((p, i) => `<span class="box" title="${esc(p.name)}: ${v.tipTotals ? v.tipTotals[i] + ' tips, ' : ''}${v.scores[i]} penalty points">${esc(pname(v, i)).slice(0, 6)} <span style="color:var(--jade)">+${v.tipTotals ? v.tipTotals[i] : 0}</span> <span style="color:var(--red)">−${v.scores[i]}</span></span>`).join('') + (v.tipsOn ? `<span class="muted">tips − penalties</span>` : '');
     }
   }
 
@@ -1253,7 +1261,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const hand = me.hand || [];
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
     const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
-    let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team} <span class="muted">${hand.length} in cart${me.out ? ' · out' : ''}</span></div><div class="muted">${v.mode === 'team' ? 'Your section\'s trolley' : 'Trolley spots you may use'}</div></div>`;
+    let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team} <span class="muted">${hand.length} in cart${me.out ? ' · out' : ''}</span></div><div class="muted">${v.mode === 'team' ? 'Your section\'s trolley' : v.tipsOn ? 'The trolley · using a rival\'s card tips them' : 'Trolley spots you may use'}</div></div>`;
 
     // trolley row
     const tseats = myTrolleySeats(v);
@@ -1265,7 +1273,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         const clickable = (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
         c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
       } else {
-        const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
+        const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null && (!v.tipsOn || i === v.me);
         c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}">${target ? 'put it here' : 'empty'}</div>`;
       }
       return `<div class="tc">${c}<span>${label}</span></div>`;
@@ -1324,7 +1332,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   function renderPassControls(v) {
     const me = v.players[v.me];
     const tseats = myTrolleySeats(v);
-    const empties = tseats.filter(i => v.players[i].slot == null);
+    const empties = tseats.filter(i => v.players[i].slot == null && (!v.tipsOn || i === v.me));
     const filled = tseats.filter(i => v.players[i].slot != null);
     if (pm.kind === 'menu') {
       return `<span class="hint" style="flex-basis:100%">You are passing — out of this trick. You may also:</span>
@@ -1443,6 +1451,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         case 'fill': return `${n(e.seat)} passes and fills ${n(e.slotSeat)}'s spot with a ${e.r}`;
         case 'swap': return `${n(e.seat)} passes and swaps: takes ${e.took} from ${n(e.slotSeat)}'s spot, puts out ${e.gave}`;
         case 'out': return `${n(e.seat)} is out!`;
+        case 'tip': return `${n(e.from)} tips ${n(e.to)} (+1)`;
         case 'trickEnd': return `${n(e.winner)} wins the trick`;
         case 'lead': return `${n(e.chooser)} hands the lead to ${n(e.leader)}`;
         case 'roundEnd': return `Round ${e.summary.round} over`;
@@ -1465,11 +1474,11 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (v.mode === 'team') {
         body = `<p><strong>${TEAMNAME[s.winnerTeam]}</strong> emptied every cart. <strong>${TEAMNAME[s.loserTeam]}</strong> takes <strong>${s.penalty}</strong> penalty point${s.penalty === 1 ? '' : 's'} for its fullest cart.</p>`;
       } else {
-        body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else scores their own cart.</p>`;
+        body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else takes penalty points for their own cart${v.tipsOn ? '; tips earned this round are banked' : ''}.</p>`;
       }
-      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Cards left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
+      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Cards left</th>${s.tips ? '<th>Tips</th>' : ''}</tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td>${s.tips ? `<td>+${s.tips[i]}</td>` : ''}</tr>`).join('')}</table>`;
       body += `<h3 style="font-size:20px;margin-top:12px">Totals after round ${s.round}</h3>`;
-      body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.scores[i]}`).join(' · ')}</p>`;
+      body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.tipsOn ? `${v.tipTotals[i] - v.scores[i]} (+${v.tipTotals[i]} tips, −${v.scores[i]})` : v.scores[i]}`).join(' · ')}</p>`;
       if (v.phase === 'gameEnd') {
         const f = finalFromView(v);
         body += `<h3>${f}</h3>`;
@@ -1488,7 +1497,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   }
   function finalFromView(v) {
     if (v.mode === 'team') { const [a, b] = v.scores; return a === b ? 'A shared victory!' : (a < b ? 'Jade' : 'Lantern') + ' wins the rush!'; }
-    const min = Math.min(...v.scores); const w = v.players.map((p, i) => v.scores[i] === min ? pname(v, i) : null).filter(Boolean);
+    const net = v.scores.map((s, i) => (v.tipsOn ? v.tipTotals[i] : 0) - s);
+    const best = Math.max(...net); const w = v.players.map((p, i) => net[i] === best ? pname(v, i) : null).filter(Boolean);
     return (w.length > 1 ? w.join(' and ') + ' share the victory!' : w[0] + ' wins the rush!');
   }
   // =====================================================================
@@ -1532,7 +1542,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 <h3>Going out and scoring</h3>
 <p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of cards in its <strong>fullest</strong> cart. Trolley cards do not count. Gather, shuffle and deal the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
-<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours'. The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart.</p>
+<p>No sections, and the whole trolley is open: you may use <strong>any</strong> player's trolley card. Every time you use another player's card (in a combination, or by swapping it into your cart) that player earns a <strong>tip</strong>: 1 point. Your own card is free. When you pass you may fill only your own spot, or swap with anyone's card. The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. After three rounds, tips minus penalty points decides it; highest wins.</p>
 <table><tr><th>Players</th><th>Numbers</th><th>Dealt</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
 <h3>Using this app</h3>
 <p>Tap cards side by side in your cart (and any trolley cards) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley card and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their card backs in order.</p>
