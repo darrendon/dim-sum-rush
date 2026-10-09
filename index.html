@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dim Sum Rush</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#FBF4E8; --panel:#F3E6CF; --face:#FFFDF7; --red:#A3221B; --red-d:#6E120D; --gold:#F2C56B; --cream:#FBF1DE;
+  --jade:#1F6B4F; --jade-l:#2E8564; --ink:#2A1A12; --brown:#6B4B32; --brown-d:#4A3324; --rule:#E2CFAE; --rule-d:#C9B79B;
+  --b0:#B07A2A; --b1:#2F5D9E; --b2:#A8462A; --b3:#1F6B4F; --b0d:#8A5A16; --b1d:#234A80; --b2d:#7E3220; --b3d:#154D39;
+  --shadow:0 2px 0 rgba(42,26,18,.18);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; } }
+:root[data-theme="dark"]{ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; }
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Figtree','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{color:#F3E6CF} }
+h1,h2,h3{font-family:'Bagel Fat One','Arial Rounded MT Bold',sans-serif;font-weight:400;margin:0;color:var(--red)}
+button{font:inherit;cursor:pointer;border:2px solid var(--ink);border-radius:12px;background:var(--face);color:var(--ink);padding:10px 14px;font-weight:700;min-height:44px;box-shadow:var(--shadow)}
+button:disabled{opacity:.45;cursor:default;box-shadow:none}
+button.primary{background:var(--red);color:var(--cream);border-color:var(--red-d)}
+button.jade{background:var(--jade);color:var(--cream);border-color:var(--b3d)}
+button.ghost{background:transparent;border-color:var(--rule-d);box-shadow:none;font-weight:600}
+input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--face);color:var(--ink);min-height:44px}
+.wrap{max-width:1100px;margin:0 auto;padding:12px 16px 24px}
+.screen{display:none}.screen.active{display:block}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.col{display:flex;flex-direction:column;gap:10px}
+.card-panel{background:var(--panel);border-radius:16px;padding:14px 16px}
+.muted{color:var(--brown);font-size:13px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .muted{color:#C9B79B} }
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--cream);background:var(--jade)}
+.pill.lantern{background:var(--red)}
+.pill.gray{background:var(--brown)}
+
+/* ---- home ---- */
+.hero{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:10px 0 18px}
+.hero h1{font-size:44px;line-height:1}
+.hero .sub{font-size:14px;color:var(--brown)}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.home-grid h3{font-size:22px;margin-bottom:8px}
+
+/* ---- cards ---- */
+.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:8px;background:var(--face);border:2px solid var(--ink);padding:3px 4px;color:var(--ink);user-select:none;flex:none;box-shadow:var(--shadow);transition:transform .12s}
+.card .rk{font-family:'Bagel Fat One',sans-serif;font-size:20px;line-height:1}
+.card .art{position:absolute;left:2px;right:2px;top:20px;bottom:16px;display:flex;align-items:center;justify-content:center}
+.card .art svg{width:100%;height:100%}
+.card .nm{font-size:8px;font-weight:700;line-height:1.05;text-align:right;color:var(--brown-d)}
+.card.b0{border-color:var(--b0)}.card.b1{border-color:var(--b1)}.card.b2{border-color:var(--b2)}.card.b3{border-color:var(--b3)}
+.card.b0 .rk{color:var(--b0d)}.card.b1 .rk{color:var(--b1d)}.card.b2 .rk{color:var(--b2d)}.card.b3 .rk{color:var(--b3d)}
+.card.b0{box-shadow:inset 0 0 0 2px var(--b0),var(--shadow)}.card.b1{box-shadow:inset 0 0 0 2px var(--b1),var(--shadow)}.card.b2{box-shadow:inset 0 0 0 2px var(--b2),var(--shadow)}.card.b3{box-shadow:inset 0 0 0 2px var(--b3),var(--shadow)}
+.card.sm{width:40px;height:56px;padding:2px 3px}.card.sm .rk{font-size:15px}.card.sm .nm{display:none}.card.sm .art{top:16px;bottom:4px}
+.card.lg{width:76px;height:108px}.card.lg .rk{font-size:26px}.card.lg .nm{font-size:9px}.card.lg .art{top:26px;bottom:20px}
+.card.sel{transform:translateY(-10px);outline:3px solid var(--gold);outline-offset:1px}
+.card.dim{opacity:.4}
+.card.clickable{cursor:pointer}
+.back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;border-radius:4px;border:1.5px solid rgba(0,0,0,.35);flex:none;margin-left:-8px;box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.back:first-child{margin-left:0}
+.back svg{width:16px;height:22px}
+.back.b0{background:var(--b0)}.back.b1{background:var(--b1)}.back.b2{background:var(--b2)}.back.b3{background:var(--b3)}
+.back.lg{width:34px;height:48px;margin-left:-12px}.back.lg svg{width:24px;height:34px}
+.slot{width:58px;height:82px;border-radius:8px;border:2px dashed var(--rule-d);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--brown);text-align:center;padding:4px;flex:none}
+.slot.sm{width:40px;height:56px;font-size:9px}
+.slot.target{border-color:var(--gold);border-style:solid;background:rgba(242,197,107,.25);cursor:pointer}
+.trolley-card{cursor:pointer}
+.trolley-card.sel{outline:3px solid var(--gold);transform:translateY(-6px)}
+
+/* ---- table ---- */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.topbar h2{font-size:26px}
+.score{display:flex;gap:8px;align-items:center;font-weight:700}
+.score .box{background:var(--face);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;color:var(--ink)}
+.others{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:10px}
+.seat{background:var(--face);color:var(--ink);border:2px solid var(--rule-d);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.seat.jade{border-color:var(--jade)}.seat.lantern{border-color:var(--red)}
+.seat.turn{outline:3px solid var(--gold);outline-offset:1px}
+.seat.out{opacity:.7}
+.seat .hd{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.seat .nm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .st{font-size:11px;font-weight:700;color:var(--brown)}
+.seat .backs{display:flex;flex-wrap:wrap;gap:2px 0;min-height:34px;align-items:center}
+.seat .foot{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--brown)}
+.center{background:var(--panel);border-radius:16px;padding:12px 14px;margin-bottom:10px;min-height:150px}
+.center .status{font-weight:800;font-size:16px;margin-bottom:8px}
+.trick{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.play{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.play .who{font-size:11px;font-weight:700;color:var(--brown)}
+.play .cards{display:flex;gap:3px}
+.play.top .who{color:var(--red)}
+.play.bomb .cards .card{box-shadow:0 0 0 3px var(--red),var(--shadow)}
+.me{background:var(--face);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:12px 14px}
+.me .hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.hand{display:flex;gap:4px;flex-wrap:wrap;padding-top:10px;min-height:96px}
+.trolley{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.trolley .tc{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--brown)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:2px solid var(--rule-d);background:var(--bg);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700;min-height:32px;box-shadow:none}
+.chip.bomb{border-color:var(--red);color:var(--red)}
+.msg{font-size:13px;color:var(--brown-d);min-height:18px;margin-top:6px}
+.err{color:var(--red);font-weight:700}
+.log{font-size:12px;color:var(--brown-d);max-height:140px;overflow:auto;background:var(--face);border-radius:10px;padding:8px 10px;margin-top:10px;color:var(--ink)}
+.overlay{position:fixed;inset:0;background:rgba(42,26,18,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{background:var(--bg);border-radius:18px;padding:18px;max-width:520px;width:100%;max-height:92vh;overflow:auto;border:3px solid var(--ink)}
+.modal h3{font-size:26px;margin-bottom:8px}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:3px solid var(--ink);border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));z-index:9;max-height:70vh;overflow:auto;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
+.sheet h3{font-size:22px;margin-bottom:6px}
+table.tbl{border-collapse:collapse;width:100%;font-size:14px}
+table.tbl th,table.tbl td{padding:6px 8px;border-top:1px solid var(--rule-d);text-align:left}
+table.tbl th{background:var(--jade);color:var(--cream)}
+.code{font-family:'Bagel Fat One',sans-serif;font-size:40px;letter-spacing:.12em;color:var(--red)}
+.lobby-seat{display:flex;justify-content:space-between;align-items:center;background:var(--face);color:var(--ink);border-radius:10px;padding:8px 12px;border:2px solid var(--rule-d)}
+.hint{font-size:12px;color:var(--brown)}
+.insert-row{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+.gap{width:18px;height:82px;border-radius:6px;border:2px dashed var(--gold);background:rgba(242,197,107,.2);cursor:pointer;flex:none}
+.gap:hover,.gap.sel{background:var(--gold)}
+.coach{background:var(--jade);color:var(--cream);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.coach .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--jade);font-family:'Bagel Fat One',sans-serif;font-size:22px}
+.coach .body{flex:1 1 auto;font-size:14px;line-height:1.4}
+.coach .body strong{color:var(--gold)}
+.coach .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.coach button{min-height:36px;padding:6px 12px;border-color:var(--cream);background:var(--cream);color:var(--jade);box-shadow:none}
+.coach button.ghost{background:transparent;color:var(--cream);border-color:rgba(251,241,222,.5)}
+.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:1px}
+@keyframes pulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.rules h3{font-size:22px;margin:14px 0 4px}
+.rules h3:first-child{margin-top:0}
+.rules p{margin:6px 0}
+.rules .ex{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.rules .ex .lbl{font-size:12px;font-weight:700;color:var(--brown);margin-right:6px;min-width:120px}
+.rules .ok{color:var(--jade);font-weight:800}.rules .no{color:var(--red);font-weight:800}
+.rules table{border-collapse:collapse;font-size:13px;margin:6px 0}
+.rules td,.rules th{padding:4px 8px;border-top:1px solid var(--rule-d);text-align:left}
+.modal.wide{max-width:760px}
+@media (max-width:600px){ .card{width:48px;height:68px}.card .rk{font-size:17px}.card .nm{display:none}.card .art{top:18px;bottom:4px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!-- ===== HOME ===== -->
+<section id="s-home" class="screen active">
+  <div class="hero"><h1>Dim Sum Rush</h1><div class="sub">Playtest build · teams of 2 or 3, or every server for themselves · 3 rounds</div></div>
+  <div class="card-panel" style="margin-bottom:14px">
+    <label style="font-weight:800">Your name</label>
+    <div class="row" style="margin-top:6px"><input id="name" maxlength="16" placeholder="e.g. Mei" style="flex:1 1 200px"></div>
+  </div>
+  <div class="home-grid">
+    <div class="card-panel" style="border:3px solid var(--jade)">
+      <h3>Learn to play</h3>
+      <p class="muted" style="margin:0 0 8px">A guided 4-player table against bots. A coach explains each situation as it comes up and can show you its pick. About 15 minutes.</p>
+      <div class="col"><button class="jade" id="btn-tutorial">Start the tutorial</button><button class="ghost" id="btn-rules">Read the full rules</button></div>
+    </div>
+    <div class="card-panel">
+      <h3>Play against bots</h3>
+      <div class="col">
+        <label>Table <select id="solo-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
+        <button class="primary" id="btn-solo">Deal me in</button>
+      </div>
+    </div>
+    <div class="card-panel">
+      <h3>Host an online table</h3>
+      <p class="muted" style="margin:0 0 8px">You get a 5-letter code. Friends open this same link, enter the code, and take seats. Empty seats are filled with bots when you start. Your browser runs the game, so keep this tab open.</p>
+      <div class="col">
+        <label>Table <select id="host-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
+        <button class="jade" id="btn-host">Open a table</button>
+      </div>
+    </div>
+    <div class="card-panel">
+      <h3>Join a table</h3>
+      <div class="col">
+        <input id="join-code" maxlength="5" placeholder="CODE" style="text-transform:uppercase;letter-spacing:.2em;font-weight:800">
+        <button class="jade" id="btn-join">Take a seat</button>
+      </div>
+    </div>
+  </div>
+  <div class="muted" style="margin-top:14px" id="home-msg"></div>
+  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
+  <div class="card-panel" style="margin-top:8px;font-size:14px">
+    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up card in front of each player; you may use your own section's trolley cards in any combination, in any position. Combinations: single, set of 2–3, run of 2+. Cards from your cart must be side by side, and a run's cart cards must already be in rising or falling order.</p>
+    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> 4+ of a number or a run of 4+, all from your own cart. More cards beats fewer; at equal size a set beats a run; then higher number.</p>
+    <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart card, or swap a cart card with a trolley card (the taken card goes anywhere in your cart). Used trolley cards are not replaced.</p>
+    <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
+    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
+  </div></details>
+</section>
+
+<!-- ===== LOBBY ===== -->
+<section id="s-lobby" class="screen">
+  <div class="topbar"><h2>Table open</h2><button class="ghost" id="btn-leave-lobby">Leave</button></div>
+  <div class="card-panel" style="text-align:center;margin-bottom:12px">
+    <div class="muted">Share this code (and this page's link)</div>
+    <div class="code" id="lobby-code">----</div>
+    <div class="muted" id="lobby-status"></div>
+  </div>
+  <div class="col" id="lobby-seats"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" id="btn-start" style="display:none">Start the rush</button>
+    <span class="hint" id="lobby-hint"></span>
+  </div>
+</section>
+
+<!-- ===== TABLE ===== -->
+<section id="s-table" class="screen">
+  <div class="topbar">
+    <h2 id="t-title">Round 1</h2>
+    <div class="score" id="t-score"></div>
+    <div class="row"><button class="ghost" id="btn-rules2">Rules</button><button class="ghost" id="btn-log">Log</button><button class="ghost" id="btn-quit">Leave</button></div>
+  </div>
+  <div class="others" id="t-others"></div>
+  <div class="center" id="t-center"></div>
+  <div class="coach" id="t-coach" style="display:none"></div>
+  <div class="me" id="t-me"></div>
+  <div class="log" id="t-log" style="display:none"></div>
+</section>
+</div>
+<div id="overlay"></div>
+<script>
+// Dim Sum Rush — pure game engine (locked rules). No DOM. Works in browser and node.
+// Cards are plain ranks (1..12). Trolley spots hold one rank or null.
+(function (root) {
+  'use strict';
+
+  const COPIES = 7;
+
+  function configFor(mode, N) {
+    if (mode === 'team') {
+      if (N === 4) return { ranks: 9, hand: 14 };
+      if (N === 6) return { ranks: 12, hand: 13 };
+      throw new Error('team mode needs 4 or 6 players');
+    }
+    if (N < 2 || N > 6) throw new Error('2-6 players');
+    if (N <= 4) return { ranks: 9, hand: 14 };
+    if (N === 5) return { ranks: 12, hand: 14 };
+    return { ranks: 12, hand: 13 };
+  }
+
+  function bandOf(r) { return r <= 3 ? 0 : r <= 6 ? 1 : r <= 9 ? 2 : 3; }
+
+  // ---------- RNG (seedable for tests) ----------
+  function makeRng(seed) {
+    let s = (seed >>> 0) || 0x9e3779b9;
+    return function () {
+      s += 0x6D2B79F5; let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- Combination classification ----------
+  // handCards: ranks in hand order (adjacent slice). slotCards: ranks taken from trolley.
+  // Returns {type:'single'|'set'|'run', size, top, bomb} or null.
+  function classify(handCards, slotCards) {
+    const all = handCards.concat(slotCards);
+    const n = all.length;
+    if (n === 0) return null;
+    if (n === 1) return { type: 'single', size: 1, top: all[0], bomb: false };
+    const first = all[0];
+    if (all.every(r => r === first)) {
+      if (n >= 4) return { type: 'set', size: n, top: first, bomb: slotCards.length === 0 };
+      return { type: 'set', size: n, top: first, bomb: false };
+    }
+    // run: distinct consecutive, hand portion already in rising or falling order
+    const sorted = all.slice().sort((a, b) => a - b);
+    for (let i = 1; i < n; i++) if (sorted[i] !== sorted[i - 1] + 1) return null;
+    if (handCards.length >= 2) {
+      let up = true, down = true;
+      for (let i = 1; i < handCards.length; i++) {
+        if (handCards[i] <= handCards[i - 1]) up = false;
+        if (handCards[i] >= handCards[i - 1]) down = false;
+      }
+      if (!up && !down) return null;
+    }
+    return { type: 'run', size: n, top: sorted[n - 1], bomb: n >= 4 && slotCards.length === 0 };
+  }
+
+  // Does combo b beat combo a (a is on the table)?
+  function beats(b, a) {
+    if (!a) return true;
+    if (b.bomb && !a.bomb) return true;
+    if (!b.bomb && a.bomb) return false;
+    if (b.bomb && a.bomb) {
+      if (b.size !== a.size) return b.size > a.size;
+      if (b.type !== a.type) return b.type === 'set'; // set beats run at equal size
+      return b.top > a.top;
+    }
+    return b.type === a.type && b.size === a.size && b.top >= a.top; // match or beat
+  }
+
+  // ---------- State ----------
+  function newGame(opts) {
+    const mode = opts.mode || 'team';
+    const N = opts.players.length;
+    const cfg = configFor(mode, N);
+    const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
+    const g = {
+      mode, N, ranks: cfg.ranks, handSize: cfg.hand,
+      players: opts.players.map((p, i) => ({
+        name: p.name, bot: !!p.bot, team: mode === 'team' ? i % 2 : i,
+        hand: [], slot: null, out: false, pick: null,
+      })),
+      round: 0, maxRounds: 3,
+      scores: mode === 'team' ? [0, 0] : opts.players.map(() => 0),
+      roundHistory: [],
+      firstLeader: opts.firstLeader != null ? opts.firstLeader : Math.floor(rng() * N),
+      phase: 'lobby',
+      trick: null,
+      log: [],
+      seedState: null,
+      _rng: rng,
+    };
+    startRound(g);
+    return g;
+  }
+
+  function startRound(g) {
+    g.round += 1;
+    const deck = [];
+    for (let r = 1; r <= g.ranks; r++) for (let c = 0; c < COPIES; c++) deck.push(r);
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(g._rng() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    g.players.forEach(p => { p.hand = []; p.slot = null; p.out = false; p.pick = null; });
+    for (let k = 0; k < g.handSize; k++) for (let i = 0; i < g.N; i++) g.players[i].hand.push(deck.pop());
+    g.phase = 'faceup';
+    g.trick = null;
+    g.discard = [];
+    g.tricksPlayed = 0;
+    if (g.round > 1) g.firstLeader = (g.firstLeader + 1) % g.N;
+    g.log.push({ t: 'round', round: g.round });
+  }
+
+  // Every player picks one hand index to put face up. When all have picked, reveal.
+  function pickFaceUp(g, seat, handIndex) {
+    if (g.phase !== 'faceup') return err('Not the face-up phase');
+    const p = g.players[seat];
+    if (p.pick != null) return err('Already picked');
+    if (handIndex < 0 || handIndex >= p.hand.length) return err('Bad card');
+    p.pick = handIndex;
+    if (g.players.every(q => q.pick != null)) {
+      g.players.forEach(q => { q.slot = q.hand.splice(q.pick, 1)[0]; q.pick = null; });
+      g.phase = 'play';
+      g.trick = { leader: g.firstLeader, turn: g.firstLeader, plays: [], passed: [], top: null, topSeat: null };
+      g.log.push({ t: 'faceup', slots: g.players.map(q => q.slot) });
+    }
+    return ok();
+  }
+
+  function ok(extra) { return Object.assign({ ok: true }, extra || {}); }
+  function err(m) { return { ok: false, error: m }; }
+
+  // Which trolley spots (seat indexes) may `seat` use?
+  function accessibleSlots(g, seat) {
+    const out = [];
+    if (g.mode === 'team') {
+      for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[seat].team) out.push(i);
+    } else {
+      const set = new Set([seat, (seat + 1) % g.N, (seat + g.N - 1) % g.N]);
+      for (let i = 0; i < g.N; i++) if (set.has(i)) out.push(i);
+    }
+    return out;
+  }
+
+  // Enumerate legal plays for seat. Each play: {hi, hj (inclusive hand slice, or hi=-1 none), slots:[seat indexes], combo}
+  function legalPlays(g, seat, opts) {
+    const p = g.players[seat];
+    const res = [];
+    if (g.phase !== 'play' || p.out) return res;
+    const top = g.trick.top;
+    const slotSeats = accessibleSlots(g, seat).filter(i => g.players[i].slot != null);
+    const slotRanks = slotSeats.map(i => g.players[i].slot);
+    const maxSlice = Math.min(p.hand.length, 8);
+    const subsets = [];
+    for (let m = 0; m < (1 << slotSeats.length); m++) {
+      const seats = [], ranks = [];
+      for (let b = 0; b < slotSeats.length; b++) if (m & (1 << b)) { seats.push(slotSeats[b]); ranks.push(slotRanks[b]); }
+      subsets.push({ seats, ranks });
+    }
+    const tryAdd = (hi, hj, hand, sub) => {
+      const c = classify(hand, sub.ranks);
+      if (!c) return;
+      if (top && !beats(c, top)) return;
+      if (!top && opts && opts.leadNoBomb && c.bomb) return;
+      res.push({ hi, hj, slots: sub.seats, combo: c });
+    };
+    for (const sub of subsets) {
+      if (sub.seats.length > 0) tryAdd(-1, -1, [], sub); // trolley-only
+      for (let i = 0; i < p.hand.length; i++) {
+        for (let j = i; j < p.hand.length && j - i < maxSlice; j++) {
+          const hand = p.hand.slice(i, j + 1);
+          // quick prune: a hand slice with a non-monotonic, non-equal pattern can't be anything
+          tryAdd(i, j, hand, sub);
+        }
+      }
+    }
+    return res;
+  }
+
+  function canPlay(g, seat) { return legalPlays(g, seat).length > 0; }
+
+  function describePlay(g, seat, play) {
+    const p = g.players[seat];
+    const hand = play.hi >= 0 ? p.hand.slice(play.hi, play.hj + 1) : [];
+    const slots = play.slots.map(i => g.players[i].slot);
+    return { hand, slots };
+  }
+
+  function applyPlay(g, seat, play) {
+    if (g.phase !== 'play') return err('Not playing');
+    if (g.trick.turn !== seat) return err('Not your turn');
+    const p = g.players[seat];
+    const hand = play.hi >= 0 ? p.hand.slice(play.hi, play.hj + 1) : [];
+    const slotRanks = [];
+    const acc = accessibleSlots(g, seat);
+    for (const i of play.slots) {
+      if (!acc.includes(i) || g.players[i].slot == null) return err('Bad trolley card');
+      slotRanks.push(g.players[i].slot);
+    }
+    if (hand.length + slotRanks.length === 0) return err('Empty play');
+    const c = classify(hand, slotRanks);
+    if (!c) return err('Not a legal combination');
+    if (g.trick.top && !beats(c, g.trick.top)) return err('Does not beat the table');
+    // apply
+    const cards = hand.map(r => ({ r, src: 'hand' })).concat(play.slots.map(i => ({ r: g.players[i].slot, src: 'slot', owner: i })));
+    if (play.hi >= 0) p.hand.splice(play.hi, hand.length);
+    for (const i of play.slots) g.players[i].slot = null;
+    g.trick.plays.push({ seat, cards, combo: c });
+    g.trick.top = c; g.trick.topSeat = seat;
+    g.log.push({ t: 'play', seat, cards: cards.map(x => x.r), combo: c });
+    if (p.hand.length === 0) { p.out = true; g.log.push({ t: 'out', seat }); }
+    if (checkRoundEnd(g)) return ok({ roundEnded: true });
+    advanceTurn(g);
+    return ok();
+  }
+
+  // pass: {kind:'none'} | {kind:'fill', handIndex, slotSeat} | {kind:'swap', slotSeat, handIndex, insertAt}
+  function applyPass(g, seat, pass) {
+    if (g.phase !== 'play') return err('Not playing');
+    if (g.trick.turn !== seat) return err('Not your turn');
+    if (g.trick.plays.length === 0) return err('The leader cannot pass');
+    const p = g.players[seat];
+    const acc = accessibleSlots(g, seat);
+    pass = pass || { kind: 'none' };
+    if (pass.kind === 'fill') {
+      if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot != null) return err('That spot is not empty');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
+      g.players[pass.slotSeat].slot = p.hand.splice(pass.handIndex, 1)[0];
+      g.log.push({ t: 'fill', seat, slotSeat: pass.slotSeat, r: g.players[pass.slotSeat].slot });
+      if (p.hand.length === 0) { p.out = true; g.log.push({ t: 'out', seat }); }
+    } else if (pass.kind === 'swap') {
+      if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot == null) return err('That spot is empty');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
+      const taken = g.players[pass.slotSeat].slot;
+      const given = p.hand.splice(pass.handIndex, 1)[0];
+      let at = pass.insertAt == null ? p.hand.length : pass.insertAt;
+      at = Math.max(0, Math.min(p.hand.length, at));
+      p.hand.splice(at, 0, taken);
+      g.players[pass.slotSeat].slot = given;
+      g.log.push({ t: 'swap', seat, slotSeat: pass.slotSeat, took: taken, gave: given });
+    } else {
+      g.log.push({ t: 'pass', seat });
+    }
+    g.trick.passed.push(seat);
+    if (checkRoundEnd(g)) return ok({ roundEnded: true });
+    advanceTurn(g);
+    return ok();
+  }
+
+  function stillIn(g, seat) {
+    return !g.players[seat].out && !g.trick.passed.includes(seat);
+  }
+
+  function advanceTurn(g) {
+    const t = g.trick;
+    // candidates: players still in the trick other than the top seat
+    const others = [];
+    for (let k = 1; k < g.N; k++) {
+      const s = (t.topSeat + k) % g.N;
+      if (stillIn(g, s)) others.push(s);
+    }
+    if (others.length === 0) { endTrick(g); return; }
+    // next in seat order after current turn who is still in
+    for (let k = 1; k <= g.N; k++) {
+      const s = (t.turn + k) % g.N;
+      if (s === t.topSeat) continue; // the top seat does not play on itself; others get a turn first
+      if (stillIn(g, s)) { t.turn = s; return; }
+    }
+    endTrick(g);
+  }
+
+  function endTrick(g) {
+    const t = g.trick;
+    const winner = t.topSeat;
+    g.tricksPlayed += 1;
+    g.discard.push(...t.plays.flatMap(pl => pl.cards.map(c => c.r)));
+    g.log.push({ t: 'trickEnd', winner, bomb: t.top.bomb });
+    g.lastTrick = { plays: t.plays, winner };
+    if (g.mode === 'team') {
+      const options = leaderOptions(g, winner);
+      if (options.length === 0) { // whole team out: round should have ended already
+        checkRoundEnd(g); return;
+      }
+      g.phase = 'chooseLeader';
+      g.chooser = winner;
+      g.leaderOptions = options;
+    } else {
+      startTrick(g, winner);
+    }
+  }
+
+  function leaderOptions(g, winner) {
+    const opts = [];
+    for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[winner].team && !g.players[i].out) opts.push(i);
+    return opts;
+  }
+
+  function chooseLeader(g, seat, leader) {
+    if (g.phase !== 'chooseLeader') return err('Not choosing');
+    if (seat !== g.chooser) return err('Not your choice');
+    if (!g.leaderOptions.includes(leader)) return err('Not a legal leader');
+    g.log.push({ t: 'lead', chooser: seat, leader });
+    startTrick(g, leader);
+    return ok();
+  }
+
+  function startTrick(g, leader) {
+    g.phase = 'play';
+    g.trick = { leader, turn: leader, plays: [], passed: [], top: null, topSeat: null };
+  }
+
+  function checkRoundEnd(g) {
+    let ended = false;
+    if (g.mode === 'team') {
+      for (const team of [0, 1]) {
+        if (g.players.every(p => p.team !== team || p.out)) { ended = true; g.roundWinner = team; }
+      }
+    } else {
+      const w = g.players.findIndex(p => p.out);
+      if (w >= 0) { ended = true; g.roundWinner = w; }
+    }
+    if (!ended) return false;
+    // scoring
+    const pens = g.players.map(p => p.hand.length);
+    let summary;
+    if (g.mode === 'team') {
+      const loser = 1 - g.roundWinner;
+      const pen = Math.max(...g.players.filter(p => p.team === loser).map(p => p.hand.length));
+      g.scores[loser] += pen;
+      summary = { round: g.round, winnerTeam: g.roundWinner, loserTeam: loser, penalty: pen, hands: pens };
+    } else {
+      g.players.forEach((p, i) => { g.scores[i] += p.hand.length; });
+      summary = { round: g.round, winner: g.roundWinner, hands: pens };
+    }
+    g.roundHistory.push(summary);
+    g.log.push({ t: 'roundEnd', summary });
+    g.phase = g.round >= g.maxRounds ? 'gameEnd' : 'roundEnd';
+    return true;
+  }
+
+  function nextRound(g) {
+    if (g.phase !== 'roundEnd') return err('Round not over');
+    startRound(g);
+    return ok();
+  }
+
+  function finalStandings(g) {
+    if (g.mode === 'team') {
+      const [a, b] = g.scores;
+      return { winners: a === b ? [0, 1] : a < b ? [0] : [1], scores: g.scores.slice() };
+    }
+    const min = Math.min(...g.scores);
+    return { winners: g.scores.map((s, i) => s === min ? i : -1).filter(i => i >= 0), scores: g.scores.slice() };
+  }
+
+  // ---------- Bots ----------
+  // A cheap "cost" of a hand: how many plays it would take to shed it greedily, lower is better.
+  function handCost(hand) {
+    let i = 0, cost = 0;
+    while (i < hand.length) {
+      let j = i;
+      // same-rank block
+      while (j + 1 < hand.length && hand[j + 1] === hand[i]) j++;
+      if (j > i) { cost += 1; i = j + 1; continue; }
+      // monotone consecutive run
+      let k = i;
+      while (k + 1 < hand.length && Math.abs(hand[k + 1] - hand[k]) === 1 && (k === i || (hand[k + 1] - hand[k]) === (hand[k] - hand[k - 1]))) k++;
+      if (k > i) { cost += 1; i = k + 1; continue; }
+      cost += 1.2; i++;
+    }
+    return cost;
+  }
+
+  // number of hand-only Chef's Specials currently sitting in a hand (non-overlapping scan)
+  function countBombs(hand) {
+    let n = 0, i = 0;
+    while (i < hand.length) {
+      let j = i; while (j + 1 < hand.length && hand[j + 1] === hand[i]) j++;
+      if (j - i + 1 >= 4) { n++; i = j + 1; continue; }
+      let k = i;
+      while (k + 1 < hand.length && Math.abs(hand[k + 1] - hand[k]) === 1 && (k === i || (hand[k + 1] - hand[k]) === (hand[k] - hand[k - 1]))) k++;
+      if (k - i + 1 >= 4) { n++; i = k + 1; continue; }
+      i++;
+    }
+    return n;
+  }
+
+  function isOrphan(hand, idx) {
+    const r = hand[idx];
+    const l = idx > 0 ? hand[idx - 1] : null, rr = idx + 1 < hand.length ? hand[idx + 1] : null;
+    const near = x => x != null && Math.abs(x - r) <= 1;
+    return !near(l) && !near(rr);
+  }
+
+  function botFaceUpPick(g, seat) {
+    const h = g.players[seat].hand;
+    let best = 0, bestScore = -1e9;
+    for (let i = 0; i < h.length; i++) {
+      let s = isOrphan(h, i) ? 10 : 0;
+      s -= Math.abs(h[i] - (g.ranks + 1) / 2) * 0.3; // middling cards are most useful as bridges
+      s += g._rng() * 0.5;
+      if (s > bestScore) { bestScore = s; best = i; }
+    }
+    return best;
+  }
+
+  function teamOf(g, seat) { return g.players[seat].team; }
+
+  function botDecide(g, seat) {
+    const p = g.players[seat];
+    const t = g.trick;
+    const leading = t.plays.length === 0;
+    const plays = legalPlays(g, seat);
+    const rng = g._rng;
+    const opponentsTop = !leading && (g.mode !== 'team' || teamOf(g, t.topSeat) !== p.team);
+    const trailing = g.mode === 'team'
+      ? Math.max(...g.players.filter(q => q.team === p.team).map(q => q.hand.length)) >= Math.max(...g.players.filter(q => q.team !== p.team).map(q => q.hand.length))
+      : true;
+
+    const score = pl => {
+      const handLeft = p.hand.slice(0, pl.hi >= 0 ? pl.hi : 0).concat(p.hand.slice(pl.hi >= 0 ? pl.hj + 1 : 0));
+      const nHand = pl.hi >= 0 ? pl.hj - pl.hi + 1 : 0;
+      let s = -handCost(handLeft) * 2;         // leave a cheap hand
+      if (!pl.combo.bomb) s -= 3 * (countBombs(p.hand) - countBombs(handLeft)); // don't break a Special
+      s += nHand * 1.0;                          // shed hand cards
+      s -= pl.combo.top * 0.15;                  // keep high cards for later
+      s -= pl.slots.length * 0.6;                // trolley cards are shared tools; don't burn them idly
+      if (pl.combo.bomb) s -= leading ? 6 : (opponentsTop ? -3 : 4);
+      if (handLeft.length === 0) s += 8;         // going out is great
+      return s + rng() * 0.3;
+    };
+
+    if (leading) {
+      let best = null, bs = -1e9;
+      for (const pl of plays) { const s = score(pl); if (s > bs) { bs = s; best = pl; } }
+      return { action: 'play', play: best };
+    }
+    // Following: decide between best play and passing
+    let best = null, bs = -1e9;
+    for (const pl of plays) { const s = score(pl); if (s > bs) { bs = s; best = pl; } }
+    // partner is on top with an ordinary play: usually let it ride
+    const partnerTop = g.mode === 'team' && teamOf(g, t.topSeat) === p.team;
+    let play = best;
+    if (partnerTop && best && !best.combo.bomb && rng() < 0.7) play = null;
+    if (best && best.combo.bomb && !(opponentsTop && (trailing || p.hand.length <= 6 || rng() < 0.6))) play = null;
+    if (play) return { action: 'play', play };
+    return { action: 'pass', pass: botPassChoice(g, seat) };
+  }
+
+  function botPassChoice(g, seat) {
+    const p = g.players[seat];
+    const acc = accessibleSlots(g, seat);
+    const rng = g._rng;
+    // 1. fill an empty spot with an orphan (never our last card unless it wins the round for us)
+    const empty = acc.filter(i => g.players[i].slot == null);
+    const orphans = p.hand.map((r, i) => i).filter(i => isOrphan(p.hand, i));
+    if (empty.length && p.hand.length > 1 && orphans.length) {
+      // prefer middling orphan
+      orphans.sort((a, b) => Math.abs(p.hand[a] - (g.ranks + 1) / 2) - Math.abs(p.hand[b] - (g.ranks + 1) / 2));
+      const slotSeat = empty.includes(seat) ? seat : empty[0];
+      return { kind: 'fill', handIndex: orphans[0], slotSeat };
+    }
+    // 2. swap: take a trolley card that lowers hand cost, give an orphan
+    const filled = acc.filter(i => g.players[i].slot != null);
+    let best = null, bestGain = 0.5;
+    const base = handCost(p.hand);
+    for (const si of filled) {
+      const r = g.players[si].slot;
+      for (const gi of (orphans.length ? orphans : p.hand.map((_, i) => i))) {
+        const h = p.hand.slice(); h.splice(gi, 1);
+        for (let at = 0; at <= h.length; at++) {
+          const h2 = h.slice(); h2.splice(at, 0, r);
+          const gain = base - handCost(h2) + 2 * (countBombs(h2) - countBombs(p.hand));
+          if (gain > bestGain) { bestGain = gain; best = { kind: 'swap', slotSeat: si, handIndex: gi, insertAt: at }; }
+        }
+      }
+    }
+    if (best) return best;
+    if (empty.length && p.hand.length > 1 && rng() < 0.5) return { kind: 'fill', handIndex: 0, slotSeat: empty[0] };
+    return { kind: 'none' };
+  }
+
+  function botChooseLeader(g, seat) {
+    const opts = g.leaderOptions;
+    // give the lead to the teammate with the most cards (they need tempo), keep it if we are close
+    let best = opts[0], most = -1;
+    for (const i of opts) { const n = g.players[i].hand.length + (i === seat ? 1 : 0); if (n > most) { most = n; best = i; } }
+    return best;
+  }
+
+  // Run one bot step if it's a bot's turn. Returns true if something happened.
+  function botStep(g) {
+    if (g.phase === 'faceup') {
+      let did = false;
+      g.players.forEach((p, i) => { if (p.bot && p.pick == null) { pickFaceUp(g, i, botFaceUpPick(g, i)); did = true; } });
+      return did;
+    }
+    if (g.phase === 'play') {
+      const s = g.trick.turn;
+      if (!g.players[s].bot) return false;
+      const d = botDecide(g, s);
+      const r = d.action === 'play' ? applyPlay(g, s, d.play) : applyPass(g, s, d.pass);
+      if (!r.ok) { // should not happen; fail safe
+        const pl = legalPlays(g, s);
+        if (pl.length) applyPlay(g, s, pl[0]); else applyPass(g, s, { kind: 'none' });
+      }
+      return true;
+    }
+    if (g.phase === 'chooseLeader') {
+      if (!g.players[g.chooser].bot) return false;
+      chooseLeader(g, g.chooser, botChooseLeader(g, g.chooser));
+      return true;
+    }
+    return false;
+  }
+
+  // ---------- Views (hidden information) ----------
+  function viewFor(g, seat) {
+    return {
+      mode: g.mode, N: g.N, ranks: g.ranks, round: g.round, maxRounds: g.maxRounds,
+      scores: g.scores.slice(), roundHistory: g.roundHistory, phase: g.phase,
+      me: seat,
+      players: g.players.map((p, i) => ({
+        name: p.name, bot: p.bot, team: p.team, slot: p.slot, out: p.out,
+        count: p.hand.length,
+        picked: p.pick != null,
+        backs: p.hand.map(bandOf),
+        hand: i === seat ? p.hand.slice() : undefined,
+      })),
+      trick: g.trick ? { leader: g.trick.leader, turn: g.trick.turn, plays: g.trick.plays, passed: g.trick.passed, top: g.trick.top, topSeat: g.trick.topSeat } : null,
+      lastTrick: g.lastTrick || null,
+      chooser: g.chooser, leaderOptions: g.phase === 'chooseLeader' ? g.leaderOptions : null,
+      firstLeader: g.firstLeader,
+      logTail: g.log.slice(-12),
+      tricksPlayed: g.tricksPlayed,
+    };
+  }
+
+  // A view is enough to compute legal plays for `me` (hand + slots). Build a shim.
+  function legalPlaysFromView(v) {
+    if (v.phase !== 'play' || v.trick.turn !== v.me) return [];
+    const g = { mode: v.mode, N: v.N, phase: 'play', players: v.players.map((p, i) => ({ team: p.team, slot: p.slot, out: p.out, hand: i === v.me ? p.hand : [] })), trick: { top: v.trick.top } };
+    return legalPlays(g, v.me);
+  }
+  function accessibleFromView(v, seat) {
+    const g = { mode: v.mode, N: v.N, players: v.players.map(p => ({ team: p.team })) };
+    return accessibleSlots(g, seat);
+  }
+
+  const api = { countBombs, configFor, bandOf, classify, beats, newGame, pickFaceUp, legalPlays, applyPlay, applyPass, chooseLeader, nextRound, finalStandings, accessibleSlots, botStep, botDecide, botFaceUpPick, botChooseLeader, viewFor, legalPlaysFromView, accessibleFromView, describePlay, handCost, makeRng };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.DSR = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>window.DSR_ART = {"art": {"1": {"name": "Har Gow", "zh": "\u8766\u9903", "band": "steamer", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"104\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M30 112 L30 150 C 30 170, 230 170, 230 150 L230 112 Z\" fill=\"#C8923E\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M30 128 C 60 136, 200 136, 230 128\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><path d=\"M30 144 C 60 152, 200 152, 230 144\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><ellipse cx=\"130\" cy=\"112\" rx=\"100\" ry=\"24\" fill=\"#E3B468\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"112\" rx=\"86\" ry=\"16\" fill=\"#F6E3BC\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><path d=\"M62 112 h136 M70 104 h120 M70 120 h120\" stroke=\"#E3C68E\" stroke-width=\"2.5\"></path><path d=\"M38 110 C 36 96, 50 76, 72 76 C 94 76, 102 96, 98 110 Z\" fill=\"#F7E1DA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"70\" cy=\"96\" rx=\"18\" ry=\"9\" fill=\"#F3A48E\" opacity=\"0.55\"></ellipse><path d=\"M46 104 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M54 100 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M62 96 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M70 92 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M78 96 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M86 100 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M94 104 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M100 104 C 98 90, 112 70, 134 70 C 156 70, 164 90, 160 104 Z\" fill=\"#F7E1DA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"132\" cy=\"90\" rx=\"18\" ry=\"9\" fill=\"#F3A48E\" opacity=\"0.55\"></ellipse><path d=\"M108 98 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M116 94 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M124 90 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M132 86 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M140 90 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M148 94 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M156 98 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M162 110 C 160 96, 174 76, 196 76 C 218 76, 226 96, 222 110 Z\" fill=\"#F7E1DA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"194\" cy=\"96\" rx=\"18\" ry=\"9\" fill=\"#F3A48E\" opacity=\"0.55\"></ellipse><path d=\"M170 104 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M178 100 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M186 96 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M194 92 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M202 96 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M210 100 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M218 104 l 3 -8\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M30 112 C 30 136, 230 136, 230 112 C 230 128, 30 128, 30 112 Z\" fill=\"#E3B468\" stroke=\"none\"></path><path d=\"M30 112 C 30 136, 230 136, 230 112\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M48 116 C 70 128, 190 128, 212 116\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path>"}, "2": {"name": "Siu Mai", "zh": "\u71d2\u8ce3", "band": "steamer", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"104\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M30 112 L30 150 C 30 170, 230 170, 230 150 L230 112 Z\" fill=\"#C8923E\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M30 128 C 60 136, 200 136, 230 128\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><path d=\"M30 144 C 60 152, 200 152, 230 144\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><ellipse cx=\"130\" cy=\"112\" rx=\"100\" ry=\"24\" fill=\"#E3B468\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"112\" rx=\"86\" ry=\"16\" fill=\"#F6E3BC\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><path d=\"M62 112 h136 M70 104 h120 M70 120 h120\" stroke=\"#E3C68E\" stroke-width=\"2.5\"></path><path d=\"M49 94 C 46 106, 47 114, 50 118 L90 118 C 93 114, 94 106, 91 94 Z\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M56 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M63 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M70 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M77 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M84 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><ellipse cx=\"70\" cy=\"94\" rx=\"22\" ry=\"8\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"70\" cy=\"94\" rx=\"16\" ry=\"5\" fill=\"#B9704A\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><path d=\"M48 94 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 7 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><circle cx=\"66\" cy=\"93\" r=\"3.5\" fill=\"#E8742C\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"77\" cy=\"95\" r=\"2.8\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"1.8\"></circle><path d=\"M109 88 C 106 100, 107 108, 110 112 L150 112 C 153 108, 154 100, 151 88 Z\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M116 90 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M123 90 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M130 90 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M137 90 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M144 90 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"88\" rx=\"22\" ry=\"8\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"88\" rx=\"16\" ry=\"5\" fill=\"#B9704A\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><path d=\"M108 88 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 7 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><circle cx=\"126\" cy=\"87\" r=\"3.5\" fill=\"#E8742C\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"137\" cy=\"89\" r=\"2.8\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"1.8\"></circle><path d=\"M169 94 C 166 106, 167 114, 170 118 L210 118 C 213 114, 214 106, 211 94 Z\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M176 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M183 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M190 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M197 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M204 96 q -1 10, 0 20\" fill=\"none\" stroke=\"#C9A14A\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><ellipse cx=\"190\" cy=\"94\" rx=\"22\" ry=\"8\" fill=\"#F2C56B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"190\" cy=\"94\" rx=\"16\" ry=\"5\" fill=\"#B9704A\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><path d=\"M168 94 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 8 -1 q 4 -6, 7 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linejoin=\"round\"></path><circle cx=\"186\" cy=\"93\" r=\"3.5\" fill=\"#E8742C\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"197\" cy=\"95\" r=\"2.8\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"1.8\"></circle><path d=\"M30 112 C 30 136, 230 136, 230 112 C 230 128, 30 128, 30 112 Z\" fill=\"#E3B468\" stroke=\"none\"></path><path d=\"M30 112 C 30 136, 230 136, 230 112\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M48 116 C 70 128, 190 128, 212 116\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path>"}, "3": {"name": "Char Siu Bao", "zh": "\u53c9\u71d2\u5305", "band": "steamer", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"104\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M30 112 L30 150 C 30 170, 230 170, 230 150 L230 112 Z\" fill=\"#C8923E\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M30 128 C 60 136, 200 136, 230 128\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><path d=\"M30 144 C 60 152, 200 152, 230 144\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"3\"></path><ellipse cx=\"130\" cy=\"112\" rx=\"100\" ry=\"24\" fill=\"#E3B468\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"112\" rx=\"86\" ry=\"16\" fill=\"#F6E3BC\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><path d=\"M62 112 h136 M70 104 h120 M70 120 h120\" stroke=\"#E3C68E\" stroke-width=\"2.5\"></path><path d=\"M37 110 C 34 72, 102 72, 99 110 Z\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M61 88 L74 87 L70 98 Z\" fill=\"#A3221B\" stroke=\"none\"></path><path d=\"M66 91 C 60 85, 54 83, 49 87 M66 91 C 72 85, 80 83, 86 89 M66 91 C 67 96, 68 99, 69 103\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M99 102 C 96 64, 164 64, 161 102 Z\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M123 80 L136 79 L132 90 Z\" fill=\"#A3221B\" stroke=\"none\"></path><path d=\"M128 83 C 122 77, 116 75, 111 79 M128 83 C 134 77, 142 75, 148 81 M128 83 C 129 88, 130 91, 131 95\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M161 110 C 158 72, 226 72, 223 110 Z\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M185 88 L198 87 L194 98 Z\" fill=\"#A3221B\" stroke=\"none\"></path><path d=\"M190 91 C 184 85, 178 83, 173 87 M190 91 C 196 85, 204 83, 210 89 M190 91 C 191 96, 192 99, 193 103\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M30 112 C 30 136, 230 136, 230 112 C 230 128, 30 128, 30 112 Z\" fill=\"#E3B468\" stroke=\"none\"></path><path d=\"M30 112 C 30 136, 230 136, 230 112\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M48 116 C 70 128, 190 128, 212 116\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path>"}, "4": {"name": "Cheung Fun", "zh": "\u8178\u7c89", "band": "plate", "svg": "<ellipse cx=\"130\" cy=\"150\" rx=\"110\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-dasharray=\"1 0\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\"></ellipse><ellipse cx=\"130\" cy=\"126\" rx=\"88\" ry=\"32\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"2.5\" opacity=\"0.7\"></ellipse><ellipse cx=\"130\" cy=\"130\" rx=\"72\" ry=\"20\" fill=\"#5A3A1E\" opacity=\"0.85\"></ellipse><rect x=\"72\" y=\"86\" width=\"116\" height=\"28\" rx=\"14\" fill=\"#FAF3E6\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M84 100 C 110 92, 150 108, 176 100\" fill=\"none\" stroke=\"#E7DCC6\" stroke-width=\"3\"></path><rect x=\"72\" y=\"104\" width=\"116\" height=\"28\" rx=\"14\" fill=\"#FAF3E6\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M84 118 C 110 110, 150 126, 176 118\" fill=\"none\" stroke=\"#E7DCC6\" stroke-width=\"3\"></path><rect x=\"72\" y=\"122\" width=\"116\" height=\"28\" rx=\"14\" fill=\"#FAF3E6\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M84 136 C 110 128, 150 144, 176 136\" fill=\"none\" stroke=\"#E7DCC6\" stroke-width=\"3\"></path><circle cx=\"96\" cy=\"92\" r=\"5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"140\" cy=\"148\" r=\"5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"178\" cy=\"110\" r=\"5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle>"}, "5": {"name": "Turnip Cake", "zh": "\u863f\u8514\u7cd5", "band": "plate", "svg": "<ellipse cx=\"130\" cy=\"150\" rx=\"110\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-dasharray=\"1 0\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\"></ellipse><ellipse cx=\"130\" cy=\"126\" rx=\"88\" ry=\"32\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"2.5\" opacity=\"0.7\"></ellipse><path d=\"M60 96 L104 96 L114 106 L114 140 L70 140 L60 130 Z\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><rect x=\"60\" y=\"96\" width=\"44\" height=\"34\" fill=\"#F3D58A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M64 100 h36 v8 h-36 Z\" fill=\"#D9A24A\" opacity=\"0.8\"></path><path d=\"M68 114 h8 M84 120 h10 M72 124 h6\" stroke=\"#C98A3A\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M118 104 L162 104 L172 114 L172 148 L128 148 L118 138 Z\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><rect x=\"118\" y=\"104\" width=\"44\" height=\"34\" fill=\"#F3D58A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M122 108 h36 v8 h-36 Z\" fill=\"#D9A24A\" opacity=\"0.8\"></path><path d=\"M126 122 h8 M142 128 h10 M130 132 h6\" stroke=\"#C98A3A\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M176 96 L220 96 L230 106 L230 140 L186 140 L176 130 Z\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><rect x=\"176\" y=\"96\" width=\"44\" height=\"34\" fill=\"#F3D58A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M180 100 h36 v8 h-36 Z\" fill=\"#D9A24A\" opacity=\"0.8\"></path><path d=\"M184 114 h8 M200 120 h10 M188 124 h6\" stroke=\"#C98A3A\" stroke-width=\"3\" stroke-linecap=\"round\"></path>"}, "6": {"name": "Spring Roll", "zh": "\u6625\u5377", "band": "plate", "svg": "<ellipse cx=\"130\" cy=\"150\" rx=\"110\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-dasharray=\"1 0\"></ellipse><ellipse cx=\"130\" cy=\"124\" rx=\"112\" ry=\"46\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"4\"></ellipse><ellipse cx=\"130\" cy=\"126\" rx=\"88\" ry=\"32\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"2.5\" opacity=\"0.7\"></ellipse><path d=\"M48 134 C 70 96, 110 96, 130 118 C 150 96, 190 96, 212 134 C 190 150, 150 152, 130 140 C 110 152, 70 150, 48 134 Z\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><g transform=\"rotate(-18 116 124)\"><rect x=\"66\" y=\"108\" width=\"100\" height=\"32\" rx=\"16\" fill=\"#D9933A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M90 116 c 6 6, 12 6, 18 0 M120 130 c 6 -6, 12 -6, 18 0\" fill=\"none\" stroke=\"#B5701F\" stroke-width=\"3\" stroke-linecap=\"round\"></path></g><g transform=\"rotate(-18 154 108)\"><rect x=\"104\" y=\"92\" width=\"100\" height=\"32\" rx=\"16\" fill=\"#D9933A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M128 100 c 6 6, 12 6, 18 0 M158 114 c 6 -6, 12 -6, 18 0\" fill=\"none\" stroke=\"#B5701F\" stroke-width=\"3\" stroke-linecap=\"round\"></path></g><g transform=\"rotate(-18 192 124)\"><rect x=\"142\" y=\"108\" width=\"100\" height=\"32\" rx=\"16\" fill=\"#D9933A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M166 116 c 6 6, 12 6, 18 0 M196 130 c 6 -6, 12 -6, 18 0\" fill=\"none\" stroke=\"#B5701F\" stroke-width=\"3\" stroke-linecap=\"round\"></path></g>"}, "7": {"name": "Congee", "zh": "\u7ca5", "band": "bowl", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"96\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M26 90 C 30 150, 70 172, 130 172 C 190 172, 230 150, 234 90 Z\" fill=\"#A8462A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"90\" rx=\"104\" ry=\"30\" fill=\"#7E3220\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"92\" ry=\"22\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"92\" ry=\"22\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><path d=\"M66 92 c 20 -6, 40 4, 64 -2 c 24 -6, 44 4, 64 0\" fill=\"none\" stroke=\"#F1E6CF\" stroke-width=\"5\" stroke-linecap=\"round\"></path><g transform=\"rotate(-18 104 88)\"><rect x=\"78\" y=\"80\" width=\"52\" height=\"16\" rx=\"8\" fill=\"#D9933A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M86 88 h36\" stroke=\"#B5701F\" stroke-width=\"3\" stroke-linecap=\"round\"></path></g><g transform=\"rotate(14 158 94)\"><rect x=\"132\" y=\"86\" width=\"52\" height=\"16\" rx=\"8\" fill=\"#D9933A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M140 94 h36\" stroke=\"#B5701F\" stroke-width=\"3\" stroke-linecap=\"round\"></path></g><circle cx=\"74\" cy=\"98\" r=\"4.5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"130\" cy=\"106\" r=\"4.5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"188\" cy=\"96\" r=\"4.5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><circle cx=\"136\" cy=\"80\" r=\"4.5\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"2\"></circle><path d=\"M86 80 c 4 -5, 10 -5, 14 0 M168 104 c 4 -5, 10 -5, 14 0\" stroke=\"#E8B04C\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path>"}, "8": {"name": "Wonton Soup", "zh": "\u96f2\u541e\u6e6f", "band": "bowl", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"96\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M26 90 C 30 150, 70 172, 130 172 C 190 172, 230 150, 234 90 Z\" fill=\"#A8462A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"90\" rx=\"104\" ry=\"30\" fill=\"#7E3220\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"92\" ry=\"22\" fill=\"#F2D27A\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><ellipse cx=\"92\" cy=\"100\" rx=\"22\" ry=\"12\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M76 94 q 5 -16, 10 -4 q 5 -16, 11 -2 q 5 -14, 11 2 Z\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M76 94 C 82 98, 102 98, 108 94\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><ellipse cx=\"156\" cy=\"94\" rx=\"22\" ry=\"12\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M140 88 q 5 -16, 10 -4 q 5 -16, 11 -2 q 5 -14, 11 2 Z\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M140 88 C 146 92, 166 92, 172 88\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><ellipse cx=\"126\" cy=\"110\" rx=\"22\" ry=\"12\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M110 104 q 5 -16, 10 -4 q 5 -16, 11 -2 q 5 -14, 11 2 Z\" fill=\"#F7E7D0\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M110 104 C 116 108, 136 108, 142 104\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><path d=\"M184 80 C 190 66, 210 66, 216 84 C 206 92, 192 92, 184 80 Z\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M190 82 L 210 76\" stroke=\"#FBF1DE\" stroke-width=\"2.5\" stroke-linecap=\"round\"></path><path d=\"M54 100 C 50 88, 62 82, 74 92\" fill=\"none\" stroke=\"#5E9A5A\" stroke-width=\"4\" stroke-linecap=\"round\"></path><circle cx=\"70\" cy=\"80\" r=\"3.5\" fill=\"#5E9A5A\"></circle><circle cx=\"140\" cy=\"76\" r=\"3.5\" fill=\"#5E9A5A\"></circle>"}, "9": {"name": "Tofu Pudding", "zh": "\u8c46\u8150\u82b1", "band": "bowl", "svg": "<path d=\"M92 50 C 84 40, 100 34, 92 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M130 44 C 122 34, 138 28, 130 16\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><path d=\"M168 50 C 160 40, 176 34, 168 22\" fill=\"none\" stroke=\"#C9B79B\" stroke-width=\"4\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"176\" rx=\"96\" ry=\"12\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><path d=\"M26 90 C 30 150, 70 172, 130 172 C 190 172, 230 150, 234 90 Z\" fill=\"#A8462A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"90\" rx=\"104\" ry=\"30\" fill=\"#7E3220\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"92\" ry=\"22\" fill=\"#F6DFB0\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"92\" ry=\"22\" fill=\"#F6DFB0\" stroke=\"#2A1A12\" stroke-width=\"3\"></ellipse><path d=\"M64 104 C 64 86, 124 86, 124 104 Z\" fill=\"#FBF6EA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M72 98 C 76 91, 90 90, 94 94\" fill=\"none\" stroke=\"#FFFDF7\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M136 102 C 136 84, 196 84, 196 102 Z\" fill=\"#FBF6EA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M144 96 C 148 89, 162 88, 166 92\" fill=\"none\" stroke=\"#FFFDF7\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M100 92 C 100 74, 160 74, 160 92 Z\" fill=\"#FBF6EA\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M108 86 C 112 79, 126 78, 130 82\" fill=\"none\" stroke=\"#FFFDF7\" stroke-width=\"3\" stroke-linecap=\"round\"></path><path d=\"M64 102 c 4 -5, 10 -5, 14 0 M182 104 c 4 -5, 10 -5, 14 0 M124 108 c 4 -4, 8 -4, 12 0\" stroke=\"#B5701F\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"></path>"}, "10": {"name": "Egg Tart", "zh": "\u86cb\u64bb", "band": "sweets", "svg": "<ellipse cx=\"130\" cy=\"156\" rx=\"112\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"128\" rx=\"116\" ry=\"46\" fill=\"#6E120D\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M 226.0 126.0 Q 234.9 131.7 222.1 135.6 Q 226.4 142.6 210.8 144.4 Q 210.1 152.2 192.9 151.7 Q 187.3 159.7 169.9 156.9 Q 159.9 164.4 143.7 159.7 Q 130.0 166.0 116.3 159.7 Q 100.1 164.4 90.1 156.9 Q 72.7 159.7 67.1 151.7 Q 49.9 152.2 49.2 144.4 Q 33.6 142.6 37.9 135.6 Q 25.1 131.7 34.0 126.0 Q 25.1 120.3 37.9 116.4 Q 33.6 109.4 49.2 107.6 Q 49.9 99.8 67.1 100.3 Q 72.7 92.3 90.1 95.1 Q 100.1 87.6 116.3 92.3 Q 130.0 86.0 143.7 92.3 Q 159.9 87.6 169.9 95.1 Q 187.3 92.3 192.9 100.3 Q 210.1 99.8 210.8 107.6 Q 226.4 109.4 222.1 116.4 Q 234.9 120.3 226.0 126.0 Z\" fill=\"#FFFDF7\" stroke=\"#C9B79B\" stroke-width=\"2\"></path><ellipse cx=\"130\" cy=\"126\" rx=\"76\" ry=\"24\" fill=\"none\" stroke=\"#E2CFAE\" stroke-width=\"2\" stroke-dasharray=\"3 5\"></ellipse><path d=\"M42 116 C 44 136, 112 136, 114 116 Z\" fill=\"#D9A24A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M47 123 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 11 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><ellipse cx=\"78\" cy=\"116\" rx=\"36\" ry=\"12\" fill=\"#E9B86B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"78\" cy=\"117\" rx=\"27\" ry=\"8\" fill=\"#F6C544\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><ellipse cx=\"70\" cy=\"115\" rx=\"8\" ry=\"3\" fill=\"#FFE07A\" opacity=\"0.9\"></ellipse><circle cx=\"88\" cy=\"118\" r=\"2.5\" fill=\"#B5701F\"></circle><path d=\"M146 116 C 148 136, 216 136, 218 116 Z\" fill=\"#D9A24A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M151 123 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 11 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><ellipse cx=\"182\" cy=\"116\" rx=\"36\" ry=\"12\" fill=\"#E9B86B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"182\" cy=\"117\" rx=\"27\" ry=\"8\" fill=\"#F6C544\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><ellipse cx=\"174\" cy=\"115\" rx=\"8\" ry=\"3\" fill=\"#FFE07A\" opacity=\"0.9\"></ellipse><circle cx=\"192\" cy=\"118\" r=\"2.5\" fill=\"#B5701F\"></circle><path d=\"M94 98 C 96 118, 164 118, 166 98 Z\" fill=\"#D9A24A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M99 105 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 10 0 q 5 5, 11 0\" fill=\"none\" stroke=\"#2A1A12\" stroke-width=\"2\"></path><ellipse cx=\"130\" cy=\"98\" rx=\"36\" ry=\"12\" fill=\"#E9B86B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"99\" rx=\"27\" ry=\"8\" fill=\"#F6C544\" stroke=\"#2A1A12\" stroke-width=\"2.5\"></ellipse><ellipse cx=\"122\" cy=\"97\" rx=\"8\" ry=\"3\" fill=\"#FFE07A\" opacity=\"0.9\"></ellipse><circle cx=\"140\" cy=\"100\" r=\"2.5\" fill=\"#B5701F\"></circle>"}, "11": {"name": "Sesame Ball", "zh": "\u714e\u5806", "band": "sweets", "svg": "<ellipse cx=\"130\" cy=\"156\" rx=\"112\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"128\" rx=\"116\" ry=\"46\" fill=\"#6E120D\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M 226.0 126.0 Q 234.9 131.7 222.1 135.6 Q 226.4 142.6 210.8 144.4 Q 210.1 152.2 192.9 151.7 Q 187.3 159.7 169.9 156.9 Q 159.9 164.4 143.7 159.7 Q 130.0 166.0 116.3 159.7 Q 100.1 164.4 90.1 156.9 Q 72.7 159.7 67.1 151.7 Q 49.9 152.2 49.2 144.4 Q 33.6 142.6 37.9 135.6 Q 25.1 131.7 34.0 126.0 Q 25.1 120.3 37.9 116.4 Q 33.6 109.4 49.2 107.6 Q 49.9 99.8 67.1 100.3 Q 72.7 92.3 90.1 95.1 Q 100.1 87.6 116.3 92.3 Q 130.0 86.0 143.7 92.3 Q 159.9 87.6 169.9 95.1 Q 187.3 92.3 192.9 100.3 Q 210.1 99.8 210.8 107.6 Q 226.4 109.4 222.1 116.4 Q 234.9 120.3 226.0 126.0 Z\" fill=\"#FFFDF7\" stroke=\"#C9B79B\" stroke-width=\"2\"></path><ellipse cx=\"130\" cy=\"126\" rx=\"76\" ry=\"24\" fill=\"none\" stroke=\"#E2CFAE\" stroke-width=\"2\" stroke-dasharray=\"3 5\"></ellipse><circle cx=\"82\" cy=\"112\" r=\"30\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle><path d=\"M68 98 c 4 -6, 12 -8, 18 -6\" fill=\"none\" stroke=\"#E9B86B\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.8\"></path><ellipse cx=\"68\" cy=\"104\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(20 68 104)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"78\" cy=\"96\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-30 78 96)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"90\" cy=\"100\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(45 90 100)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"98\" cy=\"110\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(10 98 110)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"92\" cy=\"122\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-20 92 122)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"80\" cy=\"126\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(30 80 126)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"68\" cy=\"118\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-40 68 118)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"82\" cy=\"112\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(15 82 112)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"74\" cy=\"110\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(60 74 110)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"88\" cy=\"114\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-60 88 114)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"96\" cy=\"98\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 96 98)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"64\" cy=\"94\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 64 94)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><circle cx=\"178\" cy=\"112\" r=\"30\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle><path d=\"M164 98 c 4 -6, 12 -8, 18 -6\" fill=\"none\" stroke=\"#E9B86B\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.8\"></path><ellipse cx=\"164\" cy=\"104\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(20 164 104)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"174\" cy=\"96\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-30 174 96)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"186\" cy=\"100\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(45 186 100)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"194\" cy=\"110\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(10 194 110)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"188\" cy=\"122\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-20 188 122)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"176\" cy=\"126\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(30 176 126)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"164\" cy=\"118\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-40 164 118)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"178\" cy=\"112\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(15 178 112)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"170\" cy=\"110\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(60 170 110)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"184\" cy=\"114\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-60 184 114)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"192\" cy=\"98\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 192 98)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"160\" cy=\"94\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 160 94)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><circle cx=\"130\" cy=\"92\" r=\"30\" fill=\"#C98A3A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle><path d=\"M116 78 c 4 -6, 12 -8, 18 -6\" fill=\"none\" stroke=\"#E9B86B\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.8\"></path><ellipse cx=\"116\" cy=\"84\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(20 116 84)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"126\" cy=\"76\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-30 126 76)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"138\" cy=\"80\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(45 138 80)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"146\" cy=\"90\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(10 146 90)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"140\" cy=\"102\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-20 140 102)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"128\" cy=\"106\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(30 128 106)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"116\" cy=\"98\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-40 116 98)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"130\" cy=\"92\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(15 130 92)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"122\" cy=\"90\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(60 122 90)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"136\" cy=\"94\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(-60 136 94)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"144\" cy=\"78\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 144 78)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse><ellipse cx=\"112\" cy=\"74\" rx=\"2.6\" ry=\"1.6\" transform=\"rotate(0 112 74)\" fill=\"#FBF1DE\" stroke=\"#2A1A12\" stroke-width=\"0.8\"></ellipse>"}, "12": {"name": "Mango Pudding", "zh": "\u8292\u679c\u5e03\u7538", "band": "sweets", "svg": "<ellipse cx=\"130\" cy=\"156\" rx=\"112\" ry=\"14\" fill=\"#D9C7A6\" opacity=\"0.6\"></ellipse><ellipse cx=\"130\" cy=\"128\" rx=\"116\" ry=\"46\" fill=\"#6E120D\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M 226.0 126.0 Q 234.9 131.7 222.1 135.6 Q 226.4 142.6 210.8 144.4 Q 210.1 152.2 192.9 151.7 Q 187.3 159.7 169.9 156.9 Q 159.9 164.4 143.7 159.7 Q 130.0 166.0 116.3 159.7 Q 100.1 164.4 90.1 156.9 Q 72.7 159.7 67.1 151.7 Q 49.9 152.2 49.2 144.4 Q 33.6 142.6 37.9 135.6 Q 25.1 131.7 34.0 126.0 Q 25.1 120.3 37.9 116.4 Q 33.6 109.4 49.2 107.6 Q 49.9 99.8 67.1 100.3 Q 72.7 92.3 90.1 95.1 Q 100.1 87.6 116.3 92.3 Q 130.0 86.0 143.7 92.3 Q 159.9 87.6 169.9 95.1 Q 187.3 92.3 192.9 100.3 Q 210.1 99.8 210.8 107.6 Q 226.4 109.4 222.1 116.4 Q 234.9 120.3 226.0 126.0 Z\" fill=\"#FFFDF7\" stroke=\"#C9B79B\" stroke-width=\"2\"></path><ellipse cx=\"130\" cy=\"126\" rx=\"76\" ry=\"24\" fill=\"none\" stroke=\"#E2CFAE\" stroke-width=\"2\" stroke-dasharray=\"3 5\"></ellipse><ellipse cx=\"130\" cy=\"126\" rx=\"64\" ry=\"18\" fill=\"#FFFDF7\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"126\" rx=\"52\" ry=\"12\" fill=\"#FFF4D6\" stroke=\"#E2CFAE\" stroke-width=\"2\"></ellipse><path d=\"M84 124 C 84 90, 104 78, 130 78 C 156 78, 176 90, 176 124 C 176 134, 84 134, 84 124 Z\" fill=\"#F4A23B\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M98 124 C 101.0 104, 104.0 92, 118.8 84\" fill=\"none\" stroke=\"#E08A2A\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.9\"></path><path d=\"M114 124 C 115.8 104, 117.6 92, 124.4 84\" fill=\"none\" stroke=\"#E08A2A\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.9\"></path><path d=\"M146 124 C 144.2 104, 142.4 92, 135.6 84\" fill=\"none\" stroke=\"#E08A2A\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.9\"></path><path d=\"M162 124 C 159.0 104, 156.0 92, 141.2 84\" fill=\"none\" stroke=\"#E08A2A\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.9\"></path><path d=\"M100 112 C 104 96, 118 88, 130 88\" fill=\"none\" stroke=\"#FFD27A\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.9\"></path><path d=\"M92 132 c 10 5, 66 5, 76 0\" fill=\"none\" stroke=\"#FFF4D6\" stroke-width=\"4\" stroke-linecap=\"round\"></path><rect x=\"178\" y=\"112\" width=\"14\" height=\"14\" rx=\"3\" transform=\"rotate(18 185 119)\" fill=\"#F8C058\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><rect x=\"64\" y=\"116\" width=\"12\" height=\"12\" rx=\"3\" transform=\"rotate(-12 70 122)\" fill=\"#F8C058\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><path d=\"M128 74 c 2 -10, 14 -10, 16 0 c -6 2, -10 2, -16 0 Z\" fill=\"#5E9A5A\" stroke=\"#2A1A12\" stroke-width=\"4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}}, "icons": {"steamer": "<rect x=\"32\" y=\"22\" width=\"8\" height=\"5\" rx=\"2\" fill=\"#FBF1DE\"></rect><path d=\"M12 36 C 14 26, 58 26, 60 36 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><rect x=\"11\" y=\"37\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></rect><rect x=\"11\" y=\"50\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></rect><line x1=\"16\" y1=\"40\" x2=\"16\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"19\" y1=\"53\" x2=\"19\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"23\" y1=\"40\" x2=\"23\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"26\" y1=\"53\" x2=\"26\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"30\" y1=\"40\" x2=\"30\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"33\" y1=\"53\" x2=\"33\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"37\" y1=\"40\" x2=\"37\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"40\" y1=\"53\" x2=\"40\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"44\" y1=\"40\" x2=\"44\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"47\" y1=\"53\" x2=\"47\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"51\" y1=\"40\" x2=\"51\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"54\" y1=\"53\" x2=\"54\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line>", "plate": "<ellipse cx=\"36\" cy=\"52\" rx=\"22\" ry=\"14\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></ellipse><ellipse cx=\"36\" cy=\"52\" rx=\"12\" ry=\"7\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\"></ellipse>", "bowl": "<path d=\"M14 44 L58 44 C 56 62, 46 68, 36 68 C 26 68, 16 62, 14 44 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M28 36 C 26 30, 32 28, 30 22\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\" stroke-linecap=\"round\"></path><path d=\"M42 36 C 40 30, 46 28, 44 22\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\" stroke-linecap=\"round\"></path>", "sweets": "<path d=\"M 56 52 Q 61.1 58.7 53.3 62.0 Q 54.4 70.4 46.0 69.3 Q 42.7 77.1 36.0 72.0 Q 29.3 77.1 26.0 69.3 Q 17.6 70.4 18.7 62.0 Q 10.9 58.7 16.0 52.0 Q 10.9 45.3 18.7 42.0 Q 17.6 33.6 26.0 34.7 Q 29.3 26.9 36.0 32.0 Q 42.7 26.9 46.0 34.7 Q 54.4 33.6 53.3 42.0 Q 61.1 45.3 56.0 52.0 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.4000000000000004\" stroke-linejoin=\"round\"></path><circle cx=\"36\" cy=\"52\" r=\"10\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.4000000000000004\"></circle><circle cx=\"36\" cy=\"52\" r=\"3\" fill=\"#FBF1DE\"></circle>"}, "iconsInk": {"steamer": "<rect x=\"32\" y=\"22\" width=\"8\" height=\"5\" rx=\"2\" fill=\"currentColor\"></rect><path d=\"M12 36 C 14 26, 58 26, 60 36 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"></path><rect x=\"11\" y=\"37\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></rect><rect x=\"11\" y=\"50\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></rect><line x1=\"16\" y1=\"40\" x2=\"16\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"19\" y1=\"53\" x2=\"19\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"23\" y1=\"40\" x2=\"23\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"26\" y1=\"53\" x2=\"26\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"30\" y1=\"40\" x2=\"30\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"33\" y1=\"53\" x2=\"33\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"37\" y1=\"40\" x2=\"37\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"40\" y1=\"53\" x2=\"40\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"44\" y1=\"40\" x2=\"44\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"47\" y1=\"53\" x2=\"47\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"51\" y1=\"40\" x2=\"51\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"54\" y1=\"53\" x2=\"54\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line>", "plate": "<ellipse cx=\"36\" cy=\"52\" rx=\"22\" ry=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></ellipse><ellipse cx=\"36\" cy=\"52\" rx=\"12\" ry=\"7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\"></ellipse>", "bowl": "<path d=\"M14 44 L58 44 C 56 62, 46 68, 36 68 C 26 68, 16 62, 14 44 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"></path><path d=\"M28 36 C 26 30, 32 28, 30 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\"></path><path d=\"M42 36 C 40 30, 46 28, 44 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\"></path>", "sweets": "<path d=\"M 56 52 Q 61.1 58.7 53.3 62.0 Q 54.4 70.4 46.0 69.3 Q 42.7 77.1 36.0 72.0 Q 29.3 77.1 26.0 69.3 Q 17.6 70.4 18.7 62.0 Q 10.9 58.7 16.0 52.0 Q 10.9 45.3 18.7 42.0 Q 17.6 33.6 26.0 34.7 Q 29.3 26.9 36.0 32.0 Q 42.7 26.9 46.0 34.7 Q 54.4 33.6 53.3 42.0 Q 61.1 45.3 56.0 52.0 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.2\" stroke-linejoin=\"round\"></path><circle cx=\"36\" cy=\"52\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.2\"></circle><circle cx=\"36\" cy=\"52\" r=\"3\" fill=\"currentColor\"></circle>"}, "bands": {"steamer": {"name": "Bamboo steamer", "color": "#B07A2A", "dark": "#8A5A16"}, "plate": {"name": "Porcelain plate", "color": "#2F5D9E", "dark": "#234A80"}, "bowl": {"name": "Clay bowl", "color": "#A8462A", "dark": "#7E3220"}, "sweets": {"name": "Dessert tray", "color": "#1F6B4F", "dark": "#154D39"}}, "iconCY": {"steamer": 43, "plate": 52, "bowl": 45, "teapot": 50, "sweets": 52}};</script>
+<script>
+// Sessions: Local (you + bots), Host (you + friends through a public MQTT relay + bots), Guest (thin client).
+(function (root) {
+  'use strict';
+  const E = root.DSR;
+  const BOT_DELAY = 1000;
+
+  function parseMode(v) { const m = v.startsWith('team') ? 'team' : 'solo'; return { mode: m, N: parseInt(v.replace(/\D/g, ''), 10) }; }
+
+  // ---------------- Local / Host game runner ----------------
+  class GameRunner {
+    constructor() { this.g = null; this.listeners = []; this.timer = null; this.botDelay = BOT_DELAY; }
+    onUpdate(cb) { this.listeners.push(cb); }
+    emit() { for (const cb of this.listeners) cb(); }
+    start(mode, players, seed) {
+      this.g = E.newGame({ mode, players, seed });
+      this.emit();
+      this.scheduleBots(200);
+    }
+    scheduleBots(delay) {
+      clearTimeout(this.timer);
+      const g = this.g; if (!g) return;
+      const needsBot = () => (g.phase === 'faceup' && g.players.some(p => p.bot && p.pick == null))
+        || (g.phase === 'play' && g.players[g.trick.turn].bot)
+        || (g.phase === 'chooseLeader' && g.players[g.chooser].bot);
+      if (!needsBot()) return;
+      this.timer = setTimeout(() => {
+        const did = E.botStep(g);
+        if (did) this.emit();
+        this.scheduleBots(g.phase === 'faceup' ? 50 : this.botDelay);
+      }, delay == null ? this.botDelay : delay);
+    }
+    act(seat, a) {
+      const g = this.g; if (!g) return { ok: false, error: 'No game' };
+      let r;
+      if (a.type === 'pick') r = E.pickFaceUp(g, seat, a.handIndex);
+      else if (a.type === 'play') r = E.applyPlay(g, seat, a.play);
+      else if (a.type === 'pass') r = E.applyPass(g, seat, a.pass);
+      else if (a.type === 'lead') r = E.chooseLeader(g, seat, a.leader);
+      else if (a.type === 'nextRound') r = E.nextRound(g);
+      else r = { ok: false, error: 'Unknown action' };
+      if (r.ok) { this.emit(); this.scheduleBots(); }
+      return r;
+    }
+    view(seat) { return this.g ? E.viewFor(this.g, seat) : null; }
+    stop() { clearTimeout(this.timer); }
+  }
+
+  class LocalSession {
+    constructor(modeValue, name, opts) {
+      const { mode, N } = parseMode(modeValue);
+      opts = opts || {};
+      this.kind = 'local'; this.seat = 0; this.runner = new GameRunner(); this.tutorial = !!opts.tutorial; this.seed = opts.seed;
+      if (this.tutorial) this.runner.botDelay = 1500;
+      const names = ['Bao', 'Lin', 'Jun', 'Mei', 'Kai', 'Yu'];
+      const players = [{ name: name || 'You', bot: false }];
+      for (let i = 1; i < N; i++) players.push({ name: names[i - 1], bot: true });
+      this.runner.onUpdate(() => this.cb && this.cb());
+      this.mode = mode; this.players = players;
+    }
+    begin() { this.runner.start(this.mode, this.players, this.seed); }
+    game() { return this.runner.g; }
+    onUpdate(cb) { this.cb = cb; }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
+    canControlRounds() { return true; }
+    leave() { this.runner.stop(); }
+  }
+
+  // ---------------- Relay transport (MQTT over WebSockets, public brokers) ----------------
+  // Every message goes through a broker, so no peer-to-peer connection is needed and NAT/firewalls don't matter.
+  const BROKERS = [
+    { key: 'E', url: 'wss://broker.emqx.io:8084/mqtt', name: 'EMQX' },
+    { key: 'H', url: 'wss://broker.hivemq.com:8884/mqtt', name: 'HiveMQ' },
+    { key: 'M', url: 'wss://test.mosquitto.org:8081', name: 'Mosquitto' },
+  ];
+  const TOPIC_ROOT = 'whatsgood/dimsumrush/v1/';
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js',
+  ];
+  let libLoad = null;
+  function loadLib() {
+    if (root.mqtt) return Promise.resolve(root.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error('Could not load the networking library. Check your connection or ad blocker.')); return; }
+        const s = document.createElement('script'); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (root.mqtt) resolve(root.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  function makeCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let c = ''; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; }
+  function token() { try { let t = localStorage.getItem('dsr-token'); if (!t) { t = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('dsr-token', t); } return t; } catch (e) { return 'anon-' + Math.random().toString(36).slice(2); } }
+  function cleanId(s) { return String(s).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40); }
+
+  // Connect to one broker; resolves the client or rejects after a timeout.
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: 'dsr_' + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error('timeout')); } }, 8000);
+      client.once('connect', () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error('connection closed')); } };
+      client.on('error', fail);
+      client.on('close', () => fail(new Error('connection refused')));
+      client.on('offline', () => fail(new Error('offline')));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) {
+      try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; }
+      catch (e) { last = e; }
+    }
+    throw new Error('Could not reach any relay server' + (last ? ' (' + (last.message || last) + ')' : '') + (SANDBOXED ? '. This page is running inside claude.ai, which blocks outside connections; use the copy of the game hosted elsewhere for online play.' : '. Try again, or try a different network.'));
+  }
+  function parse(payload) { try { return JSON.parse(payload.toString()); } catch (e) { return null; } }
+
+  // ---------------- Host ----------------
+  class HostSession {
+    constructor(modeValue, name) {
+      const { mode, N } = parseMode(modeValue);
+      this.kind = 'host'; this.mode = mode; this.N = N; this.seat = 0; this.name = name || 'Host';
+      this.seats = [{ name: this.name, bot: false, token: 'host', connected: true, last: 0 }];
+      for (let i = 1; i < N; i++) this.seats.push({ name: null, bot: true, token: null, connected: false, last: 0 });
+      this.runner = new GameRunner();
+      this.runner.onUpdate(() => { this.broadcastViews(); this.cb && this.cb(); });
+      this.started = false;
+    }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    async open() {
+      const mqtt = await loadLib();
+      const { client, broker } = await connectAny(mqtt, BROKERS);
+      this.client = client; this.broker = broker;
+      this.code = broker.key + makeCode();
+      this.topic = TOPIC_ROOT + this.code;
+      await new Promise((res, rej) => client.subscribe(this.topic + '/h', { qos: 1 }, (e) => e ? rej(e) : res()));
+      client.on('message', (t, payload) => { if (t === this.topic + '/h') this.onMessage(parse(payload)); });
+      client.on('offline', () => this.lobbyCb && this.lobbyCb({ error: 'Relay connection lost; reconnecting…' }));
+      client.on('connect', () => { this.pushLobby(); if (this.started) this.broadcastViews(); });
+      this.presenceTimer = setInterval(() => this.checkPresence(), 10000);
+      return this.code;
+    }
+    sendTo(seatIdx, m) {
+      const s = this.seats[seatIdx]; if (!s || !s.token || s.bot) return;
+      try { this.client.publish(this.topic + '/g/' + s.token, JSON.stringify(m), { qos: 1 }); } catch (e) {}
+    }
+    checkPresence() {
+      const now = Date.now(); let changed = false;
+      for (const s of this.seats) { if (!s.bot && s.token !== 'host' && s.connected && now - s.last > 45000) { s.connected = false; changed = true; } }
+      if (changed) this.pushLobby();
+    }
+    onMessage(m) {
+      if (!m || typeof m !== 'object' || !m.from) return;
+      const tok = cleanId(m.from);
+      let seat = this.seats.findIndex(s => s.token === tok);
+      if (m.t === 'hello') {
+        const name = String(m.name || 'Guest').slice(0, 16) || 'Guest';
+        if (seat < 0) {
+          if (this.started) { this.replyRaw(tok, { t: 'rejected', reason: 'The game has already started.' }); return; }
+          seat = this.seats.findIndex(s => s.bot && !s.token);
+          if (seat < 0) { this.replyRaw(tok, { t: 'rejected', reason: 'The table is full.' }); return; }
+          this.seats[seat] = { name, bot: false, token: tok, connected: true, last: Date.now() };
+        } else {
+          this.seats[seat].connected = true; this.seats[seat].last = Date.now(); this.seats[seat].name = name;
+        }
+        this.sendTo(seat, { t: 'welcome', seat, code: this.code });
+        this.pushLobby();
+        if (this.started) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) });
+        return;
+      }
+      if (seat < 0) return;
+      this.seats[seat].last = Date.now();
+      if (!this.seats[seat].connected) { this.seats[seat].connected = true; this.pushLobby(); }
+      if (m.t === 'ping') { if (this.started && m.needView) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); return; }
+      if (m.t === 'bye') { this.seats[seat].connected = false; this.pushLobby(); return; }
+      if (m.t === 'act') {
+        if (m.a && m.a.type === 'nextRound') { this.sendTo(seat, { t: 'err', msg: 'Only the host can start the next round.' }); return; }
+        const r = this.runner.act(seat, m.a || {});
+        if (!r.ok) this.sendTo(seat, { t: 'err', msg: r.error });
+      }
+    }
+    replyRaw(tok, m) { try { this.client.publish(this.topic + '/g/' + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    lobbyState() {
+      return { code: this.code, mode: this.mode, N: this.N, started: this.started, relay: this.broker && this.broker.name, seats: this.seats.map(s => ({ name: s.bot ? null : s.name, bot: s.bot, connected: s.connected })) };
+    }
+    pushLobby() {
+      const st = this.lobbyState();
+      this.seats.forEach((s, i) => { if (!s.bot && s.token !== 'host') this.sendTo(i, { t: 'lobby', state: st, seat: i }); });
+      this.lobbyCb && this.lobbyCb(st);
+    }
+    startGame() {
+      if (this.started) return;
+      this.started = true;
+      const names = ['Bao', 'Lin', 'Jun', 'Mei', 'Kai', 'Yu'];
+      let bi = 0;
+      const players = this.seats.map(s => s.bot ? { name: names[bi++ % names.length] + ' (bot)', bot: true } : { name: s.name, bot: false });
+      this.players = players;
+      this.pushLobby();
+      this.runner.start(this.mode, players);
+    }
+    broadcastViews() {
+      this.seats.forEach((s, i) => { if (!s.bot && s.token !== 'host') this.sendTo(i, { t: 'view', view: this.runner.view(i) }); });
+    }
+    view() { return this.runner.view(0); }
+    act(a) { return this.runner.act(0, a); }
+    canControlRounds() { return true; }
+    leave() { this.runner.stop(); clearInterval(this.presenceTimer); try { this.seats.forEach((s, i) => this.sendTo(i, { t: 'closed' })); this.client && this.client.end(); } catch (e) {} }
+  }
+
+  // ---------------- Guest ----------------
+  class GuestSession {
+    constructor(code, name) { this.kind = 'guest'; this.code = code.toUpperCase().replace(/[^A-Z]/g, ''); this.name = name || 'Guest'; this.seat = null; this._view = null; }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    async connect() {
+      const mqtt = await loadLib();
+      const broker = BROKERS.find(b => b.key === this.code[0]);
+      if (!broker || this.code.length !== 5) throw new Error('That does not look like a table code (5 letters).');
+      this.token = cleanId(token() + '-' + this.name.toLowerCase());
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + '/g/' + this.token;
+      const { client } = await connectAny(mqtt, [broker], () => ({ will: { topic: this.topic + '/h', payload: JSON.stringify({ t: 'bye', from: this.token }), qos: 1 } }));
+      this.client = client;
+      await new Promise((res, rej) => client.subscribe(my, { qos: 1 }, (e) => e ? rej(e) : res()));
+      const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        client.on('message', (t, payload) => {
+          if (t !== my) return;
+          const m = parse(payload); if (!m) return;
+          if (m.t === 'welcome') { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === 'rejected') { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.lobbyCb && this.lobbyCb({ error: m.reason }); }
+          else if (m.t === 'lobby') { this.lobby = m.state; this.seat = m.seat; this.lobbyCb && this.lobbyCb(m.state); }
+          else if (m.t === 'view') { this._view = m.view; this.cb && this.cb(); }
+          else if (m.t === 'err') { this.errCb && this.errCb(m.msg); }
+          else if (m.t === 'closed') { this.lobbyCb && this.lobbyCb({ error: 'The host closed the table.' }); }
+        });
+        hello();
+      });
+      client.on('connect', () => hello()); // after an automatic reconnect, re-register
+      this.pingTimer = setInterval(() => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'ping', from: this.token, needView: !this._view }), { qos: 0 }); } catch (e) {} }, 15000);
+    }
+    view() { return this._view; }
+    act(a) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'act', a, from: this.token }), { qos: 1 }); } catch (e) { return { ok: false, error: 'Not connected' }; } return { ok: true, pending: true }; }
+    canControlRounds() { return false; }
+    leave() { clearInterval(this.pingTimer); try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'bye', from: this.token }), { qos: 1 }); this.client.end(); } catch (e) {} }
+  }
+
+  root.DSRNet = { LocalSession, HostSession, GuestSession, parseMode, SANDBOXED };
+})(window);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const E = window.DSR, NET = window.DSRNet, ART = window.DSR_ART;
+  const $ = (id) => document.getElementById(id);
+  const BANDKEYS = ['steamer', 'plate', 'bowl', 'sweets'];
+  const TEAMNAME = ['Jade', 'Lantern'];
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  let session = null, view = null;
+  let sel = { hi: -1, hj: -1, slots: [] };
+  let pm = null;          // pass-mode state: {kind:'menu'|'fill'|'swap', handIndex, slotSeat, insertAt}
+  let pickIdx = -1;       // face-up pick
+  let msg = '', msgErr = false;
+  let lastPhaseKey = '';
+  let showLog = false;
+
+  // ---------- card rendering ----------
+  function cardHTML(r, cls, attrs) {
+    const a = ART.art[r]; const b = E.bandOf(r);
+    return `<div class="card b${b} ${cls || ''}" ${attrs || ''}><div class="rk">${r}</div><div class="art"><svg viewBox="0 0 260 200" aria-hidden="true">${a.svg}</svg></div><div class="nm">${esc(a.name)}</div></div>`;
+  }
+  function backHTML(b, cls) {
+    const k = BANDKEYS[b];
+    return `<span class="back b${b} ${cls || ''}" title="${ART.bands[k].name}"><svg viewBox="4 ${ART.iconCY[k] - 32} 64 64" aria-hidden="true">${ART.icons[k]}</svg></span>`;
+  }
+  function comboName(c) {
+    if (!c) return '';
+    if (c.bomb) return `Chef's Special · ${c.type === 'set' ? c.size + ' × ' + c.top : 'run of ' + c.size + ' to ' + c.top}`;
+    if (c.type === 'single') return `Single ${c.top}`;
+    if (c.type === 'set') return `${c.size === 2 ? 'Pair' : c.size === 3 ? 'Three'  : c.size} of ${c.top}s`;
+    return `Run of ${c.size} to ${c.top}`;
+  }
+  function teamCls(v, i) { return v.mode === 'team' ? (v.players[i].team === 0 ? 'jade' : 'lantern') : ''; }
+  function pname(v, i) { return i === v.me ? 'You' : v.players[i].name; }
+
+  // ---------- screens ----------
+  function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0, 0); }
+  function overlay(html) { $('overlay').innerHTML = html ? `<div class="overlay"><div class="modal">${html}</div></div>` : ''; }
+  function setMsg(m, isErr) { msg = m || ''; msgErr = !!isErr; const el = $('t-msg'); if (el) { el.textContent = msg; el.className = 'msg' + (msgErr ? ' err' : ''); } }
+
+  function getName() { const n = $('name').value.trim(); try { localStorage.setItem('dsr-name', n); } catch (e) {} return n || 'Player'; }
+  try { $('name').value = localStorage.getItem('dsr-name') || ''; } catch (e) {}
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('code')) $('join-code').value = qs.get('code').toUpperCase();
+
+  // ---------- home ----------
+  if (NET.SANDBOXED) {
+    const n = document.createElement('div'); n.className = 'card-panel'; n.style.cssText = 'border:3px solid var(--red);margin-bottom:14px';
+    n.innerHTML = '<strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.';
+    const grid = document.querySelector('.home-grid'); grid.parentNode.insertBefore(n, grid);
+  }
+  $('btn-solo').onclick = () => {
+    coach.on = false;
+    session = new NET.LocalSession($('solo-mode').value, getName());
+    wireSession(); session.begin(); show('s-table');
+  };
+  $('btn-host').onclick = async () => {
+    $('home-msg').textContent = 'Opening a table…';
+    try {
+      session = new NET.HostSession($('host-mode').value, getName());
+      wireSession();
+      session.onLobby(renderLobby);
+      const code = await session.open();
+      $('home-msg').textContent = '';
+      renderLobby(session.lobbyState());
+      show('s-lobby');
+    } catch (e) { $('home-msg').textContent = e.message; session = null; }
+  };
+  $('btn-join').onclick = async () => {
+    const code = $('join-code').value.trim().toUpperCase();
+    if (code.length !== 5) { $('home-msg').textContent = 'Enter the 5-letter table code.'; return; }
+    $('home-msg').textContent = 'Looking for table ' + code + '…';
+    try {
+      session = new NET.GuestSession(code, getName());
+      wireSession();
+      session.onLobby(renderLobby);
+      session.errCb = (m) => setMsg(m, true);
+      await session.connect();
+      $('home-msg').textContent = '';
+      if (session.lobby) renderLobby(session.lobby);
+      show(session.view() ? 's-table' : 's-lobby');
+    } catch (e) { $('home-msg').textContent = e.message; session && session.leave(); session = null; }
+  };
+  $('btn-leave-lobby').onclick = leave;
+  $('btn-quit').onclick = () => { if (confirm('Leave the table?')) leave(); };
+  $('btn-log').onclick = () => { showLog = !showLog; $('t-log').style.display = showLog ? 'block' : 'none'; };
+  $('btn-start').onclick = () => { session.startGame(); show('s-table'); };
+
+  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; overlay(''); show('s-home'); }
+
+  function wireSession() {
+    session.onUpdate(() => {
+      view = session.view();
+      if (!view) return;
+      if (!$('s-table').classList.contains('active')) show('s-table');
+      render();
+    });
+  }
+
+  // ---------- lobby ----------
+  function renderLobby(st) {
+    if (!st) return;
+    if (st.error) { $('lobby-status').textContent = st.error; return; }
+    $('lobby-code').textContent = st.code || '----';
+    const { mode, N } = { mode: st.mode, N: st.N };
+    $('lobby-status').textContent = (st.relay ? 'via ' + st.relay + ' relay · ' : '') + (mode === 'team' ? `Teams · ${N} players · seats alternate Jade / Lantern` : `Every Server for Themselves · ${N} players`) + (session.kind === 'guest' ? ' · waiting for the host to start' : '');
+    const mySeat = session.kind === 'host' ? 0 : session.seat;
+    $('lobby-seats').innerHTML = st.seats.map((s, i) => {
+      const team = mode === 'team' ? `<span class="pill ${i % 2 ? 'lantern' : ''}">${TEAMNAME[i % 2]}</span>` : `<span class="pill gray">Seat ${i + 1}</span>`;
+      const who = s.bot ? '<span class="muted">open seat · a bot will sit here</span>' : `<strong>${esc(s.name)}</strong>${i === mySeat ? ' (you)' : ''}${s.connected ? '' : ' <span class="muted">· reconnecting…</span>'}`;
+      return `<div class="lobby-seat"><div>${who}</div>${team}</div>`;
+    }).join('');
+    $('btn-start').style.display = session.kind === 'host' && !st.started ? 'inline-block' : 'none';
+    $('lobby-hint').textContent = session.kind === 'host' ? 'Start whenever you like; open seats become bots. Friends can still rejoin their own seat if they refresh.' : '';
+  }
+
+  // ---------- table ----------
+  function render() {
+    const v = view; if (!v) return;
+    const key = `${v.round}-${v.phase}-${v.trick ? v.trick.turn : ''}-${v.tricksPlayed}`;
+    if (key !== lastPhaseKey) { sel = { hi: -1, hj: -1, slots: [] }; pm = null; pickIdx = -1; setMsg(''); lastPhaseKey = key; }
+    $('t-title').textContent = `Round ${v.round} of ${v.maxRounds}`;
+    renderScore(v); renderOthers(v); renderCenter(v); renderMe(v); renderLog(v); renderOverlay(v); renderCoach(v);
+  }
+
+  function renderScore(v) {
+    if (v.mode === 'team') {
+      $('t-score').innerHTML = `<span class="pill">Jade</span><span class="box">${v.scores[0]}</span><span class="pill lantern">Lantern</span><span class="box">${v.scores[1]}</span><span class="muted">penalty points</span>`;
+    } else {
+      $('t-score').innerHTML = v.players.map((p, i) => `<span class="box" title="${esc(p.name)}">${esc(pname(v, i)).slice(0, 6)} ${v.scores[i]}</span>`).join('');
+    }
+  }
+
+  function seatStatus(v, i) {
+    const p = v.players[i];
+    if (v.phase === 'faceup') return p.picked ? 'chose a trolley card' : 'choosing…';
+    if (p.out) return 'OUT';
+    if (v.phase === 'chooseLeader') return i === v.chooser ? 'choosing the leader' : '';
+    if (v.phase !== 'play') return '';
+    if (v.trick.turn === i) return 'thinking…';
+    if (v.trick.passed.includes(i)) return 'passed';
+    if (v.trick.topSeat === i) return 'on top';
+    if (v.trick.leader === i && v.trick.plays.length === 0) return 'leads';
+    return '';
+  }
+
+  function renderOthers(v) {
+    const order = [];
+    for (let k = 1; k < v.N; k++) order.push((v.me + k) % v.N);
+    $('t-others').innerHTML = order.map(i => {
+      const p = v.players[i];
+      const turn = v.phase === 'play' && v.trick.turn === i;
+      const backs = p.backs.map(b => backHTML(b)).join('');
+      const team = v.mode === 'team' ? `<span class="pill ${p.team ? 'lantern' : ''}">${TEAMNAME[p.team]}</span>` : '';
+      const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm">empty</div>`;
+      return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
+        <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? '' : ''}</span>${team}</div>
+        <div class="backs">${p.count ? backs : '<span class="muted">cart empty</span>'}</div>
+        <div class="foot">${slot}<div><div><strong>${p.count}</strong> in cart</div><div class="st">${seatStatus(v, i)}</div></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderCenter(v) {
+    let status = '';
+    const t = v.trick;
+    if (v.phase === 'faceup') status = 'Everyone chooses one card from their cart to place face up on the trolley.';
+    else if (v.phase === 'chooseLeader') status = v.chooser === v.me ? 'You won the trick. Choose who leads next.' : `${esc(pname(v, v.chooser))} won the trick and is choosing who leads.`;
+    else if (v.phase === 'play') {
+      if (t.plays.length === 0) status = t.turn === v.me ? 'You lead. Play any combination.' : `${esc(pname(v, t.turn))} leads.`;
+      else status = t.turn === v.me ? `Your turn. Beat ${comboName(t.top)} or pass.` : `${esc(pname(v, t.turn))} to beat ${comboName(t.top)}.`;
+    } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') status = 'Round over.';
+    let plays = '';
+    if (t && t.plays.length) {
+      plays = `<div class="trick">${t.plays.map((pl, idx) => `<div class="play ${idx === t.plays.length - 1 ? 'top' : ''} ${pl.combo.bomb ? 'bomb' : ''}"><span class="who">${esc(pname(v, pl.seat))}${idx === t.plays.length - 1 ? ' · ' + comboName(pl.combo) : ''}</span><div class="cards">${pl.cards.map(c => cardHTML(c.r, idx === t.plays.length - 1 ? '' : 'sm', c.src === 'slot' ? 'style="border-style:dashed"' : '')).join('')}</div></div>`).join('')}</div>`;
+    } else if (v.lastTrick && v.phase === 'play') {
+      plays = `<div class="muted">Last trick won by ${esc(pname(v, v.lastTrick.winner))}. Dashed borders mark trolley cards.</div>`;
+    }
+    $('t-center').innerHTML = `<div class="status">${status}</div>${plays}`;
+  }
+
+  // accessible trolley seats for me
+  function myTrolleySeats(v) { return E.accessibleFromView(v, v.me); }
+
+  function renderMe(v) {
+    const me = v.players[v.me];
+    const hand = me.hand || [];
+    const myTurn = v.phase === 'play' && v.trick.turn === v.me;
+    const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
+    let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team} <span class="muted">${hand.length} in cart${me.out ? ' · out' : ''}</span></div><div class="muted">${v.mode === 'team' ? 'Your section\'s trolley' : 'Trolley spots you may use'}</div></div>`;
+
+    // trolley row
+    const tseats = myTrolleySeats(v);
+    html += `<div class="trolley">` + tseats.map(i => {
+      const p = v.players[i]; const label = i === v.me ? 'You' : esc(p.name);
+      let c;
+      if (p.slot != null) {
+        const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
+        const clickable = (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
+        c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
+      } else {
+        const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
+        c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}">${target ? 'put it here' : 'empty'}</div>`;
+      }
+      return `<div class="tc">${c}<span>${label}</span></div>`;
+    }).join('') + `</div>`;
+
+    // hand
+    const handClickable = (v.phase === 'faceup' && !me.picked) || myTurn || (pm && (pm.kind === 'fill' || pm.kind === 'swap'));
+    if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
+      // choose insert position: show hand without the given card, with gaps
+      const h = hand.slice(); h.splice(pm.handIndex, 1);
+      let row = '<div class="insert-row">';
+      for (let i = 0; i <= h.length; i++) {
+        row += `<div class="gap" data-gap="${i}" title="insert here"></div>`;
+        if (i < h.length) row += cardHTML(h[i], 'dim');
+      }
+      row += '</div>';
+      html += `<div class="muted" style="margin-top:8px">Where does the <strong>${v.players[pm.slotSeat].slot}</strong> go in your cart? Tap a gap.</div>` + row;
+    } else {
+      html += `<div class="hand">` + hand.map((r, i) => {
+        let cls = '';
+        if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
+        else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
+        else if (sel.hi >= 0 && i >= sel.hi && i <= sel.hj) cls = 'sel';
+        return cardHTML(r, cls + (handClickable ? ' clickable' : ''), `data-hand="${i}"`);
+      }).join('') + `</div>`;
+    }
+
+    // actions
+    html += `<div class="actions" id="t-actions">`;
+    if (v.phase === 'faceup') {
+      if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
+      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Place face up</button><span class="hint">Tap a card. The others see it; the rest of your cart stays hidden (apart from the backs).</span>`;
+    } else if (myTurn && !pm) {
+      const legal = E.legalPlaysFromView(v);
+      const cur = currentCombo(v);
+      const canLead = v.trick.plays.length === 0;
+      const legalNow = cur && legal.some(pl => samePlay(pl, sel));
+      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>Play${cur ? ' · ' + comboName(cur) : ''}</button>`;
+      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : ''}>Pass</button>`;
+      html += `<button class="ghost" id="btn-clear">Clear</button>`;
+      html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || (cur && !legalNow ? 'That does not beat the table.' : sel.hi < 0 && !sel.slots.length ? 'Tap cards side by side in your cart, add trolley cards if you like, or pick a suggestion (* = trolley card, ★ = Chef\'s Special).' : ''))}</div>`;
+      const chips = chipList(v, legal);
+      html += `<div class="chips">` + chips.slice(0, 16).map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more</span>` : '') + (legal.length === 0 ? '<span class="hint">Nothing can beat the table — pass.</span>' : '') + `</div>`;
+      $('t-me').innerHTML = html; wireMe(v, legal); return;
+    } else if (pm) {
+      html += renderPassControls(v);
+    } else if (v.phase === 'play') {
+      html += `<span class="muted">${me.out ? 'You are out for this round. Your trolley spot stays in play.' : v.trick.passed.includes(v.me) ? 'You passed this trick.' : 'Waiting…'}</span>`;
+    } else if (v.phase === 'chooseLeader') {
+      html += `<span class="muted">${v.chooser === v.me ? 'Choose the leader above.' : 'Waiting for the leader to be chosen…'}</span>`;
+    }
+    html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg)}</div>`;
+    $('t-me').innerHTML = html; wireMe(v, []);
+  }
+
+  function renderPassControls(v) {
+    const me = v.players[v.me];
+    const tseats = myTrolleySeats(v);
+    const empties = tseats.filter(i => v.players[i].slot == null);
+    const filled = tseats.filter(i => v.players[i].slot != null);
+    if (pm.kind === 'menu') {
+      return `<span class="hint" style="flex-basis:100%">You are passing — out of this trick. You may also:</span>
+        <button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty spot</button>
+        <button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley card</button>
+        <button class="primary" id="btn-pm-none">Just pass</button>
+        <button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    if (pm.kind === 'fill') {
+      const ready = pm.handIndex != null && pm.slotSeat != null;
+      return `<span class="hint" style="flex-basis:100%">${pm.handIndex == null ? 'Tap the cart card to put face up.' : pm.slotSeat == null ? 'Now tap the empty spot to fill.' : `Place the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat)}'s spot?`}</span>
+        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Fill and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    if (pm.kind === 'swap') {
+      const ready = pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null;
+      const step = pm.slotSeat == null ? 'Tap the trolley card you want.' : pm.handIndex == null ? 'Tap the cart card you give in return.' : pm.insertAt == null ? '' : `Take the ${v.players[pm.slotSeat].slot}, give the ${me.hand[pm.handIndex]}?`;
+      return `<span class="hint" style="flex-basis:100%">${step}</span>
+        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Swap and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    return '';
+  }
+
+  function currentCombo(v) {
+    const hand = v.players[v.me].hand;
+    const h = sel.hi >= 0 ? hand.slice(sel.hi, sel.hj + 1) : [];
+    const s = sel.slots.map(i => v.players[i].slot);
+    if (!h.length && !s.length) return null;
+    return E.classify(h, s);
+  }
+  function samePlay(pl, s) {
+    const a = pl.slots.slice().sort().join(','), b = s.slots.slice().sort().join(',');
+    return pl.hi === s.hi && pl.hj === s.hj && a === b;
+  }
+  function chipList(v, legal) {
+    const sorted = legal.slice().sort((a, b) => (a.combo.bomb - b.combo.bomb) || (a.combo.size - b.combo.size) || (a.combo.top - b.combo.top));
+    const seen = new Set(), out = [];
+    for (const pl of sorted) { const label = chipLabel(v, pl); if (seen.has(label)) continue; seen.add(label); out.push({ pl, label }); }
+    return out;
+  }
+  function chipLabel(v, pl) {
+    const d = E.describePlay({ players: v.players.map(p => ({ hand: p.hand || [], slot: p.slot })) }, v.me, pl);
+    const parts = d.hand.map(String).concat(d.slots.map(r => r + '*'));
+    return (pl.combo.bomb ? '★ ' : '') + parts.join(' · ');
+  }
+
+  function wireMe(v, legal) {
+    const root = $('t-me');
+    root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
+    root.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotTap(v, +el.dataset.slot));
+    root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
+    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; renderMe(v); });
+    const chips = chipList(v, legal);
+    root.querySelectorAll('[data-chip]').forEach(el => el.onclick = () => {
+      const pl = chips[+el.dataset.chip].pl; sel = { hi: pl.hi, hj: pl.hj, slots: pl.slots.slice() }; setMsg(''); renderMe(v);
+    });
+    const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+    on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
+    on('btn-play', () => {
+      const pl = legal.find(p => samePlay(p, sel)); if (!pl) return;
+      const r = session.act({ type: 'play', play: { hi: pl.hi, hj: pl.hj, slots: pl.slots } });
+      if (r && r.ok === false) setMsg(r.error, true); else { sel = { hi: -1, hj: -1, slots: [] }; setMsg(''); }
+    });
+    on('btn-pass', () => { pm = { kind: 'menu' }; sel = { hi: -1, hj: -1, slots: [] }; renderMe(v); });
+    on('btn-clear', () => { sel = { hi: -1, hj: -1, slots: [] }; setMsg(''); renderMe(v); });
+    on('btn-pm-fill', () => { pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
+    on('btn-pm-swap', () => { pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: null }; renderMe(v); });
+    on('btn-pm-none', () => doPass({ kind: 'none' }));
+    on('btn-pm-cancel', () => { pm = pm && pm.kind !== 'menu' ? { kind: 'menu' } : null; renderMe(v); });
+    on('btn-pm-confirm', () => {
+      if (pm.kind === 'fill') doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
+      else doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
+    });
+  }
+  function doPass(pass) {
+    const r = session.act({ type: 'pass', pass });
+    if (r && r.ok === false) setMsg(r.error, true); else { pm = null; setMsg(''); }
+  }
+
+  function onHandTap(v, i) {
+    const me = v.players[v.me];
+    if (v.phase === 'faceup') { if (me.picked) return; pickIdx = pickIdx === i ? -1 : i; renderMe(v); return; }
+    if (pm) {
+      if (pm.kind === 'fill') { pm.handIndex = pm.handIndex === i ? null : i; renderMe(v); }
+      else if (pm.kind === 'swap' && pm.slotSeat != null) { pm.handIndex = i; pm.insertAt = null; if (me.hand.length === 1) pm.insertAt = 0; renderMe(v); }
+      return;
+    }
+    if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
+    if (sel.hi < 0) { sel.hi = sel.hj = i; }
+    else if (i === sel.hi - 1) sel.hi = i;
+    else if (i === sel.hj + 1) sel.hj = i;
+    else if (i === sel.hi && sel.hi !== sel.hj) sel.hi++;
+    else if (i === sel.hj && sel.hi !== sel.hj) sel.hj--;
+    else if (i === sel.hi && sel.hi === sel.hj) { sel.hi = sel.hj = -1; }
+    else { sel.hi = sel.hj = i; }
+    setMsg(''); renderMe(v);
+  }
+  function onSlotTap(v, i) {
+    if (pm) { if (pm.kind === 'swap' && pm.slotSeat == null) { pm.slotSeat = i; renderMe(v); } return; }
+    if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
+    const k = sel.slots.indexOf(i);
+    if (k >= 0) sel.slots.splice(k, 1); else sel.slots.push(i);
+    setMsg(''); renderMe(v);
+  }
+  function onEmptySlotTap(v, i) {
+    if (pm && pm.kind === 'fill' && pm.handIndex != null) { pm.slotSeat = pm.slotSeat === i ? null : i; renderMe(v); }
+  }
+
+  function renderLog(v) {
+    const lines = v.logTail.map(e => {
+      const n = (s) => pname(v, s);
+      switch (e.t) {
+        case 'round': return `— Round ${e.round} —`;
+        case 'faceup': return `Trolley: ${e.slots.map((r, i) => n(i) + ' ' + r).join(', ')}`;
+        case 'play': return `${n(e.seat)} plays ${e.cards.join(' ')}${e.combo.bomb ? ' — Chef\'s Special!' : ''}`;
+        case 'pass': return `${n(e.seat)} passes`;
+        case 'fill': return `${n(e.seat)} passes and fills ${n(e.slotSeat)}'s spot with a ${e.r}`;
+        case 'swap': return `${n(e.seat)} passes and swaps: takes ${e.took} from ${n(e.slotSeat)}'s spot, puts out ${e.gave}`;
+        case 'out': return `${n(e.seat)} is out!`;
+        case 'trickEnd': return `${n(e.winner)} wins the trick`;
+        case 'lead': return `${n(e.chooser)} hands the lead to ${n(e.leader)}`;
+        case 'roundEnd': return `Round ${e.summary.round} over`;
+        default: return '';
+      }
+    }).filter(Boolean);
+    $('t-log').innerHTML = lines.map(l => `<div>${esc(l)}</div>`).join('');
+  }
+
+  function renderOverlay(v) {
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) {
+      const cs = coach.on && !coach.hidden ? coachSuggest(v) : null;
+      overlay(`<h3>You won the trick</h3><p>Choose who leads the next one. No table talk!</p>${cs ? `<p class="muted">${suggestionText(v, cs)}</p>` : ''}<div class="col">${v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}">${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('')}</div>`);
+      document.querySelectorAll('[data-lead]').forEach(b => b.onclick = () => { session.act({ type: 'lead', leader: +b.dataset.lead }); overlay(''); });
+      return;
+    }
+    if (v.phase === 'roundEnd' || v.phase === 'gameEnd') {
+      const s = v.roundHistory[v.roundHistory.length - 1];
+      let body;
+      if (v.mode === 'team') {
+        body = `<p><strong>${TEAMNAME[s.winnerTeam]}</strong> emptied every cart. <strong>${TEAMNAME[s.loserTeam]}</strong> takes <strong>${s.penalty}</strong> penalty point${s.penalty === 1 ? '' : 's'} for its fullest cart.</p>`;
+      } else {
+        body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else scores their own cart.</p>`;
+      }
+      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Cards left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
+      body += `<h3 style="font-size:20px;margin-top:12px">Totals after round ${s.round}</h3>`;
+      body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.scores[i]}`).join(' · ')}</p>`;
+      if (v.phase === 'gameEnd') {
+        const f = finalFromView(v);
+        body += `<h3>${f}</h3>`;
+        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-home">Back to the kitchen</button></div>`;
+      } else if (session.canControlRounds()) {
+        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-next">Deal round ${s.round + 1}</button></div>`;
+      } else {
+        body += `<p class="muted">Waiting for the host to deal the next round…</p>`;
+      }
+      overlay(`<h3>Round ${s.round} over</h3>${body}`);
+      const bn = $('btn-next'); if (bn) bn.onclick = () => { session.act({ type: 'nextRound' }); overlay(''); };
+      const bh = $('btn-home'); if (bh) bh.onclick = leave;
+      return;
+    }
+    overlay('');
+  }
+  function finalFromView(v) {
+    if (v.mode === 'team') { const [a, b] = v.scores; return a === b ? 'A shared victory!' : (a < b ? 'Jade' : 'Lantern') + ' wins the rush!'; }
+    const min = Math.min(...v.scores); const w = v.players.map((p, i) => v.scores[i] === min ? pname(v, i) : null).filter(Boolean);
+    return (w.length > 1 ? w.join(' and ') + ' share the victory!' : w[0] + ' wins the rush!');
+  }
+  // =====================================================================
+  // RULES MODAL
+  // =====================================================================
+  function ex(label, cards, verdict) {
+    return `<div class="ex"><span class="lbl">${label}</span>${cards.map(c => typeof c === 'number' ? cardHTML(c, 'sm') : cardHTML(c.r, 'sm', 'style="border-style:dashed"')).join('')}${verdict ? `<span class="${verdict[0] === '✓' ? 'ok' : 'no'}" style="margin-left:8px">${verdict}</span>` : ''}</div>`;
+  }
+  function rulesHTML() {
+    const T = { r: 0 };
+    return `<div class="rules">
+<h3>The goal</h3>
+<p>You are servers in a dim sum teahouse, split into two sections (<span class="pill">Jade</span> <span class="pill lantern">Lantern</span>). Each round, race to empty your <strong>cart</strong> (your hand) by playing combinations of dishes that match or beat what is on the table. When every cart in one section is empty the round ends and the other section takes penalty points. Three rounds; fewest points wins.</p>
+<h3>Your cart and the trolley</h3>
+<p>Your cart is dealt in a fixed order and <strong>you may never rearrange it</strong>. Cards you play from it must sit side by side. The backs face outward: everyone can see the <em>band</em> of every card at the table (bamboo steamer 1–3, porcelain plate 4–6, clay bowl 7–9, dessert tray 10–12), just not the exact number.</p>
+<p>Each player has one <strong>trolley spot</strong> with a face-up card. Your section's trolley cards (yours and your teammates') may be added to any combination you play, in any position — even a combination made only of trolley cards. You may never use the other section's. A used trolley card is not replaced; the spot stays empty until someone in your section fills it while passing.</p>
+<h3>Combinations</h3>
+${ex('Single', [7])}
+${ex('Set (2 or 3 equal)', [5, 5])}
+${ex('Run (2 or more in a row)', [3, 4, 5])}
+<p>A run's cart cards must already be in rising or falling order in your cart; trolley cards (dashed) can fill a gap:</p>
+${ex('Cart 4 6 + trolley 5', [4, { r: 5 }, 6], '✓ run 4 5 6')}
+${ex('Cart 4 6 5', [4, 6, 5], '✕ not in order')}
+<h3>Following</h3>
+<p>The leader plays any combination. Each player after them must play a <strong>stronger</strong> one or pass: the same kind and size with an <strong>equal or higher</strong> number (runs compare their top card). Equal numbers are allowed — a 7 beats a 7. Numbers do not wrap: 12 is never followed by 1.</p>
+${ex('Table: pair of 6s', [6, 6])}
+${ex('Pair of 6s', [6, 6], '✓ equal matches')}
+${ex('Pair of 8s', [8, 8], '✓ higher')}
+${ex('Three 9s', [9, 9, 9], '✕ wrong size')}
+<h3>Chef's Specials</h3>
+<p><strong>Four or more of a number</strong>, or <strong>a run of four or more</strong>, played entirely from your own cart (side by side, no trolley cards). A Special beats any ordinary combination, whatever its size. Specials compare: more cards wins; at equal size a set beats a run; then the higher number. An equal Special does not beat one on the table. The same cards with a trolley card mixed in are just an ordinary big combination.</p>
+${ex('Cart 8 8 8 8', [8, 8, 8, 8], '✓ Special')}
+${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
+<h3>Passing</h3>
+<p>If you do not play, you pass, and you are <strong>out of the trick</strong> until the next one begins (the leader cannot pass). When you pass you may do one of these:</p>
+<p><strong>Fill:</strong> put one cart card face up on any empty spot of your section's trolley, including a teammate's. If it was your last card, you are out.</p>
+<p><strong>Swap:</strong> take any one of your section's trolley cards and slide it into your cart <em>wherever you like</em>, then put any one cart card face up in that spot.</p>
+<p>Or pass and do nothing.</p>
+<h3>Ending a trick</h3>
+<p>The trick ends when everyone else still in the round has passed. The last player to play wins it and <strong>chooses who in their section leads next</strong> — themselves or any teammate with cards — without discussing it. A winner who has gone out still chooses a teammate.</p>
+<h3>Going out and scoring</h3>
+<p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of cards in its <strong>fullest</strong> cart. Trolley cards do not count. Gather, shuffle and deal the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
+<h3>Every Server for Themselves (2–6 players)</h3>
+<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours'. The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart.</p>
+<table><tr><th>Players</th><th>Numbers</th><th>Dealt</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
+<h3>Using this app</h3>
+<p>Tap cards side by side in your cart (and any trolley cards) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley card and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their card backs in order.</p>
+</div>`;
+  }
+  function showRules() {
+    overlay(`<h3>How to play</h3>${rulesHTML()}<div class="row" style="margin-top:12px"><button class="primary" id="btn-rules-close">Close</button></div>`);
+    document.querySelector('.modal').classList.add('wide');
+    $('btn-rules-close').onclick = () => { overlay(''); if (view) renderOverlay(view); };
+  }
+  $('btn-rules').onclick = showRules;
+  $('btn-rules2').onclick = showRules;
+
+  // =====================================================================
+  // TUTORIAL COACH
+  // =====================================================================
+  const coach = { on: false, seen: new Set(), hidden: false, current: null, suggestion: null };
+  $('btn-tutorial').onclick = () => {
+    coach.on = true; coach.seen = new Set(); coach.hidden = false; coach.current = null;
+    session = new NET.LocalSession('team4', getName(), { tutorial: true, seed: 20261009 });
+    wireSession(); session.begin(); show('s-table');
+  };
+  const TIPS = {
+    welcome: `<strong>Welcome to the teahouse.</strong> The cards below are your <strong>cart</strong>: your hand, in an order you can never change. Everyone sees the coloured backs of your cards (the colour is the number band) but not the fronts. First job: choose <strong>one card to put face up</strong> on your section's trolley. A card that sits next to nothing useful is a good choice — the coach's pick is pulsing.`,
+    trolley: `<strong>The trolley is revealed.</strong> Your spot and your partner's (Lin) make your section's trolley; you may add those cards to anything you play, in any position. Lantern's cards are off limits to you. Used trolley cards are not replaced until someone in your section fills the spot while passing.`,
+    lead: `<strong>You lead.</strong> A combination is a single, a set of 2–3 equal numbers, or a run of 2+. Cart cards must be side by side (a run's cart cards already in rising or falling order); trolley cards can fill gaps. The chips list every legal play — <strong>*</strong> marks a trolley card. Lead something low and awkward, save strength for later.`,
+    follow: `<strong>Following.</strong> You must play the same kind and size with an <strong>equal or higher</strong> number — equal is fine, so matching is a real weapon — or pass. The chips show what qualifies. A Chef's Special (★) beats anything ordinary.`,
+    pass: `<strong>Nothing fits? Pass.</strong> Passing takes you out of this trick, but it is also when you shape your cart: <strong>fill</strong> an empty trolley spot with a card you don't want, or <strong>swap</strong> a trolley card into your cart, anywhere you like. Think about what your partner's backs say they need.`,
+    bomb_seen: `<strong>That was a Chef's Special</strong> — four or more of a number, or a run of four or more, entirely from one cart. It beats any ordinary combination. Only a bigger Special beats it: more cards; at equal size a set beats a run; then the higher number.`,
+    bomb_mine: `<strong>You hold a Chef's Special</strong> (the ★ chip). Keep it for stealing the lead back when Lantern is on top. Leading with it, or using it on your partner, wastes it. Notice that trolley cards never count toward a Special.`,
+    partner_top: `<strong>Your partner is on top.</strong> Beating your own partner only helps if it gets you out or sets up a better lead; usually let it ride and pass, and use the pass to fill or swap.`,
+    lead_choice: `<strong>You won the trick.</strong> The winner chooses who leads next: yourself or a teammate with cards. Give the lead to whoever needs tempo — usually the fuller cart — with no table talk. If you had gone out, you would still choose your partner.`,
+    out: `<strong>Your cart is empty — you are out.</strong> Your section isn't finished until Lin's cart is empty too, and your trolley spot stays in play for her. Watch, and see how the backs across the table tell the story.`,
+    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their cart in order: steamer 1–3, plate 4–6, bowl 7–9. Four of the same colour in a row might be a Special; a run needs colours stepping through the bands. Your partner's backs hint at what trolley card would help.`,
+    round_end: `<strong>Round over.</strong> The section that emptied every cart scores nothing; the other takes penalty points equal to its <strong>fullest</strong> cart. Three rounds, fewest points wins. The first lead moves one seat left next round.`,
+    waiting: `Watch the bots play. Dashed borders in the trick mark trolley cards.`,
+  };
+
+  function coachSuggest(v) {
+    if (!(session && session.kind === 'local' && session.tutorial)) return null;
+    const g = session.game(); if (!g) return null;
+    if (v.phase === 'faceup' && !v.players[v.me].picked) return { kind: 'pick', handIndex: E.botFaceUpPick(g, 0) };
+    if (v.phase === 'play' && v.trick.turn === v.me) {
+      const d = E.botDecide(g, 0);
+      if (d.action === 'play') return { kind: 'play', play: d.play };
+      return { kind: 'pass', pass: d.pass };
+    }
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) return { kind: 'lead', leader: E.botChooseLeader(g, 0) };
+    return null;
+  }
+
+  function pickTip(v) {
+    const me = v.players[v.me];
+    const once = (id) => { if (coach.seen.has(id)) return null; coach.seen.add(id); return id; };
+    if (v.phase === 'faceup') return coach.seen.has('welcome') ? 'welcome' : once('welcome');
+    if (v.phase === 'roundEnd' || v.phase === 'gameEnd') return 'round_end';
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) return 'lead_choice';
+    if (v.phase === 'play') {
+      const t = v.trick;
+      if (!coach.seen.has('trolley')) return once('trolley');
+      if (t.plays.some(p => p.combo.bomb) && !coach.seen.has('bomb_seen')) return once('bomb_seen');
+      if (me.out) return coach.seen.has('out') ? 'waiting' : once('out');
+      if (t.turn === v.me) {
+        if (me.hand && E.countBombs(me.hand) > 0 && !coach.seen.has('bomb_mine')) return once('bomb_mine');
+        if (t.plays.length === 0) return coach.seen.has('lead') ? 'lead' : once('lead');
+        const legal = E.legalPlaysFromView(v);
+        if (v.mode === 'team' && v.players[t.topSeat].team === me.team && legal.length && !coach.seen.has('partner_top')) return once('partner_top');
+        if (legal.length === 0) return coach.seen.has('pass') ? 'pass' : once('pass');
+        return coach.seen.has('follow') ? 'follow' : once('follow');
+      }
+      if (v.tricksPlayed >= 1 && !coach.seen.has('backs')) return once('backs');
+      return 'waiting';
+    }
+    return 'waiting';
+  }
+
+  function suggestionText(v, s) {
+    if (!s) return '';
+    if (s.kind === 'pick') return `Coach's pick: put the <strong>${v.players[v.me].hand[s.handIndex]}</strong> face up.`;
+    if (s.kind === 'play') return `Coach's pick: play <strong>${chipLabel(v, s.play)}</strong> (${comboName(s.play.combo)}).`;
+    if (s.kind === 'pass') {
+      const p = s.pass; const me = v.players[v.me];
+      if (p.kind === 'fill') return `Coach's pick: pass and <strong>fill ${pname(v, p.slotSeat)}'s spot with the ${me.hand[p.handIndex]}</strong>.`;
+      if (p.kind === 'swap') return `Coach's pick: pass and <strong>swap — take the ${v.players[p.slotSeat].slot}, put out the ${me.hand[p.handIndex]}</strong>.`;
+      return `Coach's pick: <strong>just pass</strong>.`;
+    }
+    if (s.kind === 'lead') return `Coach's pick: <strong>${s.leader === v.me ? 'lead yourself' : 'hand the lead to ' + pname(v, s.leader)}</strong>.`;
+    return '';
+  }
+
+  function applySuggestion(v, s) {
+    if (!s) return;
+    if (s.kind === 'pick') { pickIdx = s.handIndex; renderMe(v); }
+    else if (s.kind === 'play') { pm = null; sel = { hi: s.play.hi, hj: s.play.hj, slots: s.play.slots.slice() }; setMsg(''); renderMe(v); }
+    else if (s.kind === 'pass') {
+      const p = s.pass;
+      if (p.kind === 'fill') pm = { kind: 'fill', handIndex: p.handIndex, slotSeat: p.slotSeat };
+      else if (p.kind === 'swap') pm = { kind: 'swap', slotSeat: p.slotSeat, handIndex: p.handIndex, insertAt: p.insertAt };
+      else pm = { kind: 'menu' };
+      sel = { hi: -1, hj: -1, slots: [] }; renderMe(v);
+    }
+    const el = document.getElementById('t-me'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function renderCoach(v) {
+    const box = $('t-coach');
+    if (!coach.on) { box.style.display = 'none'; return; }
+    box.style.display = 'flex';
+    if (coach.hidden) { box.innerHTML = `<div class="av">?</div><div class="body">Coach is quiet. <button class="ghost" id="coach-show">Show tips</button></div>`; $('coach-show').onclick = () => { coach.hidden = false; renderCoach(v); }; return; }
+    let tip = pickTip(v), extra = null;
+    if (tip === 'trolley' && v.phase === 'play' && v.trick.turn === v.me) extra = pickTip(v);
+    const s = coachSuggest(v);
+    coach.suggestion = s;
+    const sText = suggestionText(v, s);
+    box.innerHTML = `<div class="av">C</div><div class="body">${TIPS[tip]}${extra ? '<div style="margin-top:6px">' + TIPS[extra] + '</div>' : ''}${sText ? `<div style="margin-top:6px">${sText}</div>` : ''}<div class="acts">${s && s.kind !== 'lead' ? `<button id="coach-apply">Set it up for me</button>` : ''}<button class="ghost" id="coach-hide">Hide coach</button><button class="ghost" id="coach-rules">Full rules</button></div></div>`;
+    const a = $('coach-apply'); if (a) a.onclick = () => applySuggestion(v, s);
+    $('coach-hide').onclick = () => { coach.hidden = true; renderCoach(v); };
+    $('coach-rules').onclick = showRules;
+    // pulse the suggested face-up card
+    if (s && s.kind === 'pick') { const c = document.querySelector(`#t-me [data-hand="${s.handIndex}"]`); if (c) c.classList.add('hint-pulse'); }
+  }
+
+})();
+
+</script>
+</body>
+</html>
