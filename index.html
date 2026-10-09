@@ -180,7 +180,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
   <div class="card-panel" style="margin-top:8px;font-size:14px">
     <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up card in front of each player; you may use your own section's trolley cards in any combination, in any position. Combinations: single, set of 2–3, run of 2+. Cards from your cart must be side by side, and a run's cart cards must already be in rising or falling order.</p>
-    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> 4+ of a number or a run of 4+, all from your own cart. More cards beats fewer; at equal size a set beats a run; then higher number.</p>
+    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> 4+ of a number or a run of 4+, all from your own cart. More cards beats fewer; at equal size a set beats a run; then an equal or higher number.</p>
     <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart card, or swap a cart card with a trolley card (the taken card goes anywhere in your cart). Used trolley cards are not replaced.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
     <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
@@ -285,7 +285,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     if (b.bomb && a.bomb) {
       if (b.size !== a.size) return b.size > a.size;
       if (b.type !== a.type) return b.type === 'set'; // set beats run at equal size
-      return b.top > a.top;
+      return b.top >= a.top; // match or beat, same as ordinary combinations
     }
     return b.type === a.type && b.size === a.size && b.top >= a.top; // match or beat
   }
@@ -907,6 +907,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     constructor(modeValue, name) {
       const { mode, N } = parseMode(modeValue);
       this.kind = 'host'; this.mode = mode; this.N = N; this.seat = 0; this.name = name || 'Host';
+      this.hostSeat = () => this.seats.findIndex(x => x.token === 'host');
       this.seats = [{ name: this.name, bot: false, token: 'host', connected: true, last: 0 }];
       for (let i = 1; i < N; i++) this.seats.push({ name: null, bot: true, token: null, connected: false, last: 0 });
       this.runner = new GameRunner();
@@ -961,6 +962,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (!this.seats[seat].connected) { this.seats[seat].connected = true; this.pushLobby(); }
       if (m.t === 'ping') { if (this.started && m.needView) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); return; }
       if (m.t === 'bye') { this.seats[seat].connected = false; this.pushLobby(); return; }
+      if (m.t === 'sit') { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].bot) this.moveSeat(seat, to); return; }
       if (m.t === 'act') {
         if (m.a && m.a.type === 'nextRound') { this.sendTo(seat, { t: 'err', msg: 'Only the host can start the next round.' }); return; }
         const r = this.runner.act(seat, m.a || {});
@@ -968,6 +970,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       }
     }
     replyRaw(tok, m) { try { this.client.publish(this.topic + '/g/' + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    // Move whoever is in `from` to `to`, swapping with the current occupant. Lobby only.
+    moveSeat(from, to) {
+      if (this.started || from === to || from < 0 || to < 0 || from >= this.N || to >= this.N) return;
+      const a = this.seats[from], b = this.seats[to];
+      this.seats[to] = a; this.seats[from] = b;
+      this.seat = this.hostSeat();
+      this.pushLobby();
+    }
     lobbyState() {
       return { code: this.code, mode: this.mode, N: this.N, started: this.started, relay: this.broker && this.broker.name, seats: this.seats.map(s => ({ name: s.bot ? null : s.name, bot: s.bot, connected: s.connected })) };
     }
@@ -989,8 +999,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     broadcastViews() {
       this.seats.forEach((s, i) => { if (!s.bot && s.token !== 'host') this.sendTo(i, { t: 'view', view: this.runner.view(i) }); });
     }
-    view() { return this.runner.view(0); }
-    act(a) { return this.runner.act(0, a); }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
     canControlRounds() { return true; }
     leave() { this.runner.stop(); clearInterval(this.presenceTimer); try { this.seats.forEach((s, i) => this.sendTo(i, { t: 'closed' })); this.client && this.client.end(); } catch (e) {} }
   }
@@ -1029,6 +1039,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       client.on('connect', () => hello()); // after an automatic reconnect, re-register
       this.pingTimer = setInterval(() => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'ping', from: this.token, needView: !this._view }), { qos: 0 }); } catch (e) {} }, 15000);
     }
+    sit(seat) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'sit', seat, from: this.token }), { qos: 1 }); } catch (e) {} }
     view() { return this._view; }
     act(a) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'act', a, from: this.token }), { qos: 1 }); } catch (e) { return { ok: false, error: 'Not connected' }; } return { ok: true, pending: true }; }
     canControlRounds() { return false; }
@@ -1146,14 +1157,27 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     $('lobby-code').textContent = st.code || '----';
     const { mode, N } = { mode: st.mode, N: st.N };
     $('lobby-status').textContent = (st.relay ? 'via ' + st.relay + ' relay · ' : '') + (mode === 'team' ? `Teams · ${N} players · seats alternate Jade / Lantern` : `Every Server for Themselves · ${N} players`) + (session.kind === 'guest' ? ' · waiting for the host to start' : '');
-    const mySeat = session.kind === 'host' ? 0 : session.seat;
+    const mySeat = session.seat;
+    const humans = st.seats.map((s, i) => ({ i, name: s.name })).filter(x => !st.seats[x.i].bot);
     $('lobby-seats').innerHTML = st.seats.map((s, i) => {
       const team = mode === 'team' ? `<span class="pill ${i % 2 ? 'lantern' : ''}">${TEAMNAME[i % 2]}</span>` : `<span class="pill gray">Seat ${i + 1}</span>`;
       const who = s.bot ? '<span class="muted">open seat · a bot will sit here</span>' : `<strong>${esc(s.name)}</strong>${i === mySeat ? ' (you)' : ''}${s.connected ? '' : ' <span class="muted">· reconnecting…</span>'}`;
-      return `<div class="lobby-seat"><div>${who}</div>${team}</div>`;
+      let ctl = '';
+      if (session.kind === 'host' && !st.started) {
+        ctl = `<select data-seatsel="${i}" aria-label="Who sits in seat ${i + 1}"><option value="bot" ${s.bot ? 'selected' : ''}>Bot</option>${humans.map(h => `<option value="${h.i}" ${h.i === i ? 'selected' : ''}>${esc(h.name)}</option>`).join('')}</select>`;
+      } else if (session.kind === 'guest' && !st.started && s.bot) {
+        ctl = `<button class="ghost" data-sit="${i}">Sit here</button>`;
+      }
+      return `<div class="lobby-seat"><div>${who}</div><div class="row">${team}${ctl}</div></div>`;
     }).join('');
+    document.querySelectorAll('[data-seatsel]').forEach(el => el.onchange = () => {
+      const to = +el.dataset.seatsel, v = el.value;
+      if (v === 'bot') { const bot = st.seats.findIndex(x => x.bot); if (bot >= 0 && !st.seats[to].bot) session.moveSeat(to, bot); else renderLobby(session.lobbyState()); }
+      else session.moveSeat(+v, to);
+    });
+    document.querySelectorAll('[data-sit]').forEach(el => el.onclick = () => session.sit(+el.dataset.sit));
     $('btn-start').style.display = session.kind === 'host' && !st.started ? 'inline-block' : 'none';
-    $('lobby-hint').textContent = session.kind === 'host' ? 'Start whenever you like; open seats become bots. Friends can still rejoin their own seat if they refresh.' : '';
+    $('lobby-hint').textContent = session.kind === 'host' ? 'Use the menus to seat people (teammates sit opposite each other: seats 1 & 3, 2 & 4). Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
   }
 
   // ---------- table ----------
@@ -1495,7 +1519,7 @@ ${ex('Pair of 6s', [6, 6], '✓ equal matches')}
 ${ex('Pair of 8s', [8, 8], '✓ higher')}
 ${ex('Three 9s', [9, 9, 9], '✕ wrong size')}
 <h3>Chef's Specials</h3>
-<p><strong>Four or more of a number</strong>, or <strong>a run of four or more</strong>, played entirely from your own cart (side by side, no trolley cards). A Special beats any ordinary combination, whatever its size. Specials compare: more cards wins; at equal size a set beats a run; then the higher number. An equal Special does not beat one on the table. The same cards with a trolley card mixed in are just an ordinary big combination.</p>
+<p><strong>Four or more of a number</strong>, or <strong>a run of four or more</strong>, played entirely from your own cart (side by side, no trolley cards). A Special beats any ordinary combination, whatever its size. Specials compare: more cards wins; at equal size a set beats a run; then an equal or higher number — a Special can be matched just like an ordinary combination. The same cards with a trolley card mixed in are just an ordinary big combination.</p>
 ${ex('Cart 8 8 8 8', [8, 8, 8, 8], '✓ Special')}
 ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 <h3>Passing</h3>
@@ -1537,7 +1561,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     lead: `<strong>You lead.</strong> A combination is a single, a set of 2–3 equal numbers, or a run of 2+. Cart cards must be side by side (a run's cart cards already in rising or falling order); trolley cards can fill gaps. The chips list every legal play — <strong>*</strong> marks a trolley card. Lead something low and awkward, save strength for later.`,
     follow: `<strong>Following.</strong> You must play the same kind and size with an <strong>equal or higher</strong> number — equal is fine, so matching is a real weapon — or pass. The chips show what qualifies. A Chef's Special (★) beats anything ordinary.`,
     pass: `<strong>Nothing fits? Pass.</strong> Passing takes you out of this trick, but it is also when you shape your cart: <strong>fill</strong> an empty trolley spot with a card you don't want, or <strong>swap</strong> a trolley card into your cart, anywhere you like. Think about what your partner's backs say they need.`,
-    bomb_seen: `<strong>That was a Chef's Special</strong> — four or more of a number, or a run of four or more, entirely from one cart. It beats any ordinary combination. Only a bigger Special beats it: more cards; at equal size a set beats a run; then the higher number.`,
+    bomb_seen: `<strong>That was a Chef's Special</strong> — four or more of a number, or a run of four or more, entirely from one cart. It beats any ordinary combination. Only another Special beats it: more cards; at equal size a set beats a run; then an equal or higher number.`,
     bomb_mine: `<strong>You hold a Chef's Special</strong> (the ★ chip). Keep it for stealing the lead back when Lantern is on top. Leading with it, or using it on your partner, wastes it. Notice that trolley cards never count toward a Special.`,
     partner_top: `<strong>Your partner is on top.</strong> Beating your own partner only helps if it gets you out or sets up a better lead; usually let it ride and pass, and use the pass to fill or swap.`,
     lead_choice: `<strong>You won the trick.</strong> The winner chooses who leads next: yourself or a teammate with cards. Give the lead to whoever needs tempo — usually the fuller cart — with no table talk. If you had gone out, you would still choose your partner.`,
