@@ -44,29 +44,37 @@ input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-r
 .home-grid h3{font-size:22px;margin-bottom:8px}
 
 /* ---- cards ---- */
-.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:8px;background:var(--face);border:2px solid var(--ink);padding:3px 4px;color:var(--ink);user-select:none;flex:none;box-shadow:var(--shadow);transition:transform .12s}
-.card .rk{font-family:'Bagel Fat One',sans-serif;font-size:20px;line-height:1}
-.card .art{position:absolute;left:2px;right:2px;top:20px;bottom:16px;display:flex;align-items:center;justify-content:center}
-.card .art svg{width:100%;height:100%}
-.card .nm{font-size:8px;font-weight:700;line-height:1.05;text-align:right;color:var(--brown-d)}
-.card.b0{border-color:var(--b0)}.card.b1{border-color:var(--b1)}.card.b2{border-color:var(--b2)}.card.b3{border-color:var(--b3)}
-.card.b0 .rk{color:var(--b0d)}.card.b1 .rk{color:var(--b1d)}.card.b2 .rk{color:var(--b2d)}.card.b3 .rk{color:var(--b3d)}
-.card.b0{box-shadow:inset 0 0 0 2px var(--b0),var(--shadow)}.card.b1{box-shadow:inset 0 0 0 2px var(--b1),var(--shadow)}.card.b2{box-shadow:inset 0 0 0 2px var(--b2),var(--shadow)}.card.b3{box-shadow:inset 0 0 0 2px var(--b3),var(--shadow)}
-.card.sm{width:40px;height:56px;padding:2px 3px}.card.sm .rk{font-size:15px}.card.sm .nm{display:none}.card.sm .art{top:16px;bottom:4px}
-.card.lg{width:76px;height:108px}.card.lg .rk{font-size:26px}.card.lg .nm{font-size:9px}.card.lg .art{top:26px;bottom:20px}
-.card.sel{transform:translateY(-10px);outline:3px solid var(--gold);outline-offset:1px}
 .card.dim{opacity:.4}
 .card.clickable{cursor:pointer}
-.back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;border-radius:4px;border:1.5px solid rgba(0,0,0,.35);flex:none;margin-left:-8px;box-shadow:0 1px 0 rgba(0,0,0,.2)}
-.back:first-child{margin-left:0}
-.back svg{width:16px;height:22px}
-.back.b0{background:var(--b0)}.back.b1{background:var(--b1)}.back.b2{background:var(--b2)}.back.b3{background:var(--b3)}
-.back.lg{width:34px;height:48px;margin-left:-12px}.back.lg svg{width:24px;height:34px}
-.slot{width:58px;height:82px;border-radius:8px;border:2px dashed var(--rule-d);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--brown);text-align:center;padding:4px;flex:none}
-.slot.sm{width:40px;height:56px;font-size:9px}
 .slot.target{border-color:var(--gold);border-style:solid;background:rgba(242,197,107,.25);cursor:pointer}
 .trolley-card{cursor:pointer}
-.trolley-card.sel{outline:3px solid var(--gold);transform:translateY(-6px)}
+.trolley-card.sel{box-shadow:0 0 0 3px var(--gold),0 6px 10px rgba(0,0,0,.3);transform:translateY(-6px)}
+
+
+/* ---- tiles (mahjong look) ---- */
+:root{--bone:#F8F2E4;--bone-d:#E9DFC9;--rack:#5A3A1E;--rack-d:#3E2712;--rack-l:#7A5230}
+.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:7px;background:linear-gradient(180deg,#FCF8EE 0%,var(--bone) 55%,var(--bone-d) 100%);border:1px solid #C9B79B;border-bottom-width:7px;padding:3px 4px 2px;color:var(--ink);user-select:none;flex:none;box-shadow:0 2px 0 rgba(42,26,18,.35),inset 0 1px 0 #fff,inset 0 -1px 0 rgba(0,0,0,.08);transition:transform .12s}
+.card .rk{font-family:'Bagel Fat One',sans-serif;font-size:20px;line-height:1;text-shadow:0 1px 0 #fff}
+.card .art{position:absolute;left:3px;right:3px;top:20px;bottom:14px;display:flex;align-items:center;justify-content:center}
+.card .art svg{width:100%;height:100%}
+.card .nm{font-size:8px;font-weight:700;line-height:1.05;text-align:right;color:var(--brown-d)}
+.card.b0{border-bottom-color:var(--b0)}.card.b1{border-bottom-color:var(--b1)}.card.b2{border-bottom-color:var(--b2)}.card.b3{border-bottom-color:var(--b3)}
+.card.b0 .rk{color:var(--b0d)}.card.b1 .rk{color:var(--b1d)}.card.b2 .rk{color:var(--b2d)}.card.b3 .rk{color:var(--b3d)}
+.card.sm{width:40px;height:56px;padding:2px 3px 1px;border-bottom-width:5px}.card.sm .rk{font-size:15px}.card.sm .nm{display:none}.card.sm .art{top:16px;bottom:3px}
+.card.lg{width:76px;height:108px;border-bottom-width:9px}.card.lg .rk{font-size:26px}.card.lg .nm{font-size:9px}.card.lg .art{top:26px;bottom:18px}
+.card.sel{transform:translateY(-12px);box-shadow:0 0 0 3px var(--gold),0 6px 10px rgba(0,0,0,.3)}
+.back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;border-radius:4px;border:1px solid rgba(0,0,0,.35);border-bottom-width:4px;border-bottom-color:rgba(0,0,0,.3);flex:none;margin-left:-6px;background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 45%,rgba(0,0,0,.08));box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.back:first-child{margin-left:0}
+.back svg{width:16px;height:22px;opacity:.9}
+.back.b0{background-color:var(--b0)}.back.b1{background-color:var(--b1)}.back.b2{background-color:var(--b2)}.back.b3{background-color:var(--b3)}
+.back.lg{width:34px;height:48px;margin-left:-10px}.back.lg svg{width:24px;height:34px}
+.rack{background:linear-gradient(180deg,var(--rack-l),var(--rack) 30%,var(--rack-d));border-radius:8px;padding:8px 10px 6px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4),0 2px 0 rgba(0,0,0,.25)}
+.seat .backs.rack{min-height:46px;gap:0;padding:6px 8px 4px}
+.hand.rack{padding:14px 10px 8px;min-height:104px;gap:3px}
+.hand.rack .card{box-shadow:0 2px 0 rgba(0,0,0,.45),inset 0 1px 0 #fff}
+.slot{width:58px;height:82px;border-radius:7px;border:2px dashed var(--rule-d);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--brown);text-align:center;padding:4px;flex:none;background:rgba(0,0,0,.04)}
+.slot.sm{width:40px;height:56px;font-size:9px}
+.gap{width:18px;height:82px;border-radius:6px;border:2px dashed var(--gold);background:rgba(242,197,107,.2);cursor:pointer;flex:none}
 
 /* ---- table ---- */
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
@@ -115,7 +123,6 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .lobby-seat{display:flex;justify-content:space-between;align-items:center;background:var(--face);color:var(--ink);border-radius:10px;padding:8px 12px;border:2px solid var(--rule-d)}
 .hint{font-size:12px;color:var(--brown)}
 .insert-row{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
-.gap{width:18px;height:82px;border-radius:6px;border:2px dashed var(--gold);background:rgba(242,197,107,.2);cursor:pointer;flex:none}
 .gap:hover,.gap.sel{background:var(--gold)}
 .lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
 .help{font-size:13px;color:var(--brown-d);line-height:1.4;margin:4px 0 6px}
@@ -133,7 +140,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .coach .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .coach button{min-height:36px;padding:6px 12px;border-color:var(--cream);background:var(--cream);color:var(--jade);box-shadow:none}
 .coach button.ghost{background:transparent;color:var(--cream);border-color:rgba(251,241,222,.5)}
-.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:1px}
+.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;box-shadow:0 0 0 3px var(--gold),0 2px 0 rgba(42,26,18,.35)}
 @keyframes pulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .rules h3{font-size:22px;margin:14px 0 4px}
 .rules h3:first-child{margin-top:0}
@@ -144,7 +151,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .rules table{border-collapse:collapse;font-size:13px;margin:6px 0}
 .rules td,.rules th{padding:4px 8px;border-top:1px solid var(--rule-d);text-align:left}
 .modal.wide{max-width:760px}
-@media (max-width:600px){ .card{width:48px;height:68px}.card .rk{font-size:17px}.card .nm{display:none}.card .art{top:18px;bottom:4px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
+@media (max-width:600px){ .card{width:48px;height:68px;border-bottom-width:6px}.card .rk{font-size:17px}.card .nm{display:none}.card .art{top:18px;bottom:4px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
 </style>
 </head>
 <body>
@@ -188,7 +195,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   <div class="muted" style="margin-top:14px" id="home-msg"></div>
   <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
   <div class="card-panel" style="margin-top:8px;font-size:14px">
-    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up card in front of each player; you may use your own section's trolley cards in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four cards. Cards from your cart must be side by side, and a run's cart cards must already be in rising or falling order.</p>
+    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up card in front of each player; you may use your own section's trolley cards in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four cards. Two players use numbers 1–6. Cards from your cart must be side by side, and a run's cart cards must already be in rising or falling order.</p>
     <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four cards.</p>
     <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart card, or swap a cart card with a trolley card (the taken card goes anywhere in your cart). Used trolley cards are not replaced.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
@@ -243,6 +250,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       throw new Error('team mode needs 4 or 6 players');
     }
     if (N < 2 || N > 6) throw new Error('2-6 players');
+    if (N === 2) return { ranks: 6, hand: 14 };
     if (N <= 4) return { ranks: 9, hand: 14 };
     if (N === 5) return { ranks: 12, hand: 14 };
     return { ranks: 12, hand: 13 };
@@ -306,6 +314,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const mode = opts.mode || 'team';
     const N = opts.players.length;
     const cfg = configFor(mode, N);
+    if (opts.handSize) cfg.hand = opts.handSize;
+    if (opts.ranks) cfg.ranks = opts.ranks;
+    if (cfg.hand * N > cfg.ranks * COPIES) throw new Error('not enough cards');
     const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
     const g = {
       mode, N, ranks: cfg.ranks, handSize: cfg.hand,
@@ -1080,7 +1091,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   let hints = true; try { hints = localStorage.getItem('dsr-hints') !== 'off'; } catch (e) {}
   const help = (t) => hints ? `<div class="help">${t}</div>` : '';
   const BANDINFO = [['steamer', '1–3'], ['plate', '4–6'], ['bowl', '7–9'], ['sweets', '10–12']];
-  function legendHTML() { return `<div class="legend"><span class="muted">Card backs show the number range:</span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
+  function legendHTML() { return `<div class="legend"><span class="muted">Tile backs show the number range:</span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
   function needText(v) {
     const t = v.trick; if (!t || !t.top) return '';
     const c = t.top;
@@ -1238,7 +1249,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   function renderOthers(v) {
     const order = [];
     for (let k = 1; k < v.N; k++) order.push((v.me + k) % v.N);
-    $('t-legend').innerHTML = legendHTML() + help('Other players sit above. You see the backs of their cards in the order they hold them, and the one face-up card each has put on the trolley.');
+    $('t-legend').innerHTML = legendHTML() + help('Other players sit above. You see the backs of their tiles on their racks, in the order they hold them, and the one face-up tile each has put on the trolley.');
     $('t-others').innerHTML = order.map(i => {
       const p = v.players[i];
       const turn = v.phase === 'play' && v.trick.turn === i;
@@ -1248,7 +1259,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
         <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? ' <span class="muted">(bot)</span>' : ''}</span>${team}</div>
         <div class="lbl">Hand · ${p.count} card${p.count === 1 ? '' : 's'}</div>
-        <div class="backs">${p.count ? backs : '<span class="muted">empty</span>'}</div>
+        <div class="backs rack">${p.count ? backs : '<span class="muted" style="color:#E2CFAE">empty</span>'}</div>
         <div class="foot"><div style="display:flex;flex-direction:column;align-items:center;gap:2px">${slot}<span class="lbl">trolley</span></div><div class="st">${seatStatus(v, i)}</div></div>
       </div>`;
     }).join('');
@@ -1312,7 +1323,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       row += '</div>';
       html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap. (This is the only way a card ever changes position.)</div>` + row;
     } else {
-      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} card${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help('Your cards stay in this order all round. You may only play cards that are next to each other.') + `<div class="hand">` + hand.map((r, i) => {
+      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} card${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help('Your cards stay in this order all round. You may only play cards that are next to each other.') + `<div class="hand rack">` + hand.map((r, i) => {
         let cls = '';
         if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
         else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
@@ -1578,7 +1589,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 <p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of cards in its <strong>fullest</strong> cart. Trolley cards do not count. Gather, shuffle and deal the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
 <p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
-<table><tr><th>Players</th><th>Numbers</th><th>Dealt</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
+<table><tr><th>Players</th><th>Numbers</th><th>Dealt</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2</td><td>1–6</td><td>14</td></tr><tr><td>Every Server 3–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
 <h3>Using this app</h3>
 <p>Tap cards side by side in your cart (and any trolley cards) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley card and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their card backs in order.</p>
 </div>`;
