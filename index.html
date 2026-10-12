@@ -156,6 +156,11 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .rules td,.rules th{padding:4px 8px;border-top:1px solid var(--rule-d);text-align:left}
 .modal.wide{max-width:760px}
 @media (max-width:600px){ .card{width:48px;height:68px}.card .rk{font-size:17px}.card .nm{display:none}.card .art{top:18px;bottom:4px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
+/* ---- bag ---- */
+.bagrow{display:flex;gap:16px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.bag{filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.card.just-drawn{animation:drawin .35s ease-out}
+@keyframes drawin{0%{transform:translateY(-40px) rotateX(0) scale(1.1);opacity:0}100%{transform:rotateX(14deg) translateY(0);opacity:1}}
 /* ---- felt table (overrides) ---- */
 .center{background:radial-gradient(ellipse at 50% 30%,#35795A,var(--felt) 55%,var(--felt-d));color:var(--cream);border:6px solid var(--rack);box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 3px 0 var(--rack-d)}
 .center .lbl,.center .help,.center .muted,.center .play .who{color:#D9E8DE}
@@ -183,7 +188,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       <h3>Play against bots</h3>
       <div class="col">
         <label>Table <select id="solo-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
-        <button class="primary" id="btn-solo">Deal me in</button>
+        <button class="primary" id="btn-solo">Draw tiles</button>
       </div>
     </div>
     <div class="card-panel">
@@ -205,9 +210,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   <div class="muted" style="margin-top:14px" id="home-msg"></div>
   <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
   <div class="card-panel" style="margin-top:8px;font-size:14px">
-    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up card in front of each player; you may use your own section's trolley cards in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four cards. Two players use numbers 1–6. Cards from your cart must be side by side, and a run's cart cards must already be in rising or falling order.</p>
-    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four cards.</p>
-    <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart card, or swap a cart card with a trolley card (the taken card goes anywhere in your cart). Used trolley cards are not replaced.</p>
+    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up tile in front of each player; you may use your own section's trolley tiles in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four tiles. Two players use numbers 1–6. Tiles from your cart must be side by side, and a run's cart tiles must already be in rising or falling order.</p>
+    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four tiles.</p>
+    <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart tile, or swap a cart tile with a trolley tile (the taken tile goes anywhere in your cart). Used trolley tiles are not replaced.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
     <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
   </div></details>
@@ -326,7 +331,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const cfg = configFor(mode, N);
     if (opts.handSize) cfg.hand = opts.handSize;
     if (opts.ranks) cfg.ranks = opts.ranks;
-    if (cfg.hand * N > cfg.ranks * COPIES) throw new Error('not enough cards');
+    if (cfg.hand * N > cfg.ranks * COPIES) throw new Error('not enough tiles');
     const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
     const g = {
       mode, N, ranks: cfg.ranks, handSize: cfg.hand,
@@ -368,7 +373,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     if (g.phase !== 'faceup') return err('Not the face-up phase');
     const p = g.players[seat];
     if (p.pick != null) return err('Already picked');
-    if (handIndex < 0 || handIndex >= p.hand.length) return err('Bad card');
+    if (handIndex < 0 || handIndex >= p.hand.length) return err('Bad tile');
     p.pick = handIndex;
     if (g.players.every(q => q.pick != null)) {
       g.players.forEach(q => { q.slot = q.hand.splice(q.pick, 1)[0]; q.pick = null; });
@@ -446,7 +451,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const slotRanks = [];
     const acc = accessibleSlots(g, seat);
     for (const i of play.slots) {
-      if (!acc.includes(i) || g.players[i].slot == null) return err('Bad trolley card');
+      if (!acc.includes(i) || g.players[i].slot == null) return err('Bad trolley tile');
       slotRanks.push(g.players[i].slot);
     }
     if (hand.length + slotRanks.length === 0) return err('Empty play');
@@ -476,13 +481,13 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     pass = pass || { kind: 'none' };
     if (pass.kind === 'fill') {
       if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot != null) return err('That spot is not empty');
-      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad tile');
       g.players[pass.slotSeat].slot = p.hand.splice(pass.handIndex, 1)[0];
       g.log.push({ t: 'fill', seat, slotSeat: pass.slotSeat, r: g.players[pass.slotSeat].slot });
       if (p.hand.length === 0) { p.out = true; g.log.push({ t: 'out', seat }); }
     } else if (pass.kind === 'swap') {
       if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot == null) return err('That spot is empty');
-      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad card');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad tile');
       const taken = g.players[pass.slotSeat].slot;
       const given = p.hand.splice(pass.handIndex, 1)[0];
       let at = pass.insertAt == null ? p.hand.length : pass.insertAt;
@@ -1095,6 +1100,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   let sel = { hi: -1, hj: -1, slots: [] };
   let pm = null;          // pass-mode state: {kind:'menu'|'fill'|'swap', handIndex, slotSeat, insertAt}
   let pickIdx = -1;       // face-up pick
+  let drawn = { round: 0, count: 0 }; // setup: tiles drawn from the bag so far (visual only)
   let msg = '', msgErr = false;
   let lastPhaseKey = '';
   let showLog = false;
@@ -1106,11 +1112,16 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const t = v.trick; if (!t || !t.top) return '';
     const c = t.top;
     if (c.bomb) return `To beat it you need a stronger Chef's Special (a set beats a run; then an equal or higher number).`;
-    const kind = c.type === 'single' ? 'a single card' : c.type === 'set' ? `${c.size === 2 ? 'a pair' : 'three of a kind'}` : `a run of ${c.size} cards`;
+    const kind = c.type === 'single' ? 'a single tile' : c.type === 'set' ? `${c.size === 2 ? 'a pair' : 'three of a kind'}` : `a run of ${c.size} tiles`;
     return `To play you need ${kind} with a number of ${c.top} or higher, or a Chef's Special (four of one number, or a run of four, all from your own hand).`;
   }
 
-  // ---------- card rendering ----------
+  function bagHTML(n) {
+    return `<svg width="96" height="110" viewBox="0 0 96 110" role="img" aria-label="Tile bag"><path d="M22 38 C 6 60, 6 96, 30 104 L 66 104 C 90 96, 90 60, 74 38 Z" fill="#7E3220" stroke="#2A1A12" stroke-width="3" stroke-linejoin="round"></path><path d="M24 40 C 14 60, 16 90, 34 100" fill="none" stroke="#A8462A" stroke-width="4" stroke-linecap="round" opacity=".7"></path><path d="M30 30 C 36 22, 60 22, 66 30 L 74 38 L 22 38 Z" fill="#A3221B" stroke="#2A1A12" stroke-width="3" stroke-linejoin="round"></path><path d="M20 36 C 40 30, 56 30, 76 36" fill="none" stroke="#F2C56B" stroke-width="4" stroke-linecap="round"></path><circle cx="18" cy="38" r="4" fill="#F2C56B" stroke="#2A1A12" stroke-width="2"></circle><circle cx="78" cy="38" r="4" fill="#F2C56B" stroke="#2A1A12" stroke-width="2"></circle><text x="48" y="80" text-anchor="middle" font-family="Bagel Fat One, Arial Rounded MT Bold, sans-serif" font-size="22" fill="#FBF1DE">${n}</text></svg>`;
+  }
+  function drawState(v) { if (drawn.round !== v.round) drawn = { round: v.round, count: 0 }; return drawn; }
+
+  // ---------- tile rendering ----------
   function cardHTML(r, cls, attrs) {
     const a = ART.art[r]; const b = E.bandOf(r);
     return `<div class="card b${b} ${cls || ''}" ${attrs || ''}><div class="rk">${r}</div><div class="art"><svg viewBox="0 0 260 200" aria-hidden="true">${a.svg}</svg></div><div class="nm">${esc(a.name)}</div></div>`;
@@ -1245,7 +1256,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   function seatStatus(v, i) {
     const p = v.players[i];
-    if (v.phase === 'faceup') return p.picked ? 'has chosen a trolley card' : 'choosing a trolley card…';
+    if (v.phase === 'faceup') return p.picked ? 'has chosen a trolley tile' : 'choosing a trolley tile…';
     if (p.out) return 'OUT — hand empty';
     if (v.phase === 'chooseLeader') return i === v.chooser ? 'choosing who leads next' : '';
     if (v.phase !== 'play') return '';
@@ -1268,7 +1279,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm">empty</div>`;
       return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
         <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? ' <span class="muted">(bot)</span>' : ''}</span>${team}</div>
-        <div class="lbl">Hand · ${p.count} card${p.count === 1 ? '' : 's'}</div>
+        <div class="lbl">Hand · ${p.count} tile${p.count === 1 ? '' : 's'}</div>
         <div class="backs rack">${p.count ? backs : '<span class="muted" style="color:#E2CFAE">empty</span>'}</div>
         <div class="foot"><div style="display:flex;flex-direction:column;align-items:center;gap:2px">${slot}<span class="lbl">trolley</span></div><div class="st">${seatStatus(v, i)}</div></div>
       </div>`;
@@ -1278,11 +1289,11 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   function renderCenter(v) {
     let status = '', detail = '';
     const t = v.trick;
-    if (v.phase === 'faceup') { status = 'Setup: everyone picks one card to put face up on the trolley.'; detail = help('Each player puts one card from their hand face up in front of them. Those cards form the trolley. Later, you can add your own team\'s trolley cards to the cards you play.'); }
+    if (v.phase === 'faceup') { status = 'Setup: draw your tiles from the bag, then pick one to put face up on the trolley.'; detail = help('Each player puts one tile from their hand face up in front of them. Those tiles form the trolley. Later, you can add your own team\'s trolley tiles to the tiles you play.'); }
     else if (v.phase === 'chooseLeader') { status = v.chooser === v.me ? 'You won the trick. Choose who leads the next one.' : `${esc(pname(v, v.chooser))} won the trick and is choosing who leads next.`; detail = help('A trick ends when everyone else has passed. The winner picks a player on their team to start the next trick.'); }
     else if (v.phase === 'play') {
-      if (t.plays.length === 0) { status = t.turn === v.me ? 'You lead this trick: play any single card, pair, three of a kind, or run.' : `${esc(pname(v, t.turn))} leads this trick.`; detail = help('The leader starts a new trick with any valid group of cards. Everyone after must play a stronger group of the same kind and size, or pass.'); }
-      else { status = t.turn === v.me ? `Your turn. ${esc(pname(v, t.topSeat))} played ${comboName(t.top)}.` : `${esc(pname(v, t.turn))}'s turn to beat ${comboName(t.top)}.`; detail = help((t.turn === v.me ? needText(v) + ' ' : '') + 'Dashed borders mark cards that came from the trolley.'); }
+      if (t.plays.length === 0) { status = t.turn === v.me ? 'You lead this trick: play any single tile, pair, three of a kind, or run.' : `${esc(pname(v, t.turn))} leads this trick.`; detail = help('The leader starts a new trick with any valid group of tiles. Everyone after must play a stronger group of the same kind and size, or pass.'); }
+      else { status = t.turn === v.me ? `Your turn. ${esc(pname(v, t.topSeat))} played ${comboName(t.top)}.` : `${esc(pname(v, t.turn))}'s turn to beat ${comboName(t.top)}.`; detail = help((t.turn === v.me ? needText(v) + ' ' : '') + 'Dashed borders mark tiles that came from the trolley.'); }
     } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') status = 'Round over.';
     let plays = '';
     if (t && t.plays.length) {
@@ -1302,7 +1313,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
     const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
     let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team}</div></div>`;
-    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up cards you may add to a play' : 'Trolley cards you may use · yours and your two neighbours\''}</div>`;
+    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbours\''}</div>`;
 
     // trolley row
     const tseats = myTrolleySeats(v);
@@ -1320,10 +1331,24 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       return `<div class="tc">${c}<span>${label}</span></div>`;
     }).join('') + `</div>`;
 
+    // setup: draw tiles from the bag one at a time (visual only; the hand is already dealt)
+    const ds = drawState(v);
+    const drawing = v.phase === 'faceup' && !me.picked && ds.count < hand.length;
+    if (drawing) {
+      const left = hand.length - ds.count;
+      html += `<div class="lbl" style="margin-top:10px">Your rack · ${ds.count} of ${hand.length} tiles drawn</div>` + help('Each tile you draw goes on the right end of your rack. That order is fixed for the whole round, so watch how your hand takes shape.');
+      html += `<div class="hand rack">` + hand.slice(0, ds.count).map((r, i) => cardHTML(r, i === ds.count - 1 ? 'just-drawn' : '', `data-hand="${i}"`)).join('') + `</div>`;
+      html += `<div class="bagrow"><div class="bag">${bagHTML(left)}</div><div class="col"><button class="primary" id="btn-draw">Draw a tile</button><button class="ghost" id="btn-drawall">Draw the rest</button><span class="hint">${left} tile${left === 1 ? '' : 's'} still to draw from the bag.</span></div></div>`;
+      html += `<div class="msg" id="t-msg"></div>`;
+      $('t-me').innerHTML = html;
+      $('btn-draw').onclick = () => { drawn.count = Math.min(hand.length, drawn.count + 1); renderMe(v); renderCoach(v); };
+      $('btn-drawall').onclick = () => { drawn.count = hand.length; renderMe(v); renderCoach(v); };
+      return;
+    }
     // hand
     const handClickable = (v.phase === 'faceup' && !me.picked) || myTurn || (pm && (pm.kind === 'fill' || pm.kind === 'swap'));
     if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
-      // choose insert position: show hand without the given card, with gaps
+      // choose insert position: show hand without the given tile, with gaps
       const h = hand.slice(); h.splice(pm.handIndex, 1);
       let row = '<div class="insert-row">';
       for (let i = 0; i <= h.length; i++) {
@@ -1331,9 +1356,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         if (i < h.length) row += cardHTML(h[i], 'dim');
       }
       row += '</div>';
-      html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap. (This is the only way a card ever changes position.)</div>` + row;
+      html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap. (This is the only way a tile ever changes position.)</div>` + row;
     } else {
-      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} card${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help('Your cards stay in this order all round. You may only play cards that are next to each other.') + `<div class="hand rack">` + hand.map((r, i) => {
+      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} tile${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help('Your tiles stay in this order all round. You may only play tiles that are next to each other.') + `<div class="hand rack">` + hand.map((r, i) => {
         let cls = '';
         if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
         else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
@@ -1346,25 +1371,25 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     html += `<div class="actions" id="t-actions">`;
     if (v.phase === 'faceup') {
       if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
-      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this card on the trolley</button><span class="hint">Tap one card in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
+      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this tile on the trolley</button><span class="hint">Tap one tile in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
     } else if (myTurn && !pm) {
       const legal = E.legalPlaysFromView(v);
       const cur = currentCombo(v);
       const canLead = v.trick.plays.length === 0;
       const legalNow = cur && legal.some(pl => samePlay(pl, sel));
-      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected cards'}</button>`;
+      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected tiles'}</button>`;
       html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : ''}>Pass (sit out this trick)</button>`;
       html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
-      const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.hi >= 0 || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those cards do not form a valid group (same number, or numbers in a row).') : (canLead ? 'Tap cards that sit next to each other in your hand, or tap a play from the list below.' : 'Tap cards in your hand, or tap a play from the list below. Nothing fits? Pass.');
+      const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.hi >= 0 || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those tiles do not form a valid group (same number, or numbers in a row).') : (canLead ? 'Tap tiles that sit next to each other in your hand, or tap a play from the list below.' : 'Tap tiles in your hand, or tap a play from the list below. Nothing fits? Pass.');
       html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || selMsg)}</div>`;
       const chips = chipList(v, legal);
       html += `<div class="lbl" style="margin-top:8px">${legal.length ? 'Plays you can make right now · tap one to select it' : 'No play can beat the table'}</div>`;
-      html += `<div class="chips">` + chips.slice(0, 16).map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more</span>` : '') + (legal.length === 0 ? '<span class="hint">Press Pass. You can still fill or swap a trolley card as you pass.</span>' : '') + `</div>` + (legal.length ? help('* means the play uses a trolley card. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
+      html += `<div class="chips">` + chips.slice(0, 16).map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more</span>` : '') + (legal.length === 0 ? '<span class="hint">Press Pass. You can still fill or swap a trolley tile as you pass.</span>' : '') + `</div>` + (legal.length ? help('* means the play uses a trolley tile. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
       $('t-me').innerHTML = html; wireMe(v, legal); return;
     } else if (pm) {
       html += renderPassControls(v);
     } else if (v.phase === 'play') {
-      html += `<span class="muted">${me.out ? 'Your hand is empty — you are out for this round. Your trolley card stays in play for your team.' : v.trick.passed.includes(v.me) ? 'You passed, so you sit out until this trick ends.' : 'Waiting for ' + esc(pname(v, v.trick.turn)) + '…'}</span>`;
+      html += `<span class="muted">${me.out ? 'Your hand is empty — you are out for this round. Your trolley tile stays in play for your team.' : v.trick.passed.includes(v.me) ? 'You passed, so you sit out until this trick ends.' : 'Waiting for ' + esc(pname(v, v.trick.turn)) + '…'}</span>`;
     } else if (v.phase === 'chooseLeader') {
       html += `<span class="muted">${v.chooser === v.me ? 'Choose the leader above.' : 'Waiting for the leader to be chosen…'}</span>`;
     }
@@ -1379,19 +1404,19 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const filled = tseats.filter(i => v.players[i].slot != null);
     if (pm.kind === 'menu') {
       return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may tidy your hand in one of these ways:</div>
-        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one card from your hand face up on an empty spot you may use. Gets rid of a card you don\'t want.</span></div>
-        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley card</button><span class="hint">Take a trolley card into your hand — you choose where it goes — and put one of your cards in its place. Fixes a gap in a run or breaks up a bad stretch.</span></div>
+        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
+        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.</span></div>
         <div class="pm-opt"><button class="primary" id="btn-pm-none">Just pass</button><span class="hint">Do nothing else.</span></div>
         <button class="ghost" id="btn-pm-cancel">Back</button>`;
     }
     if (pm.kind === 'fill') {
       const ready = pm.handIndex != null && pm.slotSeat != null;
-      return `<span class="hint" style="flex-basis:100%"><strong>Fill:</strong> ${pm.handIndex == null ? 'tap the card in your hand you want to put face up.' : pm.slotSeat == null ? 'now tap the empty trolley spot (highlighted) to put it on.' : `put the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat)}'s spot?`}</span>
+      return `<span class="hint" style="flex-basis:100%"><strong>Fill:</strong> ${pm.handIndex == null ? 'tap the tile in your hand you want to put face up.' : pm.slotSeat == null ? 'now tap the empty trolley spot (highlighted) to put it on.' : `put the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat)}'s spot?`}</span>
         <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Fill and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
     }
     if (pm.kind === 'swap') {
       const ready = pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null;
-      const step = pm.slotSeat == null ? 'tap the trolley card you want to take.' : pm.handIndex == null ? 'tap the card in your hand you will give in return.' : pm.insertAt == null ? 'tap a gap to say where the new card goes.' : `take the ${v.players[pm.slotSeat].slot} and give the ${me.hand[pm.handIndex]}?`;
+      const step = pm.slotSeat == null ? 'tap the trolley tile you want to take.' : pm.handIndex == null ? 'tap the tile in your hand you will give in return.' : pm.insertAt == null ? 'tap a gap to say where the new tile goes.' : `take the ${v.players[pm.slotSeat].slot} and give the ${me.hand[pm.handIndex]}?`;
       return `<span class="hint" style="flex-basis:100%"><strong>Swap:</strong> ${step}</span>
         <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Swap and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
     }
@@ -1520,7 +1545,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       } else {
         body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else takes penalty points for their own cart.</p>`;
       }
-      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Cards left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
+      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Tiles left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
       body += `<h3 style="font-size:20px;margin-top:12px">Totals after round ${s.round}</h3>`;
       body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.scores[i]}`).join(' · ')}</p>`;
       if (v.phase === 'gameEnd') {
@@ -1528,9 +1553,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         body += `<h3>${f}</h3>`;
         body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-home">Back to the kitchen</button></div>`;
       } else if (session.canControlRounds()) {
-        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-next">Deal round ${s.round + 1}</button></div>`;
+        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-next">Draw round ${s.round + 1}</button></div>`;
       } else {
-        body += `<p class="muted">Waiting for the host to deal the next round…</p>`;
+        body += `<p class="muted">Waiting for the host to draw the next round…</p>`;
       }
       overlay(`<h3>Round ${s.round} over</h3>${body}`);
       const bn = $('btn-next'); if (bn) bn.onclick = () => { session.act({ type: 'nextRound' }); overlay(''); };
@@ -1547,21 +1572,21 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   // =====================================================================
   // RULES MODAL
   // =====================================================================
-  function ex(label, cards, verdict) {
-    return `<div class="ex"><span class="lbl">${label}</span>${cards.map(c => typeof c === 'number' ? cardHTML(c, 'sm') : cardHTML(c.r, 'sm', 'style="border-style:dashed"')).join('')}${verdict ? `<span class="${verdict[0] === '✓' ? 'ok' : 'no'}" style="margin-left:8px">${verdict}</span>` : ''}</div>`;
+  function ex(label, tiles, verdict) {
+    return `<div class="ex"><span class="lbl">${label}</span>${tiles.map(c => typeof c === 'number' ? cardHTML(c, 'sm') : cardHTML(c.r, 'sm', 'style="border-style:dashed"')).join('')}${verdict ? `<span class="${verdict[0] === '✓' ? 'ok' : 'no'}" style="margin-left:8px">${verdict}</span>` : ''}</div>`;
   }
   function rulesHTML() {
     const T = { r: 0 };
     return `<div class="rules">
 <h3>Words used in this game</h3>
 <table><tr><th>Word</th><th>Meaning</th></tr>
-<tr><td><strong>Hand / cart</strong></td><td>The cards you hold. Dealt in a fixed order you can never change.</td></tr>
-<tr><td><strong>Trolley</strong></td><td>The row of face-up cards, one per player. Your team's trolley cards can be added to your plays.</td></tr>
-<tr><td><strong>Spot</strong></td><td>Each player's place on the trolley. It holds one card or is empty.</td></tr>
-<tr><td><strong>Combination / play</strong></td><td>The cards you put down on one turn: a single, a pair or three of a kind, or a run.</td></tr>
+<tr><td><strong>Hand / cart</strong></td><td>The tiles you hold. Drawn from the bag in a fixed order you can never change.</td></tr>
+<tr><td><strong>Trolley</strong></td><td>The row of face-up tiles, one per player. Your team's trolley tiles can be added to your plays.</td></tr>
+<tr><td><strong>Spot</strong></td><td>Each player's place on the trolley. It holds one tile or is empty.</td></tr>
+<tr><td><strong>Combination / play</strong></td><td>The tiles you put down on one turn: a single, a pair or three of a kind, or a run.</td></tr>
 <tr><td><strong>Trick</strong></td><td>One round of plays, from the first play until everyone else has passed. The last player to play wins it.</td></tr>
 <tr><td><strong>Lead</strong></td><td>To start a trick with any valid play.</td></tr>
-<tr><td><strong>Pass</strong></td><td>To not play. You sit out until the trick ends, but you may fill or swap a trolley card first.</td></tr>
+<tr><td><strong>Pass</strong></td><td>To not play. You sit out until the trick ends, but you may fill or swap a trolley tile first.</td></tr>
 <tr><td><strong>Chef's Special</strong></td><td>This game's bomb: four of a number or a run of four, all from your own hand. Beats any ordinary play.</td></tr>
 <tr><td><strong>Section</strong></td><td>Your team (Jade or Lantern).</td></tr>
 <tr><td><strong>Out</strong></td><td>Your hand is empty; you take no more turns this round.</td></tr>
@@ -1569,39 +1594,39 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 <h3>The goal</h3>
 <p>You are servers in a dim sum teahouse, split into two sections (<span class="pill">Jade</span> <span class="pill lantern">Lantern</span>). Each round, race to empty your <strong>cart</strong> (your hand) by playing combinations of dishes that match or beat what is on the table. When every cart in one section is empty the round ends and the other section takes penalty points. Three rounds; fewest points wins.</p>
 <h3>Your cart and the trolley</h3>
-<p>Your cart is dealt in a fixed order and <strong>you may never rearrange it</strong>. Cards you play from it must sit side by side. The backs face outward: everyone can see the <em>band</em> of every card at the table (bamboo steamer 1–3, porcelain plate 4–6, clay bowl 7–9, dessert tray 10–12), just not the exact number.</p>
-<p>Each player has one <strong>trolley spot</strong> with a face-up card. Your section's trolley cards (yours and your teammates') may be added to any combination you play, in any position — even a combination made only of trolley cards. You may never use the other section's. A used trolley card is not replaced; the spot stays empty until someone in your section fills it while passing.</p>
+<p>Your cart is drawn from the bag one tile at a time, each new tile going on the right end of your rack, and <strong>you may never rearrange it</strong>. Tiles you play from it must sit side by side. The backs face outward: everyone can see the <em>band</em> of every tile at the table (bamboo steamer 1–3, porcelain plate 4–6, clay bowl 7–9, dessert tray 10–12), just not the exact number.</p>
+<p>Each player has one <strong>trolley spot</strong> with a face-up tile. Your section's trolley tiles (yours and your teammates') may be added to any combination you play, in any position — even a combination made only of trolley tiles. You may never use the other section's. A used trolley tile is not replaced; the spot stays empty until someone in your section fills it while passing.</p>
 <h3>Combinations</h3>
 ${ex('Single', [7])}
 ${ex('Set (2 or 3 equal)', [5, 5])}
 ${ex('Run (2 to 4 in a row)', [3, 4, 5])}
-<p>A run's cart cards must already be in rising or falling order in your cart; trolley cards (dashed) can fill a gap:</p>
+<p>A run's cart tiles must already be in rising or falling order in your cart; trolley tiles (dashed) can fill a gap:</p>
 ${ex('Cart 4 6 + trolley 5', [4, { r: 5 }, 6], '✓ run 4 5 6')}
 ${ex('Cart 4 6 5', [4, 6, 5], '✕ not in order')}
 <h3>Following</h3>
-<p>The leader plays any combination. Each player after them must play a <strong>stronger</strong> one or pass: the same kind and size with an <strong>equal or higher</strong> number (runs compare their top card). Equal numbers are allowed — a 7 beats a 7. Numbers do not wrap: 12 is never followed by 1.</p>
+<p>The leader plays any combination. Each player after them must play a <strong>stronger</strong> one or pass: the same kind and size with an <strong>equal or higher</strong> number (runs compare their top tile). Equal numbers are allowed — a 7 beats a 7. Numbers do not wrap: 12 is never followed by 1.</p>
 ${ex('Table: pair of 6s', [6, 6])}
 ${ex('Pair of 6s', [6, 6], '✓ equal matches')}
 ${ex('Pair of 8s', [8, 8], '✓ higher')}
 ${ex('Three 9s', [9, 9, 9], '✕ wrong size')}
 <h3>Chef's Specials</h3>
-<p><strong>Four of a number</strong>, or <strong>a run of four</strong>, played entirely from your own cart (side by side, no trolley cards). A Special beats any ordinary combination, whatever its size. Specials compare: a set beats a run; then an equal or higher number — a Special can be matched just like an ordinary combination. The same four cards with a trolley card mixed in are just an ordinary combination of four. <strong>No combination may have more than four cards.</strong></p>
+<p><strong>Four of a number</strong>, or <strong>a run of four</strong>, played entirely from your own cart (side by side, no trolley tiles). A Special beats any ordinary combination, whatever its size. Specials compare: a set beats a run; then an equal or higher number — a Special can be matched just like an ordinary combination. The same four tiles with a trolley tile mixed in are just an ordinary combination of four. <strong>No combination may have more than four tiles.</strong></p>
 ${ex('Cart 8 8 8 8', [8, 8, 8, 8], '✓ Special')}
 ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 <h3>Passing</h3>
 <p>If you do not play, you pass, and you are <strong>out of the trick</strong> until the next one begins (the leader cannot pass). When you pass you may do one of these:</p>
-<p><strong>Fill:</strong> put one cart card face up on any empty spot of your section's trolley, including a teammate's. If it was your last card, you are out.</p>
-<p><strong>Swap:</strong> take any one of your section's trolley cards and slide it into your cart <em>wherever you like</em>, then put any one cart card face up in that spot.</p>
+<p><strong>Fill:</strong> put one cart tile face up on any empty spot of your section's trolley, including a teammate's. If it was your last tile, you are out.</p>
+<p><strong>Swap:</strong> take any one of your section's trolley tiles and slide it into your cart <em>wherever you like</em>, then put any one cart tile face up in that spot.</p>
 <p>Or pass and do nothing.</p>
 <h3>Ending a trick</h3>
-<p>The trick ends when everyone else still in the round has passed. The last player to play wins it and <strong>chooses who in their section leads next</strong> — themselves or any teammate with cards — without discussing it. A winner who has gone out still chooses a teammate.</p>
+<p>The trick ends when everyone else still in the round has passed. The last player to play wins it and <strong>chooses who in their section leads next</strong> — themselves or any teammate with tiles — without discussing it. A winner who has gone out still chooses a teammate.</p>
 <h3>Going out and scoring</h3>
-<p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of cards in its <strong>fullest</strong> cart. Trolley cards do not count. Gather, shuffle and deal the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
+<p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of tiles in its <strong>fullest</strong> cart. Trolley tiles do not count. Return every tile to the bag and draw the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
 <p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
-<table><tr><th>Players</th><th>Numbers</th><th>Dealt</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2</td><td>1–6</td><td>14</td></tr><tr><td>Every Server 3–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
+<table><tr><th>Players</th><th>Numbers</th><th>Drawn</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2</td><td>1–6</td><td>14</td></tr><tr><td>Every Server 3–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
 <h3>Using this app</h3>
-<p>Tap cards side by side in your cart (and any trolley cards) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley card and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their card backs in order.</p>
+<p>Tap tiles side by side in your cart (and any trolley tiles) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley tile and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their tile backs in order.</p>
 </div>`;
   }
   function showRules() {
@@ -1625,38 +1650,39 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     overlay(`<h3>Before we start</h3>
 <p><strong>Never played a shedding game?</strong> Here is the whole idea in four lines:</p>
 <ol style="padding-left:20px;margin:6px 0 10px;line-height:1.5">
-<li><strong>Get rid of your cards.</strong> Everyone is dealt a hand; the first team to empty theirs wins the round.</li>
-<li><strong>Play in tricks.</strong> One player starts by playing a card or a small group of cards. Going around the table, each player must play a <em>stronger</em> group of the same kind and size — a higher pair on a pair, a higher run on a run — or <strong>pass</strong>.</li>
-<li><strong>Last one standing wins the trick.</strong> When everyone else has passed, the cards are cleared and the winner's team starts the next trick.</li>
-<li><strong>The twist in this game:</strong> your hand stays in the order it was dealt — you may only play cards that sit next to each other — and your team shares a row of face-up cards (the <strong>trolley</strong>) you can mix into your plays.</li>
+<li><strong>Get rid of your tiles.</strong> Everyone draws a hand of tiles from a bag; the first team to empty theirs wins the round.</li>
+<li><strong>Play in tricks.</strong> One player starts by playing a tile or a small group of tiles. Going around the table, each player must play a <em>stronger</em> group of the same kind and size — a higher pair on a pair, a higher run on a run — or <strong>pass</strong>.</li>
+<li><strong>Last one standing wins the trick.</strong> When everyone else has passed, the tiles are cleared and the winner's team starts the next trick.</li>
+<li><strong>The twist in this game:</strong> your hand stays in the order you drew it — you may only play tiles that sit next to each other — and your team shares a row of face-up tiles (the <strong>trolley</strong>) you can mix into your plays.</li>
 </ol>
-<p><strong>The screen:</strong> other players across the top (you see their card backs), the table in the middle, your own cards at the bottom. The green coach panel explains each situation as it comes up and can set up its suggested move for you.</p>
+<p><strong>The screen:</strong> other players across the top (you see their tile backs), the table in the middle, your own tiles at the bottom. The green coach panel explains each situation as it comes up and can set up its suggested move for you.</p>
 <div class="row" style="margin-top:12px"><button class="jade" id="btn-tut-go">Start the tutorial</button><button class="ghost" id="btn-tut-cancel">Not now</button></div>`);
     $('btn-tut-go').onclick = () => { overlay(''); startTutorial(); };
     $('btn-tut-cancel').onclick = () => overlay('');
   };
   const TIPS = {
-    welcome: `<strong>Your hand.</strong> The cards at the bottom are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The coloured backs are what the other players see: the colour tells them roughly how big each card is, but not the number. <strong>First job:</strong> pick one card to put face up on the trolley. A card that doesn't sit next to anything useful (no neighbour with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
-    trolley: `<strong>The trolley.</strong> Everyone's face-up card is now showing. The two cards on your side — yours and your partner Lin's — are your <em>team's</em> trolley. When you play, you may add either of them to your cards, in any position, to make a bigger or better group. The other team's two cards are off limits to you. A used trolley card is not replaced automatically.`,
-    lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one card, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 cards). No play may have more than four cards. Cards from your hand must sit side by side; a run's cards must already be in rising or falling order. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong cards for later.`,
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The coloured backs are what the other players will see.`,
+    welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbour with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
+    trolley: `<strong>The trolley.</strong> Everyone's face-up tile is now showing. The two tiles on your side — yours and your partner Lin's — are your <em>team's</em> trolley. When you play, you may add either of them to your tiles, in any position, to make a bigger or better group. The other team's two tiles are off limits to you. A used trolley tile is not replaced automatically.`,
+    lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles). No play may have more than four tiles. Tiles from your hand must sit side by side; a run's tiles must already be in rising or falling order. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
     follow: `<strong>Following.</strong> To stay in the trick you must play the <em>same kind and size</em> as what's on the table, with an equal or higher number — a pair of 7s beats a pair of 6s, and a pair of 6s also beats a pair of 6s (equal counts!). Or pass. The list under your hand only shows plays that qualify.`,
-    pass: `<strong>Nothing fits? Pass.</strong> Passing means you sit out until this trick ends. But a pass is also your chance to tidy your hand: <strong>fill</strong> an empty trolley spot with a card you don't want, or <strong>swap</strong> a trolley card into your hand (you choose where it goes) and put one of yours out in its place. Look at what your partner's backs suggest they could use.`,
-    bomb_seen: `<strong>That was a Chef's Special</strong> — this game's "bomb". Four of the same number, or a run of four, played entirely from one player's own hand (no trolley cards). A Special beats any ordinary play, whatever its size. Only another Special beats it: a set beats a run; then an equal or higher number.`,
+    pass: `<strong>Nothing fits? Pass.</strong> Passing means you sit out until this trick ends. But a pass is also your chance to tidy your hand: <strong>fill</strong> an empty trolley spot with a tile you don't want, or <strong>swap</strong> a trolley tile into your hand (you choose where it goes) and put one of yours out in its place. Look at what your partner's backs suggest they could use.`,
+    bomb_seen: `<strong>That was a Chef's Special</strong> — this game's "bomb". Four of the same number, or a run of four, played entirely from one player's own hand (no trolley tiles). A Special beats any ordinary play, whatever its size. Only another Special beats it: a set beats a run; then an equal or higher number.`,
     bomb_mine: `<strong>You hold a Chef's Special</strong> — see the ★ in your play list. Keep it to grab the lead back when the other team is winning the trick. Leading with it, or playing it over your own partner, wastes it.`,
     partner_top: `<strong>Your partner is winning this trick.</strong> Beating your own partner only helps if it empties your hand or sets up a better lead. Usually it's better to pass, and use the pass to fill or swap.`,
-    lead_choice: `<strong>You won the trick.</strong> In this game the winner chooses who on their team leads (starts) the next trick: yourself, or your partner if they still have cards. Leading is an advantage, so give it to whoever needs it more — usually the fuller hand. No table talk. If you had already emptied your hand, you would still choose your partner.`,
-    out: `<strong>Your hand is empty — you are out.</strong> Your team hasn't finished until Lin's hand is empty too, so watch the backs across the table and see how it plays out. Your trolley card stays available to her.`,
-    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their hand in order: brown = 1–3, blue = 4–6, red = 7–9. Four of the same colour in a row could be a Special; a run needs colours stepping through the ranges. Your partner's backs hint at which trolley card would help them.`,
+    lead_choice: `<strong>You won the trick.</strong> In this game the winner chooses who on their team leads (starts) the next trick: yourself, or your partner if they still have tiles. Leading is an advantage, so give it to whoever needs it more — usually the fuller hand. No table talk. If you had already emptied your hand, you would still choose your partner.`,
+    out: `<strong>Your hand is empty — you are out.</strong> Your team hasn't finished until Lin's hand is empty too, so watch the backs across the table and see how it plays out. Your trolley tile stays available to her.`,
+    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their hand in order: brown = 1–3, blue = 4–6, red = 7–9. Four of the same colour in a row could be a Special; a run needs colours stepping through the ranges. Your partner's backs hint at which trolley tile would help them.`,
     round_end: `<strong>Round over.</strong> The team that emptied every hand scores nothing. The other team takes penalty points equal to its <em>fullest</em> hand — the manager judges a section by its slowest server. Three rounds; fewest penalty points wins.`,
-    waiting: `Watch the others play. Dashed borders in the middle mark cards that came from the trolley.`,
+    waiting: `Watch the others play. Dashed borders in the middle mark tiles that came from the trolley.`,
   };
-  const LESSONS = ['welcome', 'trolley', 'lead', 'follow', 'pass', 'bomb_seen', 'bomb_mine', 'partner_top', 'lead_choice', 'out', 'backs', 'round_end'];
-  const LESSON_TITLES = { welcome: 'Your hand', trolley: 'The trolley', lead: 'Leading', follow: 'Following', pass: 'Passing', bomb_seen: "Chef's Specials", bomb_mine: 'Holding a Special', partner_top: 'Your partner is winning', lead_choice: 'Choosing the leader', out: 'Going out', backs: 'Reading the backs', round_end: 'Scoring' };
+  const LESSONS = ['draw', 'welcome', 'trolley', 'lead', 'follow', 'pass', 'bomb_seen', 'bomb_mine', 'partner_top', 'lead_choice', 'out', 'backs', 'round_end'];
+  const LESSON_TITLES = { draw: 'Drawing from the bag', welcome: 'Your hand', trolley: 'The trolley', lead: 'Leading', follow: 'Following', pass: 'Passing', bomb_seen: "Chef's Specials", bomb_mine: 'Holding a Special', partner_top: 'Your partner is winning', lead_choice: 'Choosing the leader', out: 'Going out', backs: 'Reading the backs', round_end: 'Scoring' };
 
   function coachSuggest(v) {
     if (!(session && session.kind === 'local' && session.tutorial)) return null;
     const g = session.game(); if (!g) return null;
-    if (v.phase === 'faceup' && !v.players[v.me].picked) return { kind: 'pick', handIndex: E.botFaceUpPick(g, 0) };
+    if (v.phase === 'faceup' && !v.players[v.me].picked) { const ds = drawState(v); if (ds.count < v.players[v.me].hand.length) return null; return { kind: 'pick', handIndex: E.botFaceUpPick(g, 0) }; }
     if (v.phase === 'play' && v.trick.turn === v.me) {
       const d = E.botDecide(g, 0);
       if (d.action === 'play') return { kind: 'play', play: d.play };
@@ -1669,7 +1695,11 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
   function pickTip(v) {
     const me = v.players[v.me];
     const once = (id) => { if (coach.seen.has(id)) return null; coach.seen.add(id); return id; };
-    if (v.phase === 'faceup') return coach.seen.has('welcome') ? 'welcome' : once('welcome');
+    if (v.phase === 'faceup') {
+      const ds = drawState(v);
+      if (!me.picked && ds.count < (me.hand || []).length) return coach.seen.has('draw') ? 'draw' : once('draw');
+      return coach.seen.has('welcome') ? 'welcome' : once('welcome');
+    }
     if (v.phase === 'roundEnd' || v.phase === 'gameEnd') return 'round_end';
     if (v.phase === 'chooseLeader' && v.chooser === v.me) return 'lead_choice';
     if (v.phase === 'play') {
@@ -1735,7 +1765,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     const a = $('coach-apply'); if (a) a.onclick = () => applySuggestion(v, s);
     $('coach-hide').onclick = () => { coach.hidden = true; renderCoach(v); };
     $('coach-rules').onclick = showRules;
-    // pulse the suggested face-up card
+    // pulse the suggested face-up tile
     if (s && s.kind === 'pick') { const c = document.querySelector(`#t-me [data-hand="${s.handIndex}"]`); if (c) c.classList.add('hint-pulse'); }
   }
 
