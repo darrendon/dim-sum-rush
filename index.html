@@ -171,6 +171,29 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .center .play.top .who{color:var(--gold)}
 .center .status{color:#fff}
 .trick{padding:6px 0 10px}
+/* ---- short scripted tutorial ---- */
+.coach .ctop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.coach .ctop .lbl{color:var(--gold);white-space:nowrap}
+.coach .prog{flex:0 1 140px;min-width:40px;height:8px;border-radius:99px;background:rgba(251,241,222,.25);overflow:hidden}
+.coach .prog i{display:block;height:100%;background:var(--gold)}
+.coach h3{font-size:20px;line-height:1.1;color:var(--cream);margin:2px 0 4px}
+.coach .body p{margin:0;max-width:72ch}
+.coach .cue{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.coach .cue.wait{color:rgba(251,241,222,.75)}
+.coach .acts{align-items:center}
+.coach button.go{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:800}
+.coach button.exit{background:none;border:0;box-shadow:none;color:var(--cream);opacity:.85;text-decoration:underline;text-underline-offset:3px;font-weight:600;padding:6px 2px;margin-left:auto;min-height:36px}
+.coach table.tbl{margin-top:8px;background:var(--face);color:var(--ink);border-radius:8px;overflow:hidden}
+.coach table.tbl th{background:var(--b3d)}
+.coach table.tbl strong{color:var(--red)}
+.tut-spot{outline:4px solid var(--gold)!important;outline-offset:3px;animation:tutring 1.3s ease-in-out infinite}
+@keyframes tutring{50%{outline-offset:7px;outline-color:rgba(242,197,107,.45)}}
+.trolley.tut-spot,.hand.tut-spot{outline-offset:-4px;animation-name:tutring-in} /* inward, so it never crosses the label above */
+@keyframes tutring-in{50%{outline-offset:-1px;outline-color:rgba(242,197,107,.45)}}
+.gap.tut{background:var(--gold);animation:tutring 1.3s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:2px}
+body.tut-on .seat{min-height:0}
+@media (max-width:600px){ .coach{padding:10px 12px;gap:10px} .coach .av{display:none} .coach h3{font-size:18px} .coach .body{font-size:14px} }
+@media (prefers-reduced-motion: reduce){ .tut-spot,.gap.tut,.card.hint-pulse{animation:none!important} }
 </style>
 </head>
 <body>
@@ -185,7 +208,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   <div class="home-grid">
     <div class="card-panel" style="border:3px solid var(--jade)">
       <h3>Learn to play</h3>
-      <p class="muted" style="margin:0 0 8px">A guided 4-player table against bots. A coach explains each situation as it comes up and can show you its pick. About 15 minutes.</p>
+      <p class="muted" style="margin:0 0 8px">A coach walks you through the end of a round at a 4-player table against bots, one move at a time. About 4 minutes.</p>
       <div class="col"><button class="jade" id="btn-tutorial">Start the tutorial</button><button class="ghost" id="btn-rules">Read the full rules</button></div>
     </div>
     <div class="card-panel">
@@ -825,11 +848,12 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   // ---------------- Local / Host game runner ----------------
   class GameRunner {
-    constructor() { this.g = null; this.listeners = []; this.timer = null; this.botDelay = BOT_DELAY; }
+    constructor() { this.g = null; this.listeners = []; this.timer = null; this.botDelay = BOT_DELAY; this.botStep = E.botStep; }
     onUpdate(cb) { this.listeners.push(cb); }
     emit() { for (const cb of this.listeners) cb(); }
-    start(mode, players, seed) {
+    start(mode, players, seed, setup) {
       this.g = E.newGame({ mode, players, seed });
+      if (setup) setup(this.g); // the tutorial stacks the deal here
       this.emit();
       this.scheduleBots(200);
     }
@@ -841,7 +865,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         || (g.phase === 'chooseLeader' && g.players[g.chooser].bot);
       if (!needsBot()) return;
       this.timer = setTimeout(() => {
-        const did = E.botStep(g);
+        const did = this.botStep(g);
         if (did) this.emit();
         this.scheduleBots(g.phase === 'faceup' ? 50 : this.botDelay);
       }, delay == null ? this.botDelay : delay);
@@ -868,13 +892,16 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       opts = opts || {};
       this.kind = 'local'; this.seat = 0; this.runner = new GameRunner(); this.tutorial = !!opts.tutorial; this.seed = opts.seed;
       if (this.tutorial) this.runner.botDelay = 1500;
+      if (opts.botDelay) this.runner.botDelay = opts.botDelay;
+      if (opts.botStep) this.runner.botStep = opts.botStep;
+      this.scripted = !!opts.setup; this.setup = opts.setup;
       const names = ['Bao', 'Lin', 'Jun', 'Mei', 'Kai', 'Yu'];
       const players = [{ name: name || 'You', bot: false }];
       for (let i = 1; i < N; i++) players.push({ name: names[i - 1], bot: true });
       this.runner.onUpdate(() => this.cb && this.cb());
       this.mode = mode; this.players = players;
     }
-    begin() { this.runner.start(this.mode, this.players, this.seed); }
+    begin() { this.runner.start(this.mode, this.players, this.seed, this.setup); }
     game() { return this.runner.g; }
     onUpdate(cb) { this.cb = cb; }
     view() { return this.runner.view(this.seat); }
@@ -1109,7 +1136,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   let lastPhaseKey = '';
   let showLog = false;
   let hints = true; try { hints = localStorage.getItem('dsr-hints') !== 'off'; } catch (e) {}
-  const help = (t) => hints ? `<div class="help">${t}</div>` : '';
+  let tut = null;         // short scripted tutorial: { step, bots, focused } (see SHORT TUTORIAL below)
+  const help = (t) => hints && !tut ? `<div class="help">${t}</div>` : '';
   const BANDINFO = [['steamer', '1–3'], ['plate', '4–6'], ['bowl', '7–9'], ['sweets', '10–12']];
   function legendHTML() { return `<div class="legend"><span class="muted">Tile backs show the number range:</span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
   function needText(v) {
@@ -1160,11 +1188,13 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     n.innerHTML = '<strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.';
     const grid = document.querySelector('.home-grid'); grid.parentNode.insertBefore(n, grid);
   }
-  $('btn-solo').onclick = () => {
-    coach.on = false;
-    session = new NET.LocalSession($('solo-mode').value, getName());
+  function startBots(modeValue) {
+    coach.on = false; tut = null; overlay('');
+    if (session) session.leave();
+    session = new NET.LocalSession(modeValue, getName());
     wireSession(); session.begin(); show('s-table');
-  };
+  }
+  $('btn-solo').onclick = () => startBots($('solo-mode').value);
   $('btn-host').onclick = async () => {
     $('home-msg').textContent = 'Opening a table…';
     try {
@@ -1193,14 +1223,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     } catch (e) { $('home-msg').textContent = e.message; session && session.leave(); session = null; }
   };
   $('btn-leave-lobby').onclick = leave;
-  $('btn-quit').onclick = () => { if (confirm('Leave the table?')) leave(); };
+  $('btn-quit').onclick = () => { if (tut || confirm('Leave the table?')) leave(); };
   $('btn-log').onclick = () => { showLog = !showLog; $('t-log').style.display = showLog ? 'block' : 'none'; };
   function syncHintBtn() { $('btn-hints').textContent = hints ? 'Hints: on' : 'Hints: off'; }
   syncHintBtn();
   $('btn-hints').onclick = () => { hints = !hints; try { localStorage.setItem('dsr-hints', hints ? 'on' : 'off'); } catch (e) {} syncHintBtn(); if (view) render(); };
   $('btn-start').onclick = () => { session.startGame(); show('s-table'); };
 
-  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; overlay(''); show('s-home'); }
+  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; tut = null; document.body.classList.remove('tut-on'); overlay(''); show('s-home'); }
 
   function wireSession() {
     session.onUpdate(() => {
@@ -1246,7 +1276,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const v = view; if (!v) return;
     const key = `${v.round}-${v.phase}-${v.trick ? v.trick.turn : ''}-${v.tricksPlayed}`;
     if (key !== lastPhaseKey) { sel = { hi: -1, hj: -1, slots: [] }; pm = null; pickIdx = -1; setMsg(''); lastPhaseKey = key; }
-    $('t-title').textContent = `Round ${v.round} of ${v.maxRounds}`;
+    $('t-title').textContent = tut ? 'Tutorial' : `Round ${v.round} of ${v.maxRounds}`;
+    document.body.classList.toggle('tut-on', !!tut);
+    $('btn-hints').style.display = $('btn-log').style.display = tut ? 'none' : '';
+    $('btn-quit').textContent = tut ? 'Exit tutorial' : 'Leave';
     renderScore(v); renderOthers(v); renderCenter(v); renderMe(v); renderLog(v); renderOverlay(v); renderCoach(v);
   }
 
@@ -1311,7 +1344,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   // accessible trolley seats for me
   function myTrolleySeats(v) { return E.accessibleFromView(v, v.me); }
 
-  function renderMe(v) {
+  function renderMe(v) { renderMeInner(v); if (tut) renderCoach(v); }
+  function renderMeInner(v) {
     const me = v.players[v.me];
     const hand = me.hand || [];
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
@@ -1326,7 +1360,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       let c;
       if (p.slot != null) {
         const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
-        const clickable = (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
+        const clickable = tut ? tutAllowSlot(v, i) : (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
         c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
       } else {
         const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
@@ -1367,7 +1401,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
         else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
         else if (sel.hi >= 0 && i >= sel.hi && i <= sel.hj) cls = 'sel';
-        return cardHTML(r, cls + (handClickable ? ' clickable' : ''), `data-hand="${i}"`);
+        return cardHTML(r, cls + ((tut ? tutAllowHand(v, i) : handClickable) ? ' clickable' : ''), `data-hand="${i}"`);
       }).join('') + `</div>`;
     }
 
@@ -1380,12 +1414,18 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       const legal = E.legalPlaysFromView(v);
       const cur = currentCombo(v);
       const canLead = v.trick.plays.length === 0;
-      const legalNow = cur && legal.some(pl => samePlay(pl, sel));
+      const legalNow = cur && legal.some(pl => samePlay(pl, sel)) && (!tut || tutSelReady(v));
+      const td = tut ? tutDo(v) : null;
       html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected tiles'}</button>`;
-      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : ''}>Pass (sit out this trick)</button>`;
-      html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
+      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : tut && !(td && td.type === 'pass') ? 'disabled' : ''}>Pass (sit out this trick)</button>`;
+      if (!tut) html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
       const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.hi >= 0 || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those tiles do not form a valid group (same number, or numbers in a row).') : (canLead ? 'Tap tiles that sit next to each other in your hand, or tap a play from the list below.' : 'Tap tiles in your hand, or tap a play from the list below. Nothing fits? Pass.');
       html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || selMsg)}</div>`;
+      if (tut) { // only the move this step teaches; the coach says which
+        const chips = tutChips(v, legal);
+        if (chips.length) html += `<div class="lbl" style="margin-top:8px">The play the coach is asking for · tap it to select it</div><div class="chips">` + chips.map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + `</div>`;
+        $('t-me').innerHTML = html; wireMe(v, legal); return;
+      }
       const chips = chipList(v, legal);
       html += `<div class="lbl" style="margin-top:8px">${legal.length ? 'Plays you can make right now · tap one to select it' : 'No play can beat the table'}</div>`;
       html += `<div class="chips">` + chips.slice(0, 16).map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more</span>` : '') + (legal.length === 0 ? '<span class="hint">Press Pass. You can still fill or swap a trolley tile as you pass.</span>' : '') + `</div>` + (legal.length ? help('* means the play uses a trolley tile. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
@@ -1394,8 +1434,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       html += renderPassControls(v);
     } else if (v.phase === 'play') {
       html += `<span class="muted">${me.out ? 'Your hand is empty — you are out for this round. Your trolley tile stays in play for your team.' : v.trick.passed.includes(v.me) ? 'You passed, so you sit out until this trick ends.' : 'Waiting for ' + esc(pname(v, v.trick.turn)) + '…'}</span>`;
+    } else if (v.phase === 'chooseLeader' && tut && v.chooser === v.me) {
+      // in the tutorial the choice sits here, next to the coach, instead of in a dialog that would cover it
+      const td = tutDo(v);
+      html += `<div style="flex-basis:100%"><strong>You won the trick.</strong> Choose who in Jade leads the next one.</div>` + v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}" ${td && td.leader === i ? '' : 'disabled'}>${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('');
     } else if (v.phase === 'chooseLeader') {
       html += `<span class="muted">${v.chooser === v.me ? 'Choose the leader above.' : 'Waiting for the leader to be chosen…'}</span>`;
+    } else if (tut && (v.phase === 'roundEnd' || v.phase === 'gameEnd')) {
+      html += `<span class="muted">Your cart is empty. Jade has emptied every cart.</span>`;
     }
     html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg)}</div>`;
     $('t-me').innerHTML = html; wireMe(v, []);
@@ -1408,9 +1454,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const filled = tseats.filter(i => v.players[i].slot != null);
     if (pm.kind === 'menu') {
       return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may tidy your hand in one of these ways:</div>
-        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
-        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.</span></div>
-        <div class="pm-opt"><button class="primary" id="btn-pm-none">Just pass</button><span class="hint">Do nothing else.</span></div>
+        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length && !tutBlocks('fill') ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
+        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length && !tutBlocks('swap') ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.</span></div>
+        <div class="pm-opt"><button class="primary" id="btn-pm-none" ${tutBlocks('none') ? 'disabled' : ''}>Just pass</button><span class="hint">Do nothing else.</span></div>
         <button class="ghost" id="btn-pm-cancel">Back</button>`;
     }
     if (pm.kind === 'fill') {
@@ -1457,16 +1503,17 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
     root.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotTap(v, +el.dataset.slot));
     root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
-    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; renderMe(v); });
-    const chips = chipList(v, legal);
+    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { if (tut && !tutAllowGap(v, +el.dataset.gap)) return; pm.insertAt = +el.dataset.gap; renderMe(v); });
+    const chips = tut ? tutChips(v, legal) : chipList(v, legal);
     root.querySelectorAll('[data-chip]').forEach(el => el.onclick = () => {
       const pl = chips[+el.dataset.chip].pl; sel = { hi: pl.hi, hj: pl.hj, slots: pl.slots.slice() }; setMsg(''); renderMe(v);
     });
+    root.querySelectorAll('[data-lead]').forEach(b => b.onclick = () => act({ type: 'lead', leader: +b.dataset.lead }));
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
-    on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
+    on('btn-pick', () => { const r = act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
     on('btn-play', () => {
       const pl = legal.find(p => samePlay(p, sel)); if (!pl) return;
-      const r = session.act({ type: 'play', play: { hi: pl.hi, hj: pl.hj, slots: pl.slots } });
+      const r = act({ type: 'play', play: { hi: pl.hi, hj: pl.hj, slots: pl.slots } });
       if (r && r.ok === false) setMsg(r.error, true); else { sel = { hi: -1, hj: -1, slots: [] }; setMsg(''); }
     });
     on('btn-pass', () => { pm = { kind: 'menu' }; sel = { hi: -1, hj: -1, slots: [] }; renderMe(v); });
@@ -1481,11 +1528,22 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     });
   }
   function doPass(pass) {
-    const r = session.act({ type: 'pass', pass });
+    const r = act({ type: 'pass', pass });
     if (r && r.ok === false) setMsg(r.error, true); else { pm = null; setMsg(''); }
+  }
+  // Every action the player takes goes through here. In the tutorial only the move the current step teaches is
+  // accepted, and the step advances before the game updates so the coach never shows a stale step.
+  function act(a) {
+    if (!tut) return session.act(a);
+    if (!tutMatches(view, a)) return { ok: false, error: 'In this lesson, make the move the coach is asking for.' };
+    tut.step++;
+    const r = session.act(a);
+    if (r && r.ok === false) { tut.step--; render(); }
+    return r;
   }
 
   function onHandTap(v, i) {
+    if (tut && !tutAllowHand(v, i)) return;
     const me = v.players[v.me];
     if (v.phase === 'faceup') { if (me.picked) return; pickIdx = pickIdx === i ? -1 : i; renderMe(v); return; }
     if (pm) {
@@ -1504,6 +1562,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     setMsg(''); renderMe(v);
   }
   function onSlotTap(v, i) {
+    if (tut && !tutAllowSlot(v, i)) return;
     if (pm) { if (pm.kind === 'swap' && pm.slotSeat == null) { pm.slotSeat = i; renderMe(v); } return; }
     if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
     const k = sel.slots.indexOf(i);
@@ -1535,6 +1594,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   }
 
   function renderOverlay(v) {
+    if (tut) { // the coach handles choosing the leader and the round end; leave the rules or the finish screen open
+      if (!$('btn-rules-close') && !$('tut-finish')) overlay('');
+      return;
+    }
     if (v.phase === 'chooseLeader' && v.chooser === v.me) {
       const cs = coach.on && !coach.hidden ? coachSuggest(v) : null;
       overlay(`<h3>You won the trick</h3><p>In this game the winner chooses who on their team <strong>leads</strong> (starts) the next trick. Leading is an advantage: you set the kind and size everyone else must match. Give it to whoever needs it most. No table talk!</p>${cs ? `<p class="muted">${suggestionText(v, cs)}</p>` : ''}<div class="col">${v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}">${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('')}</div>`);
@@ -1642,28 +1705,216 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
   $('btn-rules2').onclick = showRules;
 
   // =====================================================================
-  // TUTORIAL COACH
+  // SHORT TUTORIAL (scripted, about 4 minutes)
+  // =====================================================================
+  // One short, stacked round at the 4-player team table, joined partway through. The carts, the trolley and every bot
+  // move are fixed, and each step accepts only the move it teaches, so the round always plays out the same way:
+  // you lead 3 5 + Lin's 4, Bao answers 4 5 6, Lin passes and fills her spot with an 8, you win the trick with an equal
+  // 6 5 4 and hand Lin the lead; she goes out on a pair of 2s, Jun plays 7 7, you pass and swap Lin's 8 into your cart
+  // (6 7 2 9 becomes 6 7 8 9), Jun leads 9 9, and your Chef's Special empties Jade's last cart. Lantern takes 5.
+  const TUT_HANDS = [[3, 5, 6, 5, 4, 6, 7, 2, 9], [1, 4, 5, 6, 8, 3, 9, 1], [8, 2, 2], [9, 9, 3, 7, 7, 2]];
+  const TUT_SLOTS = [1, 7, 4, 5];
+  const TUT_BOTS = {
+    1: [{ t: 'play', hi: 1, hj: 3 }, { t: 'pass' }, { t: 'pass' }],
+    2: [{ t: 'pass', pass: { kind: 'fill', handIndex: 0, slotSeat: 2 } }, { t: 'play', hi: 0, hj: 1 }],
+    3: [{ t: 'pass' }, { t: 'play', hi: 3, hj: 4 }, { t: 'lead', leader: 3 }, { t: 'play', hi: 0, hj: 1 }],
+  };
+  const SWAP = { kind: 'swap', slotSeat: 2, handIndex: 2, insertAt: 2 };
+  const TUT = [
+    { title: 'Your cart', spot: '#t-me .hand', next: true,
+      text: `This lesson joins a 4-player round already under way. You and <strong>Lin</strong> are the Jade section, against <strong>Bao</strong> and <strong>Jun</strong> of Lantern. The first section to empty every cart wins the round. Along the bottom is <strong>your cart</strong>: your tiles, in the order you drew them from the bag. You can never rearrange it, so tiles you play together must sit side by side.` },
+    { title: 'The trolley', spot: '#t-me .trolley', next: true,
+      text: `Each player keeps one tile face up: their spot on the <strong>trolley</strong>. Your section's trolley is your 1 and Lin's 4. Either of you may add them to a play, in any position. A used trolley tile is not replaced. The 7 and 5 in Bao's and Jun's boxes up top belong to Lantern, and you may never use them.` },
+    { title: 'Lead a run', do: { type: 'play', hi: 0, hj: 1, slots: [2] },
+      text: `You lead this trick, so any combination goes: a <strong>single</strong>, a <strong>set</strong> of 2 or 3 of one number, or a <strong>run</strong> of 2 to 4 numbers in a row. Your 3 and 5 sit side by side, and Lin's 4 fills the gap. Tap your <strong>3</strong> and <strong>5</strong>, tap Lin's <strong>4</strong> on the trolley, then press <strong>Play</strong>.` },
+    { title: 'Following', spot: '#t-center', next: true,
+      wait: `Your run 3 4 5 is on the table. Going around the table, each player plays something stronger or passes. Watch Bao, Lin and Jun.`,
+      text: `Bao beat your run with <strong>4 5 6</strong>. To follow, play the <strong>same kind and size</strong> with an <strong>equal or higher</strong> number. Runs compare their highest tile, so his 6 beats your 5. On a run of three, a pair or a run of four won't do.` },
+    { title: 'Passing', spot: '#t-me .trolley', next: true,
+      text: `Lin couldn't beat 4 5 6, so she <strong>passed</strong>. Once you pass, you sit out until the next trick. When you pass you may do one thing: <strong>fill</strong> an empty spot on your section's trolley with a tile from your cart, or <strong>swap</strong>. Lin filled her own spot, emptied when you used her 4, with an <strong>8</strong>. Jun just passed: his teammate was winning.` },
+    { title: 'Equal is enough', do: { type: 'play', hi: 0, hj: 2, slots: [] },
+      text: `Your <strong>6 5 4</strong> sit side by side in falling order, which is fine for a run. Its top is 6, the same as Bao's, and an equal number beats. Tap the <strong>6</strong>, <strong>5</strong> and <strong>4</strong>, then press <strong>Play</strong>.` },
+    { title: 'Choose who leads', do: { type: 'lead', leader: 2 },
+      wait: `Your 6 5 4 is on top. Bao has to beat it or pass.`,
+      text: `Bao passed, so everyone else has passed and <strong>you win the trick</strong>. The winner chooses who in their section leads the next one: you, or Lin. No table talk. Lin is down to 2 tiles, and both backs are bamboo steamers (1–3), so they might be a pair. Press <strong>Lin leads</strong>.` },
+    { title: 'Going out', spot: '#t-center', next: true,
+      wait: `Lin leads the next trick.`,
+      text: `Lin led a pair of 2s, her last tiles, so she's <strong>out</strong> for the round. Her trolley spot stays, and you can still use it. Jun beat the 2s with a pair of 7s. Jade isn't done until your cart is empty too: the round ends the moment every server in one section is out.` },
+    { title: 'Pass and swap', do: { type: 'pass', pass: SWAP },
+      text: (v) => !pm ? `Nothing in your cart makes a pair of 7s or better, so pass. Your cart reads 6 7 2 9, and Lin's spot holds the 8 she put out: a <strong>swap</strong> fixes that gap. Press <strong>Pass</strong>.`
+        : pm.kind === 'menu' ? `Choose <strong>Swap with a trolley tile</strong>.`
+        : pm.slotSeat == null ? `Tap Lin's <strong>8</strong> on the trolley to take it.`
+        : pm.handIndex == null ? `Now tap the <strong>2</strong> in your cart. It goes face up in Lin's spot, in place of the 8.`
+        : pm.insertAt == null ? `Tap the gap between your <strong>7</strong> and <strong>9</strong> to slide the 8 in. A swap is the only way a tile ever moves in your cart.`
+        : `Press <strong>Swap and pass</strong>.` },
+    { title: "Chef's Special", do: { type: 'play', hi: 0, hj: 3, slots: [] },
+      wait: `You passed. Bao has to beat Jun's 7s or pass.`,
+      text: `Bao passed, so Jun won the trick and kept the lead: a pair of 9s. Your cart now reads <strong>6 7 8 9</strong>, a run of four entirely from your own cart. That's a <strong>Chef's Special</strong>, and so is four of one number. It beats any combination that isn't a Special; only a stronger Special beats it. Tap all four tiles, then press <strong>Play</strong>.` },
+    { title: 'Scoring', spot: '#t-coach .tbl', next: 'Finish', score: true,
+      text: `Your cart is empty and Lin was already out, so Jade has emptied every cart, and the round ends at once, even mid-trick. Jade takes no points. Lantern takes <strong>penalty points equal to its fullest cart</strong>: Bao's 5 tiles. Trolley tiles don't count. A game is 3 rounds, and the section with the fewest penalty points wins.` },
+  ];
+
+  function startTutorial() {
+    coach.on = false; overlay('');
+    if (session) session.leave();
+    tut = { step: 0, bots: { 1: TUT_BOTS[1].slice(), 2: TUT_BOTS[2].slice(), 3: TUT_BOTS[3].slice() }, focused: '' };
+    session = new NET.LocalSession('team4', getName(), { seed: 20261028, botDelay: 1300, setup: tutSetup, botStep: tutBotStep });
+    lastPhaseKey = ''; showLog = false; $('t-log').style.display = 'none';
+    show('s-table'); wireSession(); session.begin(); // show first: show() scrolls to the top, then the coach scrolls to its target
+  }
+  function tutSetup(g) {
+    g.players.forEach((p, i) => { p.hand = TUT_HANDS[i].slice(); p.slot = TUT_SLOTS[i]; p.out = false; p.pick = null; });
+    g.firstLeader = 0; g.phase = 'play'; g.tricksPlayed = 4; g.discard = [];
+    g.trick = { leader: 0, turn: 0, plays: [], passed: [], top: null, topSeat: null };
+    g.log = [{ t: 'round', round: 1 }];
+  }
+  // scripted bots: each bot takes its next move from TUT_BOTS
+  function tutBotStep(g) {
+    const seat = g.phase === 'play' ? g.trick.turn : g.phase === 'chooseLeader' ? g.chooser : -1;
+    if (seat < 0 || !g.players[seat].bot) return false;
+    const a = tut && tut.bots[seat] && tut.bots[seat].shift();
+    if (!a) return E.botStep(g); // never expected; keeps the table moving
+    const r = a.t === 'play' ? E.applyPlay(g, seat, { hi: a.hi, hj: a.hj, slots: a.slots || [] })
+      : a.t === 'pass' ? E.applyPass(g, seat, a.pass || { kind: 'none' })
+      : E.chooseLeader(g, seat, a.leader);
+    if (!r.ok) return E.botStep(g);
+    return true;
+  }
+  const tstep = () => (tut ? TUT[tut.step] || null : null);
+  function tutWaiting(v) { // the bots still have moves to make before this step's moment
+    if (!v || v.phase === 'roundEnd' || v.phase === 'gameEnd') return false;
+    if (v.phase === 'play') return v.trick.turn !== v.me;
+    if (v.phase === 'chooseLeader') return v.chooser !== v.me;
+    return true;
+  }
+  function tutDo(v) { const s = tstep(); return s && s.do && !tutWaiting(v) ? s.do : null; }
+  function tutBlocks(kind) { // pass menu: only the option the step teaches
+    if (!tut) return false;
+    const d = tutDo(view); return !(d && d.type === 'pass' && d.pass.kind === kind);
+  }
+  function tutAllowHand(v, i) {
+    const d = tutDo(v); if (!d) return false;
+    if (d.type === 'play' && !pm) return i >= d.hi && i <= d.hj;
+    if (d.type === 'pass' && pm && pm.kind === 'swap' && pm.slotSeat != null) return i === d.pass.handIndex;
+    return false;
+  }
+  function tutAllowSlot(v, i) {
+    const d = tutDo(v); if (!d) return false;
+    if (d.type === 'play' && !pm) return d.slots.includes(i);
+    if (d.type === 'pass' && pm && pm.kind === 'swap' && pm.slotSeat == null) return i === d.pass.slotSeat;
+    return false;
+  }
+  function tutAllowGap(v, k) { const d = tutDo(v); return !!(d && d.type === 'pass' && pm && pm.kind === 'swap' && pm.handIndex != null && k === d.pass.insertAt); }
+  function tutSelReady(v) {
+    const d = tutDo(v);
+    return !!(d && d.type === 'play' && sel.hi === d.hi && sel.hj === d.hj && sel.slots.slice().sort().join() === d.slots.slice().sort().join());
+  }
+  function tutChips(v, legal) {
+    const d = tutDo(v); if (!d || d.type !== 'play') return [];
+    const pl = legal.find(p => samePlay(p, { hi: d.hi, hj: d.hj, slots: d.slots }));
+    return pl ? [{ pl, label: chipLabel(v, pl) }] : [];
+  }
+  function tutMatches(v, a) {
+    const d = tutDo(v); if (!d || d.type !== a.type) return false;
+    if (a.type === 'play') return a.play.hi === d.hi && a.play.hj === d.hj && a.play.slots.slice().sort().join() === d.slots.slice().sort().join();
+    if (a.type === 'lead') return a.leader === d.leader;
+    if (a.type === 'pass') return ['kind', 'slotSeat', 'handIndex', 'insertAt'].every(k => a.pass[k] === d.pass[k]);
+    return false;
+  }
+  function tutNext() {
+    if (!tut) return;
+    if (tut.step >= TUT.length - 1) { tutFinish(); return; }
+    tut.step++; render();
+  }
+  function renderTutCoach(v) {
+    const box = $('t-coach'); const s = tstep();
+    if (!s) { box.style.display = 'none'; return; }
+    box.style.display = 'flex';
+    const waiting = tutWaiting(v), n = TUT.length, k = tut.step + 1;
+    const text = waiting && s.wait ? s.wait : typeof s.text === 'function' ? s.text(v) : s.text;
+    let extra = '';
+    if (s.score && !waiting && v.roundHistory.length) {
+      const h = v.roundHistory[v.roundHistory.length - 1];
+      extra = `<table class="tbl"><tr><th>Server</th><th>Section</th><th>Tiles left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td><td>${TEAMNAME[p.team]}</td><td>${h.hands[i]}</td></tr>`).join('')}<tr><td colspan="2"><strong>Lantern's penalty (its fullest cart)</strong></td><td><strong>${h.penalty}</strong></td></tr></table>`;
+    }
+    const act = waiting ? `<span class="cue wait">Watching the table…</span>`
+      : s.next ? `<button class="go" id="tut-next">${typeof s.next === 'string' ? s.next : 'Next'}</button>`
+      : `<span class="cue">Your move</span>`;
+    box.innerHTML = `<div class="av">C</div><div class="body"><div class="ctop"><span class="lbl">Coach · step ${k} of ${n}</span><span class="prog" aria-hidden="true"><i style="width:${Math.round(k / n * 100)}%"></i></span></div><h3>${esc(s.title)}</h3><p>${text}</p>${extra}<div class="acts">${act}<button class="exit" id="tut-exit">Exit tutorial</button></div></div>`;
+    const nb = $('tut-next'); if (nb) nb.onclick = tutNext;
+    $('tut-exit').onclick = leave;
+    tutDecorate(v, waiting);
+  }
+  // point at what the step is about, and keep the coach and that target on screen together
+  function tutDecorate(v, waiting) {
+    const s = tstep(); if (!s) return;
+    const d = tutDo(v), root = $('t-me'), q = (sel) => root.querySelector(sel);
+    const spot = (el) => { if (el) el.classList.add('tut-spot'); return el; };
+    document.querySelectorAll('.tut-spot').forEach(el => el.classList.remove('tut-spot')); // panels that outlive a re-render
+    const targets = [];
+    if (waiting) targets.push($('t-center'));
+    else if (d && d.type === 'play') {
+      for (let i = d.hi; i <= d.hj; i++) if (!(sel.hi >= 0 && i >= sel.hi && i <= sel.hj)) { const el = q(`[data-hand="${i}"]`); if (el) { el.classList.add('hint-pulse'); targets.push(el); } }
+      d.slots.forEach(i => { if (!sel.slots.includes(i)) targets.push(spot(q(`[data-slot="${i}"]`))); });
+      if (tutSelReady(v)) targets.push(spot($('btn-play')));
+      else targets.push($('btn-play'));
+    } else if (d && d.type === 'lead') targets.push(spot(q(`[data-lead="${d.leader}"]`)));
+    else if (d && d.type === 'pass') {
+      if (!pm) targets.push(spot($('btn-pass')));
+      else if (pm.kind === 'menu') targets.push(spot($('btn-pm-swap')));
+      else if (pm.slotSeat == null) targets.push(spot(q(`[data-slot="${d.pass.slotSeat}"]`)));
+      else if (pm.handIndex == null) { const el = q(`[data-hand="${d.pass.handIndex}"]`); if (el) { el.classList.add('hint-pulse'); targets.push(el); } }
+      else if (pm.insertAt == null) { const el = q(`[data-gap="${d.pass.insertAt}"]`); if (el) { el.classList.add('tut'); targets.push(el); } }
+      else targets.push(spot($('btn-pm-confirm')));
+    } else if (s.spot) targets.push(spot(document.querySelector(s.spot)));
+    const key = tut.step + (waiting ? 'w' : 'm') + (pm ? pm.kind + pm.slotSeat + pm.handIndex + pm.insertAt : '') + sel.hi + sel.hj + sel.slots.join();
+    if (key === tut.focused) return;
+    tut.focused = key;
+    reveal([$('t-coach')].concat(targets.filter(Boolean)), !!s.next && !waiting);
+    if (!waiting && s.next) { const b = $('tut-next'); if (b) b.focus({ preventScroll: true }); }
+  }
+  // Scroll this document (never the page around the iframe) so the coach and the targets fit. If they can't all fit,
+  // the things to click win, and the coach goes as close above them as it can. A step with a Next button keeps the
+  // coach in view instead.
+  function reveal(els, coachFirst) {
+    els = els.filter(Boolean); if (!els.length) return;
+    const vh = window.innerHeight, rs = els.map(el => el.getBoundingClientRect());
+    let top = Math.min(...rs.map(r => r.top)), bottom = Math.max(...rs.map(r => r.bottom));
+    if (bottom - top > vh - 20) {
+      if (coachFirst) { top = rs[0].top; bottom = Math.max(rs[0].bottom, Math.min(bottom, top + vh - 40)); }
+      else { const t = rs.slice(1); top = Math.max(top, Math.min(...t.map(r => r.top)) - (vh - 40 - (Math.max(...t.map(r => r.bottom)) - Math.min(...t.map(r => r.top))))); bottom = Math.max(...t.map(r => r.bottom)); }
+    }
+    // keep a margin at both edges where there's room: inside the game page's iframe, the page's sticky header can cover the top
+    const pad = Math.max(10, Math.min(90, (vh - (bottom - top)) / 2));
+    let dy = 0;
+    if (top < pad) dy = top - pad;
+    else if (bottom > vh - pad) dy = Math.min(bottom - (vh - pad), top - 10);
+    if (Math.abs(dy) > 2) window.scrollBy({ top: dy, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+  function tutFinish() {
+    overlay(`<div id="tut-finish"><h3>Ready for the lunch rush</h3>
+<p>That's the whole game. Play tiles that sit side by side in your cart, plus any of your section's trolley tiles. Follow with the same kind and size at an equal or higher number, or play a Chef's Special. When you pass, you may fill an empty spot or swap. The trick winner picks who in their section leads next, and the round ends when one section has emptied every cart.</p>
+<p>A full round starts with 14 tiles each, drawn from the bag one at a time onto the right end of your rack. Then everyone picks one tile to put face up on the trolley. Watch the tile backs: their colors show the number ranges in every cart.</p>
+<div class="col" style="margin-top:12px"><button class="primary" id="tut-play">Play against bots</button><button class="jade" id="tut-menu">Back to the menu</button><button class="ghost" id="tut-again">Replay the tutorial</button><button class="ghost" id="tut-coached">Play a full round with the coach (about 15 minutes)</button></div>
+<p class="muted" style="margin:10px 0 0">Play against bots starts a 3-round game at the 4-player team table: you and Lin against Bao and Jun. Other tables are on the menu.</p></div>`);
+    $('tut-play').focus();
+    $('tut-play').onclick = () => startBots('team4');
+    $('tut-menu').onclick = leave;
+    $('tut-again').onclick = startTutorial;
+    $('tut-coached').onclick = startCoachedGame;
+  }
+  $('btn-tutorial').onclick = startTutorial;
+
+  // =====================================================================
+  // COACHED GAME (the longer option: a full random round with situational tips)
   // =====================================================================
   const coach = { on: false, seen: new Set(), hidden: false, current: null, suggestion: null };
-  function startTutorial() {
+  function startCoachedGame() {
+    tut = null; overlay(''); if (session) session.leave();
     coach.on = true; coach.seen = new Set(); coach.hidden = false; coach.current = null; coach.lesson = 0;
     session = new NET.LocalSession('team4', getName(), { tutorial: true, seed: 20261009 });
     wireSession(); session.begin(); show('s-table');
   }
-  $('btn-tutorial').onclick = () => {
-    overlay(`<h3>Before we start</h3>
-<p><strong>Never played a shedding game?</strong> Here is the whole idea in four lines:</p>
-<ol style="padding-left:20px;margin:6px 0 10px;line-height:1.5">
-<li><strong>Get rid of your tiles.</strong> Everyone draws a hand of tiles from a bag; the first team to empty theirs wins the round.</li>
-<li><strong>Play in tricks.</strong> One player starts by playing a tile or a small group of tiles. Going around the table, each player must play a <em>stronger</em> group of the same kind and size — a higher pair on a pair, a higher run on a run — or <strong>pass</strong>.</li>
-<li><strong>Last one standing wins the trick.</strong> When everyone else has passed, the tiles are cleared and the winner's team starts the next trick.</li>
-<li><strong>The twist in this game:</strong> your hand stays in the order you drew it — you may only play tiles that sit next to each other — and your team shares a row of face-up tiles (the <strong>trolley</strong>) you can mix into your plays.</li>
-</ol>
-<p><strong>The screen:</strong> other players across the top (you see their tile backs), the table in the middle, your own tiles at the bottom. The green coach panel explains each situation as it comes up and can set up its suggested move for you.</p>
-<div class="row" style="margin-top:12px"><button class="jade" id="btn-tut-go">Start the tutorial</button><button class="ghost" id="btn-tut-cancel">Not now</button></div>`);
-    $('btn-tut-go').onclick = () => { overlay(''); startTutorial(); };
-    $('btn-tut-cancel').onclick = () => overlay('');
-  };
   const TIPS = {
     draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The colored backs are what the other players will see.`,
     welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The colored backs are what the other players see: the color tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbor with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
@@ -1755,6 +2006,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 
   function renderCoach(v) {
     const box = $('t-coach');
+    if (tut) { renderTutCoach(v); return; }
     if (!coach.on) { box.style.display = 'none'; return; }
     box.style.display = 'flex';
     if (coach.hidden) { box.innerHTML = `<div class="av">?</div><div class="body">Coach is quiet. <button class="ghost" id="coach-show">Show tips</button></div>`; $('coach-show').onclick = () => { coach.hidden = false; renderCoach(v); }; return; }
@@ -1773,6 +2025,8 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     if (s && s.kind === 'pick') { const c = document.querySelector(`#t-me [data-hand="${s.handIndex}"]`); if (c) c.classList.add('hint-pulse'); }
   }
 
+  // deep link: ?tutorial starts the tutorial right away (e.g. darrendon.com/dim-sum-rush/?tutorial)
+  if (qs.has('tutorial')) startTutorial();
 })();
 
 </script>
