@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dim Sum Rush</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Noto+Serif+TC:wght@700&family=Figtree:wght@400;600;700;800&display=swap">
+<style>@font-face{font-family:"Fraunces";src:url("/assets/fonts/fraunces-900-soft.woff") format("woff");font-weight:100 900;font-display:swap}</style>
 <style>
 :root{
   --bg:#FBF4E8; --panel:#F3E6CF; --face:#FFFDF7; --red:#A3221B; --red-d:#6E120D; --gold:#F2C56B; --cream:#FBF1DE;
@@ -18,7 +19,7 @@
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--ink);font-family:'Figtree','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.35;-webkit-tap-highlight-color:transparent}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{color:#F3E6CF} }
-h1,h2,h3{font-family:'Bagel Fat One','Arial Rounded MT Bold',sans-serif;font-weight:400;margin:0;color:var(--red)}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:900;margin:0;color:var(--red)}
 button{font:inherit;cursor:pointer;border:2px solid var(--ink);border-radius:12px;background:var(--face);color:var(--ink);padding:10px 14px;font-weight:700;min-height:44px;box-shadow:var(--shadow)}
 button:disabled{opacity:.45;cursor:default;box-shadow:none}
 button.primary{background:var(--red);color:var(--cream);border-color:var(--red-d)}
@@ -126,7 +127,7 @@ input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-r
 table.tbl{border-collapse:collapse;width:100%;font-size:14px}
 table.tbl th,table.tbl td{padding:6px 8px;border-top:1px solid var(--rule-d);text-align:left}
 table.tbl th{background:var(--jade);color:var(--cream)}
-.code{font-family:'Bagel Fat One',sans-serif;font-size:40px;letter-spacing:.12em;color:var(--red)}
+.code{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:40px;letter-spacing:.12em;color:var(--red)}
 .lobby-seat{display:flex;justify-content:space-between;align-items:center;background:var(--face);color:var(--ink);border-radius:10px;padding:8px 12px;border:2px solid var(--rule-d)}
 .hint{font-size:12px;color:var(--brown)}
 .insert-row{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
@@ -141,7 +142,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .chip .ck{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brown);margin-right:4px}
 .chip.bomb .ck{color:var(--red)}
 .coach{background:var(--jade);color:var(--cream);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
-.coach .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--jade);font-family:'Bagel Fat One',sans-serif;font-size:22px}
+.coach .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--jade);font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:22px}
 .coach .body{flex:1 1 auto;font-size:14px;line-height:1.4}
 .coach .body strong{color:var(--gold)}
 .coach .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
