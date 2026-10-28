@@ -176,7 +176,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 <div class="wrap">
 <!-- ===== HOME ===== -->
 <section id="s-home" class="screen active">
-  <div class="hero"><h1>Dim Sum Rush</h1><div class="sub">Playtest build · teams of 2 or 3, or every server for themselves · 3 rounds</div></div>
+  <div class="hero"><h1>Dim Sum Rush</h1><div class="sub">Teams of 2 or 3, or every server for themselves · 3 rounds · shown here with tiles; it plays the same with cards</div></div>
   <div class="card-panel" style="margin-bottom:14px">
     <label style="font-weight:800">Your name</label>
     <div class="row" style="margin-top:6px"><input id="name" maxlength="16" placeholder="e.g. Mei" style="flex:1 1 200px"></div>
@@ -217,7 +217,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four tiles.</p>
     <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart tile, or swap a cart tile with a trolley tile (the taken tile goes anywhere in your cart). Used trolley tiles are not replaced.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
-    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
+    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbors' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
   </div></details>
 </section>
 
@@ -1316,7 +1316,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
     const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
     let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team}</div></div>`;
-    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbours\''}</div>`;
+    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbors\''}</div>`;
 
     // trolley row
     const tseats = myTrolleySeats(v);
@@ -1626,7 +1626,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 <h3>Going out and scoring</h3>
 <p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of tiles in its <strong>fullest</strong> cart. Trolley tiles do not count. Return every tile to the bag and draw the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
-<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
+<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbors' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
 <table><tr><th>Players</th><th>Numbers</th><th>Drawn</th></tr><tr><td>Teams of 2 (4p)</td><td>1–9</td><td>14</td></tr><tr><td>Teams of 3 (6p)</td><td>1–12</td><td>13</td></tr><tr><td>Every Server 2</td><td>1–6</td><td>14</td></tr><tr><td>Every Server 3–4</td><td>1–9</td><td>14</td></tr><tr><td>Every Server 5</td><td>1–12</td><td>14</td></tr><tr><td>Every Server 6</td><td>1–12</td><td>13</td></tr></table>
 <h3>Using this app</h3>
 <p>Tap tiles side by side in your cart (and any trolley tiles) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley tile and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their tile backs in order.</p>
@@ -1664,8 +1664,8 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     $('btn-tut-cancel').onclick = () => overlay('');
   };
   const TIPS = {
-    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The coloured backs are what the other players will see.`,
-    welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbour with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The colored backs are what the other players will see.`,
+    welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The colored backs are what the other players see: the color tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbor with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
     trolley: `<strong>The trolley.</strong> Everyone's face-up tile is now showing. The two tiles on your side — yours and your partner Lin's — are your <em>team's</em> trolley. When you play, you may add either of them to your tiles, in any position, to make a bigger or better group. The other team's two tiles are off limits to you. A used trolley tile is not replaced automatically.`,
     lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles). No play may have more than four tiles. Tiles from your hand must sit side by side; a run's tiles must already be in rising or falling order. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
     follow: `<strong>Following.</strong> To stay in the trick you must play the <em>same kind and size</em> as what's on the table, with an equal or higher number — a pair of 7s beats a pair of 6s, and a pair of 6s also beats a pair of 6s (equal counts!). Or pass. The list under your hand only shows plays that qualify.`,
@@ -1675,7 +1675,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     partner_top: `<strong>Your partner is winning this trick.</strong> Beating your own partner only helps if it empties your hand or sets up a better lead. Usually it's better to pass, and use the pass to fill or swap.`,
     lead_choice: `<strong>You won the trick.</strong> In this game the winner chooses who on their team leads (starts) the next trick: yourself, or your partner if they still have tiles. Leading is an advantage, so give it to whoever needs it more — usually the fuller hand. No table talk. If you had already emptied your hand, you would still choose your partner.`,
     out: `<strong>Your hand is empty — you are out.</strong> Your team hasn't finished until Lin's hand is empty too, so watch the backs across the table and see how it plays out. Your trolley tile stays available to her.`,
-    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their hand in order: brown = 1–3, blue = 4–6, red = 7–9. Four of the same colour in a row could be a Special; a run needs colours stepping through the ranges. Your partner's backs hint at which trolley tile would help them.`,
+    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their hand in order: brown = 1–3, blue = 4–6, red = 7–9. Four of the same color in a row could be a Special; a run needs colors stepping through the ranges. Your partner's backs hint at which trolley tile would help them.`,
     round_end: `<strong>Round over.</strong> The team that emptied every hand scores nothing. The other team takes penalty points equal to its <em>fullest</em> hand — the manager judges a section by its slowest server. Three rounds; fewest penalty points wins.`,
     waiting: `Watch the others play. Dashed borders in the middle mark tiles that came from the trolley.`,
   };
