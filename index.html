@@ -5,276 +5,406 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dim Sum Rush</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Noto+Serif+TC:wght@700&family=Figtree:wght@400;600;700;800&display=swap">
-<style>@font-face{font-family:"Fraunces";src:url("/assets/fonts/fraunces-900-soft.woff") format("woff");font-weight:100 900;font-display:swap}</style>
 <style>
+@font-face{font-family:"Fraunces";src:url("/assets/fonts/fraunces-900-soft.woff") format("woff");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Figtree";src:url("/assets/fonts/figtree.woff") format("woff");font-weight:300 900;font-display:swap}
+@font-face{font-family:"Bagel Fat One";src:url("/assets/fonts/bagel-fat-one.woff") format("woff");font-weight:400;font-display:swap}
+</style>
+<style>
+/* ===== tokens ===== */
 :root{
-  --bg:#FBF4E8; --panel:#F3E6CF; --face:#FFFDF7; --red:#A3221B; --red-d:#6E120D; --gold:#F2C56B; --cream:#FBF1DE;
-  --jade:#1F6B4F; --jade-l:#2E8564; --ink:#2A1A12; --brown:#6B4B32; --brown-d:#4A3324; --rule:#E2CFAE; --rule-d:#C9B79B;
-  --b0:#B07A2A; --b1:#2F5D9E; --b2:#A8462A; --b3:#1F6B4F; --b0d:#8A5A16; --b1d:#234A80; --b2d:#7E3220; --b3d:#154D39;
-  --shadow:0 2px 0 rgba(42,26,18,.18);
+  --bg:#FBF4E8; --surface:#FFFDF8; --panel:#F4EADA; --line:rgba(42,26,18,.11); --line-2:rgba(42,26,18,.22);
+  --ink:#2A1A12; --ink-2:#5C4433; --muted:#8A6E5A;
+  --red:#A3221B; --red-d:#7E1812; --red-ink:#A3221B; --red-t:rgba(163,34,27,.08);
+  --jade:#1F6B4F; --jade-d:#154D39; --jade-ink:#1F6B4F; --jade-t:rgba(31,107,79,.10);
+  --gold:#E3AC45; --gold-l:#F2C56B; --cream:#FBF1DE;
+  --coach-bg:#EAF2EC; --coach-line:rgba(31,107,79,.22);
+  --felt:#2A6A4E; --felt-l:#357A5B; --felt-d:#1E5240;
+  --b0:#B07A2A; --b1:#2F5D9E; --b2:#A8462A; --b3:#1F6B4F;
+  --bone:#F8F2E4; --bone-d:#E6DBC3;
+  --shadow:0 1px 2px rgba(42,26,18,.06),0 4px 14px rgba(42,26,18,.06);
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; } }
-:root[data-theme="dark"]{ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#18120E; --surface:#231A15; --panel:#2D221B; --line:rgba(243,230,207,.10); --line-2:rgba(243,230,207,.22);
+  --ink:#F3E6CF; --ink-2:#D8C5A9; --muted:#AE977E; --red-ink:#EE8378; --red-t:rgba(238,131,120,.14); --jade-ink:#6CC69E; --jade-t:rgba(108,198,158,.14);
+  --coach-bg:#18261F; --coach-line:rgba(108,198,158,.25); --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); } }
+:root[data-theme="dark"]{
+  --bg:#18120E; --surface:#231A15; --panel:#2D221B; --line:rgba(243,230,207,.10); --line-2:rgba(243,230,207,.22);
+  --ink:#F3E6CF; --ink-2:#D8C5A9; --muted:#AE977E; --red-ink:#EE8378; --red-t:rgba(238,131,120,.14); --jade-ink:#6CC69E; --jade-t:rgba(108,198,158,.14);
+  --coach-bg:#18261F; --coach-line:rgba(108,198,158,.25); --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); }
+
+/* ===== base ===== */
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--ink);font-family:'Figtree','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.35;-webkit-tap-highlight-color:transparent}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{color:#F3E6CF} }
-h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:900;margin:0;color:var(--red)}
-button{font:inherit;cursor:pointer;border:2px solid var(--ink);border-radius:12px;background:var(--face);color:var(--ink);padding:10px 14px;font-weight:700;min-height:44px;box-shadow:var(--shadow)}
-button:disabled{opacity:.45;cursor:default;box-shadow:none}
-button.primary{background:var(--red);color:var(--cream);border-color:var(--red-d)}
-button.jade{background:var(--jade);color:var(--cream);border-color:var(--b3d)}
-button.ghost{background:transparent;border-color:var(--rule-d);box-shadow:none;font-weight:600}
-input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--face);color:var(--ink);min-height:44px}
-.wrap{max-width:1100px;margin:0 auto;padding:12px 16px 24px}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:900;margin:0;color:var(--red-ink);letter-spacing:-.005em;line-height:1.1}
+p{margin:0}
+button{font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);padding:0 16px;min-height:44px;line-height:1.2;transition:background-color .15s,border-color .15s,box-shadow .15s,opacity .15s}
+button:hover:not(:disabled){border-color:var(--ink-2)}
+button:disabled{opacity:.38;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.primary{background:var(--red);border-color:var(--red);color:#FFF8EC;box-shadow:0 1px 0 var(--red-d)}
+button.primary:hover:not(:disabled){background:#8E1C16;border-color:#8E1C16}
+button.jade{background:var(--jade);border-color:var(--jade);color:#F3FAF5;box-shadow:0 1px 0 var(--jade-d)}
+button.jade:hover:not(:disabled){background:var(--jade-d);border-color:var(--jade-d)}
+button.primary:disabled,button.jade:disabled{background:var(--panel);border-color:var(--line);color:var(--muted);box-shadow:none;opacity:1}
+button.ghost,button.quiet{background:transparent;border-color:transparent;color:var(--ink-2);font-weight:600;box-shadow:none}
+button.quiet:hover:not(:disabled),button.ghost:hover:not(:disabled){background:var(--panel);border-color:transparent}
+input,select{font:inherit;padding:0 12px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);color:var(--ink);min-height:44px;width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 20px 28px}
 .screen{display:none}.screen.active{display:block}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.col{display:flex;flex-direction:column;gap:10px}
-.card-panel{background:var(--panel);border-radius:16px;padding:14px 16px}
-.muted{color:var(--brown);font-size:13px}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .muted{color:#C9B79B} }
-.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--cream);background:var(--jade)}
+.col{display:flex;flex-direction:column;gap:8px}
+.muted,.fine{color:var(--muted);font-size:13px}
+.mlbl,.lbl{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.err{color:var(--red-ink);font-weight:700}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;color:#F3FAF5;background:var(--jade)}
 .pill.lantern{background:var(--red)}
-.pill.gray{background:var(--brown)}
+.pill.gray{background:var(--ink-2)}
+.tdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--jade);flex:none}
+.tdot.lantern{background:var(--red)}
+.tname{display:inline-flex;align-items:center;gap:5px;font-weight:700}
+.tname.jade{color:var(--jade-ink)}.tname.lantern{color:var(--red-ink)}
 
-/* ---- home ---- */
-.hero{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:10px 0 18px}
-.hero h1{font-size:44px;line-height:1}
-.hero .sub{font-size:14px;color:var(--brown)}
-.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.home-grid h3{font-size:22px;margin-bottom:8px}
+/* ===== home ===== */
+.home{max-width:780px;margin:0 auto;padding-top:clamp(8px,5vh,48px)}
+.hero h1{font-size:clamp(42px,8vw,68px);line-height:.95}
+.hero .sub{margin-top:12px;color:var(--ink-2);font-size:16px;max-width:54ch}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.hcard h3{font-size:22px}
+.hcard p{color:var(--ink-2);font-size:14px}
+.hcard .push{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hcard .push button{flex:1 1 auto}
+.hcard.wide{grid-column:1/-1}
+.hcard.notice{grid-column:1/-1;border-color:var(--red);box-shadow:none}
+.field{display:flex;flex-direction:column;gap:6px}
+.online{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.online .col{gap:8px}
+#join-code{text-transform:uppercase;letter-spacing:.2em;font-weight:800}
+.home-msg:empty{display:none}
+.home-msg{font-size:14px;color:var(--ink-2)}
 
-/* ---- cards ---- */
-.card.dim{opacity:.4}
-.card.clickable{cursor:pointer}
-.slot.target{border-color:var(--gold);border-style:solid;background:rgba(242,197,107,.25);cursor:pointer}
-.trolley-card{cursor:pointer}
-.trolley-card.sel{box-shadow:0 0 0 3px var(--gold),0 6px 10px rgba(0,0,0,.3);transform:translateY(-6px)}
+/* ===== lobby ===== */
+.lobby{max-width:560px;margin:0 auto}
+.code-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;text-align:center;box-shadow:var(--shadow);margin-bottom:14px}
+.code{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:44px;letter-spacing:.14em;color:var(--red-ink);line-height:1.15;margin:4px 0}
+.lobby-seats{display:flex;flex-direction:column;gap:8px}
+.lobby-seat{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px 8px 14px;min-height:56px;position:relative;overflow:hidden}
+.lobby-seat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line-2)}
+.lobby-seat.jade::before{background:var(--jade)}.lobby-seat.lantern::before{background:var(--red)}
+.lobby-seat .ls-who{flex:1 1 auto;min-width:0}
+.lobby-seat .ls-who .fine{display:block}
+.lobby-seat select{width:auto;min-width:110px}
+.lobby-foot{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.lobby-foot button{align-self:flex-start}
 
-
-/* ---- tiles (mahjong look) ---- */
-:root{--bone:#F8F2E4;--bone-d:#E6DBC3;--bone-s:#CDBFA3;--rack:#5A3A1E;--rack-d:#3A2410;--rack-l:#8A5E36;--felt:#2A6A4E;--felt-d:#1D4F3A}
-.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:5px;background:linear-gradient(170deg,#FFFCF4 0%,var(--bone) 45%,var(--bone-d) 100%);border:1px solid #D4C6A8;padding:3px 4px 2px;color:var(--ink);user-select:none;flex:none;transform-style:preserve-3d;transition:transform .15s,box-shadow .15s;
-  box-shadow:inset 0 1px 0 #fff,inset -1px 0 0 rgba(0,0,0,.06),0 1px 0 #BFB094,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 4px 4px rgba(0,0,0,.3)}
-.card .rk{font-family:'Bagel Fat One',sans-serif;font-size:20px;line-height:1;text-shadow:0 1px 0 #fff,0 -1px 0 rgba(0,0,0,.08)}
-.card .art{position:absolute;left:4px;right:4px;top:21px;bottom:21px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 1px 0 rgba(255,255,255,.8))}
+/* ===== tiles (art kept) ===== */
+.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:5px;background:linear-gradient(170deg,#FFFCF4 0%,var(--bone) 45%,var(--bone-d) 100%);border:1px solid #D4C6A8;padding:3px 4px 2px;color:#2A1A12;user-select:none;flex:none;transform-style:preserve-3d;transition:transform .15s,box-shadow .15s;
+  box-shadow:inset 0 1px 0 #fff,inset -1px 0 0 rgba(0,0,0,.06),0 1px 0 #BFB094,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 4px 4px rgba(0,0,0,.28)}
+.card .rk{font-family:'Bagel Fat One','Figtree',sans-serif;font-size:20px;line-height:1;text-shadow:0 1px 0 #fff}
+.card .art{position:absolute;left:4px;right:4px;top:21px;bottom:21px;display:flex;align-items:center;justify-content:center}
 .card .art svg{width:100%;height:100%}
-.card .lbl{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
+.card .lbl{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1;letter-spacing:0;text-transform:none}
 .card .zh{font-family:'Noto Serif TC','Songti TC','PMingLiU',serif;font-weight:700;font-size:10px;letter-spacing:.08em}
 .card .nm{font-size:6px;font-weight:800;line-height:1;letter-spacing:.08em;text-transform:uppercase;text-align:center;white-space:nowrap}
-.card.b0 .lbl{color:var(--b0)}.card.b1 .lbl{color:var(--b1)}.card.b2 .lbl{color:var(--b2)}.card.b3 .lbl{color:var(--b3)}
+.card.b0 .lbl,.card.b0 .rk{color:var(--b0)}.card.b1 .lbl,.card.b1 .rk{color:var(--b1)}.card.b2 .lbl,.card.b2 .rk{color:var(--b2)}.card.b3 .lbl,.card.b3 .rk{color:var(--b3)}
 .card.b0{--edge:var(--b0);--edge-d:#6b4510}.card.b1{--edge:var(--b1);--edge-d:#1d3a66}.card.b2{--edge:var(--b2);--edge-d:#6b2b18}.card.b3{--edge:var(--b3);--edge-d:#123f2e}
-.card.b0 .rk{color:var(--b0)}.card.b1 .rk{color:var(--b1)}.card.b2 .rk{color:var(--b2)}.card.b3 .rk{color:var(--b3)}
-.card.sm{width:40px;height:56px;padding:2px 3px 1px;box-shadow:inset 0 1px 0 #fff,0 1px 0 var(--edge,#8A5A16),0 2px 0 var(--edge-d,#6b4510),0 3px 3px rgba(0,0,0,.28)}.card.sm .rk{font-size:15px}.card.sm .lbl{display:none}.card.sm .art{top:16px;bottom:3px}
-.card.lg{width:76px;height:108px}.card.lg .rk{font-size:26px}.card.lg .zh{font-size:13px}.card.lg .nm{font-size:7px}.card.lg .art{top:27px;bottom:26px}
+.card.sm{width:40px;height:56px;padding:2px 3px 1px;box-shadow:inset 0 1px 0 #fff,0 1px 0 var(--edge,#8A5A16),0 2px 0 var(--edge-d,#6b4510),0 3px 3px rgba(0,0,0,.25)}
+.card.sm .rk{font-size:15px}.card.sm .lbl{display:none}.card.sm .art{top:16px;bottom:3px}
+.card.lg{width:70px;height:99px}.card.lg .rk{font-size:24px}.card.lg .zh{font-size:12px}.card.lg .nm{font-size:7px}.card.lg .art{top:26px;bottom:25px}
+.card.dim{opacity:.45}
+.card.clickable{cursor:pointer}
 .card.clickable:active{transform:translateY(2px) scale(.98)}
-.card.sel{transform:translateY(-14px) rotateX(0deg);box-shadow:0 0 0 3px var(--gold),inset 0 1px 0 #fff,0 1px 0 #BFB094,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 14px 12px rgba(0,0,0,.35)}
-.back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;border-radius:3px;border:1px solid rgba(0,0,0,.35);flex:none;margin-left:-6px;background-image:linear-gradient(170deg,rgba(255,255,255,.35),rgba(255,255,255,0) 40%,rgba(0,0,0,.12));box-shadow:0 1px 0 rgba(0,0,0,.3),0 2px 2px rgba(0,0,0,.35);transform:rotateX(-8deg)}
-.back:first-child{margin-left:0}
-.back svg{width:16px;height:22px;opacity:.9}
-.back.b0{background-color:var(--b0)}.back.b1{background-color:var(--b1)}.back.b2{background-color:var(--b2)}.back.b3{background-color:var(--b3)}
-.back.lg{width:34px;height:48px;margin-left:-10px}.back.lg svg{width:24px;height:34px}
-.rack{position:relative;background:linear-gradient(180deg,var(--rack-l) 0,var(--rack) 22%,#4A2E16 70%,var(--rack-d));background-image:linear-gradient(180deg,var(--rack-l) 0,var(--rack) 22%,#4A2E16 70%,var(--rack-d)),repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 6px,rgba(0,0,0,.04) 6px 11px);border-radius:8px;padding:8px 10px 6px;box-shadow:inset 0 2px 3px rgba(255,255,255,.12),inset 0 -3px 6px rgba(0,0,0,.45),0 3px 0 var(--rack-d),0 6px 8px rgba(0,0,0,.3);perspective:700px}
-.rack::after{content:"";position:absolute;left:0;right:0;bottom:0;height:7px;border-radius:0 0 8px 8px;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45))}
-.seat .backs.rack{min-height:46px;gap:0;padding:6px 8px 5px}
-.hand.rack{padding:18px 12px 12px;min-height:116px;gap:12px 3px;align-items:flex-end;flex-wrap:wrap}
-.hand.rack .card{transform:rotateX(14deg);transform-origin:50% 100%}
-.hand.rack .card.sel{transform:translateY(-14px) rotateX(0deg)}
-.hand.rack .card.hint-pulse{transform:rotateX(14deg)}
-.slot{width:58px;height:82px;border-radius:8px;border:2px dashed rgba(42,26,18,.35);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--brown);text-align:center;padding:4px;flex:none;background:rgba(0,0,0,.05);box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.card.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--gold-l),inset 0 1px 0 #fff,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 12px 12px rgba(0,0,0,.3)}
+.trolley-card.sel{transform:translateY(-6px)}
+.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;outline:3px solid var(--gold-l);outline-offset:2px}
+@keyframes pulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.card.just-drawn{animation:drawin .3s ease-out}
+@keyframes drawin{0%{transform:translateY(-10px);opacity:0}100%{transform:none;opacity:1}}
+.slot{width:58px;height:82px;border-radius:6px;border:1.5px dashed var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center;padding:4px;flex:none;background:rgba(42,26,18,.03)}
 .slot.sm{width:40px;height:56px;font-size:9px}
-.gap{width:18px;height:82px;border-radius:6px;border:2px dashed var(--gold);background:rgba(242,197,107,.2);cursor:pointer;flex:none}
-/* ---- table ---- */
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.topbar h2{font-size:26px}
-.score{display:flex;gap:8px;align-items:center;font-weight:700}
-.score .box{background:var(--face);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;color:var(--ink)}
-.others{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:10px}
-.seat{background:var(--face);color:var(--ink);border:2px solid var(--rule-d);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;min-height:120px}
-.seat.jade{border-color:var(--jade)}.seat.lantern{border-color:var(--red)}
-.seat.turn{outline:3px solid var(--gold);outline-offset:1px}
-.seat.out{opacity:.7}
-.seat .hd{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.seat .nm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.seat .st{font-size:11px;font-weight:700;color:var(--brown)}
-.seat .backs{display:flex;flex-wrap:wrap;gap:2px 0;min-height:34px;align-items:center}
-.seat .foot{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--brown)}
-.center{background:var(--panel);border-radius:16px;padding:12px 14px;margin-bottom:10px;min-height:150px}
-.center .status{font-weight:800;font-size:16px;margin-bottom:8px}
-.trick{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
-.play{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-.play .who{font-size:11px;font-weight:700;color:var(--brown)}
+.slot.target{border:2px solid var(--gold);background:rgba(242,197,107,.22);color:var(--ink);font-weight:700;cursor:pointer}
+.back{display:inline-flex;align-items:center;justify-content:center;width:18px;height:26px;border-radius:3px;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2)}
+.back svg{width:14px;height:20px;opacity:.9}
+.back.b0{background-color:var(--b0)}.back.b1{background-color:var(--b1)}.back.b2{background-color:var(--b2)}.back.b3{background-color:var(--b3)}
+
+/* ===== table: top bar ===== */
+.tbar{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin-bottom:12px;min-height:44px}
+.tbar h2{font-size:24px;white-space:nowrap}
+.score{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tpill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;font-size:13px;font-weight:700;background:var(--jade-t);color:var(--jade-ink);white-space:nowrap}
+.tpill i{width:8px;height:8px;border-radius:50%;background:var(--jade)}
+.tpill b{font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.tpill.lantern{background:var(--red-t);color:var(--red-ink)}.tpill.lantern i{background:var(--red)}
+.tpill.mine{background:var(--panel);color:var(--ink-2)}.tpill.mine i{display:none}
+.sc-note{margin-left:4px}
+.tnav{display:flex;gap:2px;margin-left:auto}
+.tnav button{min-height:38px;padding:0 12px;font-size:14px}
+
+/* ===== table: felt, seats, trick ===== */
+.felt{position:relative;border-radius:26px;padding:18px;background:radial-gradient(120% 100% at 50% 45%,var(--felt-l) 0,var(--felt) 55%,var(--felt-d) 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),inset 0 2px 30px rgba(0,0,0,.28);color:#F4F1E6}
+.felt.u{display:grid;grid-template-columns:minmax(170px,210px) minmax(0,1fr) minmax(170px,210px);grid-template-areas:"top top top" "left center right";gap:14px 18px;align-items:center}
+.felt.row{display:grid;grid-template-areas:"top" "center";gap:14px}
+#t-others{display:contents}
+.seats-top{grid-area:top;display:flex;justify-content:center;gap:14px}
+.seats-top .seat{flex:0 1 230px;min-width:0}
+.seat.pos-left{grid-area:left}.seat.pos-right{grid-area:right}
+.seat{--team:transparent;display:flex;gap:10px;align-items:flex-start;background:#FFFDF8;color:#2A1A12;border-radius:12px;padding:10px 10px 8px;min-width:0;
+  box-shadow:inset 0 3px 0 var(--team),0 1px 0 rgba(0,0,0,.18),0 6px 14px rgba(0,0,0,.14);transition:box-shadow .2s,opacity .2s}
+.seat.jade{--team:#1F6B4F;background:#F1F7F2}.seat.lantern{--team:#A3221B;background:#FCF2EE}
+.seat.turn{box-shadow:inset 0 3px 0 var(--team),0 0 0 3px var(--gold-l),0 8px 20px rgba(0,0,0,.25)}
+.seat.passed,.seat.out{opacity:.62}
+.s-tile{flex:none;line-height:0}
+.s-main{flex:1 1 auto;min-width:0}
+.s-name{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;line-height:1.2}
+.s-nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat.jade .s-nm{color:#1F6B4F}.seat.lantern .s-nm{color:#A3221B}
+.s-cnt{margin-left:auto;min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:rgba(42,26,18,.08);font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;color:#4A3324}
+.s-backs{display:flex;flex-wrap:wrap;gap:2px;margin-top:7px;min-height:13px}
+.mb{width:9px;height:15px;border-radius:2px;background:var(--b0);box-shadow:inset 0 -2px 0 rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.25)}
+.mb.b1{background:var(--b1)}.mb.b2{background:var(--b2)}.mb.b3{background:var(--b3)}
+.s-empty{font-size:12px;color:#8A6E5A}
+.s-st{font-size:12px;font-weight:600;color:#8A6E5A;min-height:16px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat.turn .s-st{color:#8C5F0E}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:5px;vertical-align:1px;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.seat .slot{border-color:rgba(42,26,18,.25)}
+.center{grid-area:center;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.cap{font-size:14px;color:rgba(244,241,230,.82);max-width:40ch}
+.trick{display:flex;align-items:flex-end;justify-content:center;gap:12px 20px;flex-wrap:wrap}
+.play{display:flex;flex-direction:column;align-items:center;gap:7px}
 .play .cards{display:flex;gap:3px}
-.play.top .who{color:var(--red)}
-.play.bomb .cards .card{box-shadow:0 0 0 3px var(--red),var(--shadow)}
-.me{background:var(--face);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:12px 14px}
-.me .hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.hand{display:flex;gap:4px;flex-wrap:wrap;padding-top:10px;min-height:96px}
-.trolley{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding-top:14px}
-.trolley .tc{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--brown)}
-.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.chip{border:2px solid var(--rule-d);background:var(--bg);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700;min-height:32px;box-shadow:none}
-.chip.bomb{border-color:var(--red);color:var(--red)}
-.msg{font-size:13px;color:var(--brown-d);min-height:18px;margin-top:6px}
-.err{color:var(--red);font-weight:700}
-.log{font-size:12px;color:var(--brown-d);max-height:140px;overflow:auto;background:var(--face);border-radius:10px;padding:8px 10px;margin-top:10px;color:var(--ink)}
-.overlay{position:fixed;inset:0;background:rgba(42,26,18,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
-.modal{background:var(--bg);border-radius:18px;padding:18px;max-width:520px;width:100%;max-height:92vh;overflow:auto;border:3px solid var(--ink)}
-.modal h3{font-size:26px;margin-bottom:8px}
-.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:3px solid var(--ink);border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));z-index:9;max-height:70vh;overflow:auto;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
-.sheet h3{font-size:22px;margin-bottom:6px}
-table.tbl{border-collapse:collapse;width:100%;font-size:14px}
-table.tbl th,table.tbl td{padding:6px 8px;border-top:1px solid var(--rule-d);text-align:left}
-table.tbl th{background:var(--jade);color:var(--cream)}
-.code{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:40px;letter-spacing:.12em;color:var(--red)}
-.lobby-seat{display:flex;justify-content:space-between;align-items:center;background:var(--face);color:var(--ink);border-radius:10px;padding:8px 12px;border:2px solid var(--rule-d)}
-.hint{font-size:12px;color:var(--brown)}
-.insert-row{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
-.gap:hover,.gap.sel{background:var(--gold)}
-.lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
-.help{font-size:13px;color:var(--brown-d);line-height:1.4;margin:4px 0 6px}
-.legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:700;margin-bottom:6px}
-.legend .lg{display:inline-flex;align-items:center;gap:4px}
-.legend .back{margin-left:0}
-.pm-opt{display:flex;flex-direction:column;gap:3px;flex:1 1 200px}
-.pm-opt .hint{font-size:12px}
-.chip .ck{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brown);margin-right:4px}
-.chip.bomb .ck{color:var(--red)}
-.coach{background:var(--jade);color:var(--cream);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
-.coach .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--jade);font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:22px}
-.coach .body{flex:1 1 auto;font-size:14px;line-height:1.4}
-.coach .body strong{color:var(--gold)}
-.coach .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.coach button{min-height:36px;padding:6px 12px;border-color:var(--cream);background:var(--cream);color:var(--jade);box-shadow:none}
-.coach button.ghost{background:transparent;color:var(--cream);border-color:rgba(251,241,222,.5)}
-.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:2px}
-@keyframes pulse{0%,100%{transform:rotateX(14deg) translateY(0)}50%{transform:rotateX(14deg) translateY(-8px)}}
-.rules h3{font-size:22px;margin:14px 0 4px}
-.rules h3:first-child{margin-top:0}
-.rules p{margin:6px 0}
-.rules .ex{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:6px 0}
-.rules .ex .lbl{font-size:12px;font-weight:700;color:var(--brown);margin-right:6px;min-width:120px}
-.rules .ok{color:var(--jade);font-weight:800}.rules .no{color:var(--red);font-weight:800}
-.rules table{border-collapse:collapse;font-size:13px;margin:6px 0}
-.rules td,.rules th{padding:4px 8px;border-top:1px solid var(--rule-d);text-align:left}
+.play .who{font-size:12px;font-weight:600;color:rgba(244,241,230,.72);white-space:nowrap}
+.play.prev{opacity:.72}
+.play.prev:nth-last-child(n+5){display:none}
+.play.top .who{font-size:13px;color:#fff;font-weight:700}
+.play.bomb .cards .card{box-shadow:0 0 0 2px var(--gold-l),0 3px 0 var(--edge,#8A5A16),0 6px 10px rgba(0,0,0,.35)}
+.bag{filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));line-height:0}
+
+/* ===== table: your area ===== */
+.me{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"status actions" "tiles tiles" "chips chips";gap:14px 18px;margin-top:14px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s}
+.me.myturn{border-color:var(--gold);box-shadow:0 0 0 3px rgba(227,172,69,.22),var(--shadow)}
+.m-status{grid-area:status;min-width:0;align-self:center}
+.m-line{font-size:18px;font-weight:700;line-height:1.3}
+.m-line .you{display:inline-flex;align-items:center;gap:6px}
+.m-hint{font-size:14px;color:var(--ink-2);margin-top:3px;max-width:70ch}
+.msg{font-size:14px;color:var(--ink-2);margin-top:3px}
+.msg:empty{display:none}
+.m-actions{grid-area:actions;display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.m-actions:empty{display:none}
+.m-actions button{min-width:96px}
+.m-tiles{grid-area:tiles;display:flex;gap:14px 22px;align-items:flex-start;flex-wrap:wrap}
+.m-trolley{flex:none}
+.m-cart{flex:1 1 560px;min-width:0}
+.m-tiles .mlbl{margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.trolley{display:flex;gap:8px;align-items:flex-start;padding-top:10px}
+.tc{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.rack{position:relative;background:linear-gradient(180deg,#7A5230 0,#5A3A1E 26%,#472D16 100%);border-radius:10px;padding:14px 10px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -4px 6px rgba(0,0,0,.35),0 2px 0 #3A2410;perspective:700px}
+.hand{display:flex;flex-wrap:wrap;gap:12px 3px;align-items:flex-end;min-height:106px}
+.hand .card{transform:rotateX(10deg);transform-origin:50% 100%}
+.hand .card.sel{transform:translateY(-10px)}
+.hand .card.hint-pulse{transform:none}
+.gap{width:16px;align-self:stretch;min-height:60px;border-radius:6px;border:2px dashed var(--gold-l);background:rgba(242,197,107,.16);cursor:pointer;flex:none}
+.gap:hover,.gap.sel{background:var(--gold-l)}
+.m-chips{grid-area:chips;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.m-chips .mlbl{margin-right:4px}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:0 12px;font-size:14px;font-weight:700;min-height:34px;box-shadow:none}
+.chip .ck{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.chip.bomb{border-color:var(--red);color:var(--red-ink)}.chip.bomb .ck{color:var(--red-ink)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}.chip.on .ck{color:inherit;opacity:.75}
+.chip.more{border-style:dashed;color:var(--ink-2)}
+
+/* ===== drawer (log, hints, score detail) ===== */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(360px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-16px 0 40px rgba(0,0,0,.16);z-index:9;padding:16px 18px 24px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dhead h3{font-size:22px}
+.dsec{display:flex;flex-direction:column;gap:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.loglines{font-size:13px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+.loglines .rd{font-weight:700;color:var(--ink);margin-top:6px}
+#btn-hints{align-self:flex-start}
+
+/* ===== dialogs ===== */
+.overlay{position:fixed;inset:0;background:rgba(30,20,14,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{background:var(--bg);color:var(--ink);border-radius:22px;padding:24px;max-width:480px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 30px 70px rgba(0,0,0,.32)}
 .modal.wide{max-width:760px}
-@media (max-width:600px){ .card{width:48px;height:68px}.card .rk{font-size:17px}.card .nm{display:none}.card .zh{font-size:9px}.card .art{top:18px;bottom:14px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
-/* ---- bag ---- */
-.bagrow{display:flex;gap:16px;align-items:center;margin-top:22px;flex-wrap:wrap;position:relative;z-index:0}
-.bag{filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
-.card.just-drawn{animation:drawin .35s ease-out}
-@keyframes drawin{0%{transform:rotateX(14deg) translateY(-10px);opacity:0}100%{transform:rotateX(14deg) translateY(0);opacity:1}}
-/* ---- felt table (overrides) ---- */
-.center{background:radial-gradient(ellipse at 50% 30%,#35795A,var(--felt) 55%,var(--felt-d));color:var(--cream);border:6px solid var(--rack);box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 3px 0 var(--rack-d)}
-.center .lbl,.center .help,.center .muted,.center .play .who{color:#D9E8DE}
-.center .play.top .who{color:var(--gold)}
-.center .status{color:#fff}
-.trick{padding:6px 0 10px}
-/* ---- short scripted tutorial ---- */
+.modal h3{font-size:28px;margin:4px 0 8px}
+.modal > p,.modal #tut-finish > p{color:var(--ink-2);margin:0 0 10px}
+.modal .acts{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.totals{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+table.tbl{border-collapse:collapse;width:100%;font-size:15px;margin-top:8px}
+table.tbl th{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px;border-bottom:1px solid var(--line-2);background:none}
+table.tbl td{padding:8px;border-bottom:1px solid var(--line)}
+table.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+table.tbl tr.total td{font-weight:800;border-bottom:0;border-top:1px solid var(--line-2)}
+table.tbl tr.win td{font-weight:700}
+.rules h3{font-size:22px;margin:22px 0 6px}
+.rules h3:first-child{margin-top:0}
+.rules p{margin:6px 0;color:var(--ink)}
+.rules .ex{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.rules .ex .lbl{font-size:12px;font-weight:700;color:var(--muted);margin-right:6px;min-width:130px;text-transform:none;letter-spacing:0}
+.rules .ok{color:var(--jade-ink);font-weight:800}.rules .no{color:var(--red-ink);font-weight:800}
+.rules table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%}
+.rules td,.rules th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.rules th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mclose{position:sticky;bottom:-24px;background:var(--bg);padding:12px 0 0;margin-top:12px}
+
+/* ===== coach (tutorial and coached game) ===== */
+.coach{margin-top:14px;background:var(--coach-bg);color:var(--ink);border:1px solid var(--coach-line);border-radius:18px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+.coach .body{flex:1 1 auto;font-size:15px;line-height:1.45;min-width:0}
+.coach .body strong{color:var(--jade-ink)}
 .coach .ctop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
-.coach .ctop .lbl{color:var(--gold);white-space:nowrap}
-.coach .prog{flex:0 1 140px;min-width:40px;height:8px;border-radius:99px;background:rgba(251,241,222,.25);overflow:hidden}
-.coach .prog i{display:block;height:100%;background:var(--gold)}
-.coach h3{font-size:20px;line-height:1.1;color:var(--cream);margin:2px 0 4px}
-.coach .body p{margin:0;max-width:72ch}
-.coach .cue{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
-.coach .cue.wait{color:rgba(251,241,222,.75)}
-.coach .acts{align-items:center}
-.coach button.go{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:800}
-.coach button.exit{background:none;border:0;box-shadow:none;color:var(--cream);opacity:.85;text-decoration:underline;text-underline-offset:3px;font-weight:600;padding:6px 2px;margin-left:auto;min-height:36px}
-.coach table.tbl{margin-top:8px;background:var(--face);color:var(--ink);border-radius:8px;overflow:hidden}
-.coach table.tbl th{background:var(--b3d)}
-.coach table.tbl strong{color:var(--red)}
-.tut-spot{outline:4px solid var(--gold)!important;outline-offset:3px;animation:tutring 1.3s ease-in-out infinite}
-@keyframes tutring{50%{outline-offset:7px;outline-color:rgba(242,197,107,.45)}}
-.trolley.tut-spot,.hand.tut-spot{outline-offset:-4px;animation-name:tutring-in} /* inward, so it never crosses the label above */
-@keyframes tutring-in{50%{outline-offset:-1px;outline-color:rgba(242,197,107,.45)}}
-.gap.tut{background:var(--gold);animation:tutring 1.3s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:2px}
-body.tut-on .seat{min-height:0}
-@media (max-width:600px){ .coach{padding:10px 12px;gap:10px} .coach .av{display:none} .coach h3{font-size:18px} .coach .body{font-size:14px} }
-@media (prefers-reduced-motion: reduce){ .tut-spot,.gap.tut,.card.hint-pulse{animation:none!important} }
+.coach .ctop .lbl{color:var(--jade-ink);white-space:nowrap}
+.coach .prog{flex:0 1 160px;min-width:40px;height:4px;border-radius:99px;background:rgba(31,107,79,.16);overflow:hidden}
+.coach .prog i{display:block;height:100%;background:var(--jade)}
+.coach h3{font-size:20px;color:var(--ink);margin:2px 0 4px}
+.coach .body p{margin:0;max-width:74ch}
+.coach .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.coach button{min-height:38px;padding:0 14px}
+.coach button.go{background:var(--jade);border-color:var(--jade);color:#F3FAF5}
+.coach button.exit{background:none;border:0;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;font-weight:600;padding:0 2px;margin-left:auto}
+.coach .cue{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--jade-ink)}
+.coach .cue.wait{color:var(--muted)}
+.coach table.tbl{background:var(--surface);border-radius:10px;overflow:hidden;font-size:14px}
+.coach table.tbl strong{color:var(--red-ink)}
+.coach table.tbl th{padding:8px 10px}.coach table.tbl td{padding:6px 10px}
+.tut-spot{outline:3px solid var(--gold)!important;outline-offset:3px;animation:tutring 1.3s ease-in-out infinite}
+@keyframes tutring{50%{outline-offset:6px;outline-color:rgba(227,172,69,.45)}}
+.trolley.tut-spot,.hand.tut-spot{outline-offset:-3px;animation-name:tutring-in}
+@keyframes tutring-in{50%{outline-offset:0;outline-color:rgba(227,172,69,.45)}}
+.gap.tut{background:var(--gold-l);animation:tutring 1.3s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){ .tut-spot,.gap.tut,.card.hint-pulse,.pulse{animation:none!important} }
+
+/* ===== phones and narrow frames ===== */
+@media (max-width:720px){
+  .wrap{padding:10px 12px 20px}
+  .home-grid,.online{grid-template-columns:1fr}
+  .hero .sub{font-size:15px}
+  .hcard{padding:16px}
+  .code{font-size:38px}
+  .tbar{margin-bottom:8px;gap:6px 10px}
+  .tbar h2{font-size:20px}
+  .score{order:3;flex-basis:100%}
+  .sc-note{display:none}
+  .tnav button{padding:0 9px;min-height:36px}
+  .felt,.felt.u,.felt.row{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:18px}
+  #t-others{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:6px}
+  .seats-top{display:contents}
+  .seat.pos-left,.seat.pos-right{grid-area:auto}
+  .seat{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tile name" "backs backs" "st st";gap:5px 6px;padding:7px 7px 5px;border-radius:10px;align-items:center}
+  .s-main{display:contents}
+  .s-tile{grid-area:tile}.s-name{grid-area:name;font-size:13px}.s-backs{grid-area:backs}.s-st{grid-area:st}
+  .seat .card.sm,.seat .slot.sm{width:28px;height:40px}
+  .seat .card.sm .rk{font-size:12px}.seat .card.sm .art{top:13px;bottom:2px}
+  .s-cnt{min-width:20px;height:18px;padding:0 5px;font-size:11px}
+  .s-backs{margin-top:0;gap:1px}
+  .mb{width:6px;height:10px}
+  .s-st{margin-top:0;font-size:11px}
+  .center{min-height:118px;gap:8px}
+  .play.prev:not(:nth-last-child(2)){display:none}
+  .card,.card.lg{width:44px;height:62px}.card .rk,.card.lg .rk{font-size:16px}.card .nm{display:none}.card .zh,.card.lg .zh{font-size:8px}.card .art,.card.lg .art{top:17px;bottom:13px}
+  .gap{width:10px}
+  .slot{width:44px;height:62px;font-size:10px}
+  .me{display:block;margin-top:10px;padding:12px 0 0;background:none;border:0;border-radius:0;box-shadow:none}
+  .me.myturn{box-shadow:none}
+  .m-line{font-size:17px}
+  .m-trolley{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .m-trolley .mlbl{margin:0;min-width:58px}
+  .trolley{padding-top:4px}
+  .m-cart{flex:none}
+  .rack{padding:12px 6px 8px}
+  .hand{gap:10px 3px;min-height:74px}
+  .hand .card{width:calc((100% - 18px) / 7);max-width:52px;height:auto;aspect-ratio:58/82}
+  .hand .card .art{top:30%;bottom:20%}
+  .m-tiles{display:block;margin-top:12px}.m-chips{margin-top:12px}.m-actions{margin-top:14px;justify-content:stretch}
+  .m-actions button{flex:1 1 auto;min-width:0;padding:0 12px}
+  .m-actions button.quiet{flex:0 0 auto}
+  .coach{padding:12px 14px;margin-top:10px}
+  .coach h3{font-size:18px}
+  .coach .body{font-size:14px}
+  .drawer{top:auto;left:0;width:100%;max-height:78vh;border-left:0;border-top:1px solid var(--line);border-radius:20px 20px 0 0;box-shadow:0 -16px 40px rgba(0,0,0,.2)}
+  .modal{padding:20px;border-radius:18px}
+  .modal h3{font-size:24px}
+}
+@media (max-width:720px) and (min-width:0){ .me.myturn .m-line::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-right:8px;vertical-align:2px} }
 </style>
 </head>
 <body>
 <div class="wrap">
 <!-- ===== HOME ===== -->
 <section id="s-home" class="screen active">
-  <div class="hero"><h1>Dim Sum Rush</h1><div class="sub">Teams of 2 or 3, or every server for themselves · 3 rounds · shown here with tiles; it plays the same with cards</div></div>
-  <div class="card-panel" style="margin-bottom:14px">
-    <label style="font-weight:800">Your name</label>
-    <div class="row" style="margin-top:6px"><input id="name" maxlength="16" placeholder="e.g. Mei" style="flex:1 1 200px"></div>
-  </div>
-  <div class="home-grid">
-    <div class="card-panel" style="border:3px solid var(--jade)">
-      <h3>Learn to play</h3>
-      <p class="muted" style="margin:0 0 8px">A coach walks you through the end of a round at a 4-player table against bots, one move at a time. About 4 minutes.</p>
-      <div class="col"><button class="jade" id="btn-tutorial">Start the tutorial</button><button class="ghost" id="btn-rules">Read the full rules</button></div>
-    </div>
-    <div class="card-panel">
-      <h3>Play against bots</h3>
-      <div class="col">
-        <label>Table <select id="solo-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
-        <button class="primary" id="btn-solo">Draw tiles</button>
+  <div class="home">
+    <header class="hero">
+      <h1>Dim Sum Rush</h1>
+      <p class="sub">A climbing game for 2–6 servers: teams of 2 or 3, or every server for themselves. Three rounds. Shown here with tiles; it plays the same with cards.</p>
+    </header>
+    <div class="home-grid">
+      <div class="hcard learn">
+        <h3>Learn to play</h3>
+        <p>A coach walks you through the end of a round at a 4-player table, one move at a time. About 4 minutes.</p>
+        <div class="push"><button class="primary" id="btn-tutorial">Start the tutorial</button><button class="quiet" id="btn-rules">Read the rules</button></div>
       </div>
-    </div>
-    <div class="card-panel">
-      <h3>Host an online table</h3>
-      <p class="muted" style="margin:0 0 8px">You get a 5-letter code. Friends open this same link, enter the code, and take seats. Empty seats are filled with bots when you start. Your browser runs the game, so keep this tab open.</p>
-      <div class="col">
-        <label>Table <select id="host-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
-        <button class="jade" id="btn-host">Open a table</button>
+      <div class="hcard">
+        <h3>Play against bots</h3>
+        <label class="field"><span class="mlbl">Table</span><select id="solo-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2 players</option><option value="solo3">Every Server · 3 players</option><option value="solo4">Every Server · 4 players</option><option value="solo5">Every Server · 5 players</option><option value="solo6">Every Server · 6 players</option></select></label>
+        <div class="push"><button class="jade" id="btn-solo">Start a game</button></div>
       </div>
-    </div>
-    <div class="card-panel">
-      <h3>Join a table</h3>
-      <div class="col">
-        <input id="join-code" maxlength="5" placeholder="CODE" style="text-transform:uppercase;letter-spacing:.2em;font-weight:800">
-        <button class="jade" id="btn-join">Take a seat</button>
+      <div class="hcard wide">
+        <h3>Play online with friends</h3>
+        <label class="field"><span class="mlbl">Your name</span><input id="name" maxlength="16" placeholder="e.g. Mei" autocomplete="nickname"></label>
+        <div class="online">
+          <div class="col"><span class="mlbl">Host a table</span><select id="host-mode" aria-label="Table to host"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2 players</option><option value="solo3">Every Server · 3 players</option><option value="solo4">Every Server · 4 players</option><option value="solo5">Every Server · 5 players</option><option value="solo6">Every Server · 6 players</option></select><button id="btn-host">Open a table</button></div>
+          <div class="col"><span class="mlbl">Join a table</span><input id="join-code" maxlength="5" placeholder="CODE" aria-label="Table code" autocomplete="off"><button id="btn-join">Take a seat</button></div>
+        </div>
+        <p class="fine">Hosting gives you a 5-letter code to share. Empty seats are filled with bots when you start. Your browser runs the game, so keep this tab open.</p>
+        <div class="home-msg" id="home-msg" role="status"></div>
       </div>
     </div>
   </div>
-  <div class="muted" style="margin-top:14px" id="home-msg"></div>
-  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
-  <div class="card-panel" style="margin-top:8px;font-size:14px">
-    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up tile in front of each player; you may use your own section's trolley tiles in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four tiles. Two players use numbers 1–6. Tiles from your cart must be side by side, and a run's cart tiles must already be in rising or falling order.</p>
-    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four tiles.</p>
-    <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart tile, or swap a cart tile with a trolley tile (the taken tile goes anywhere in your cart). Used trolley tiles are not replaced.</p>
-    <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
-    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbors' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
-  </div></details>
 </section>
 
 <!-- ===== LOBBY ===== -->
 <section id="s-lobby" class="screen">
-  <div class="topbar"><h2>Table open</h2><button class="ghost" id="btn-leave-lobby">Leave</button></div>
-  <div class="card-panel" style="text-align:center;margin-bottom:12px">
-    <div class="muted">Share this code (and this page's link)</div>
-    <div class="code" id="lobby-code">----</div>
-    <div class="muted" id="lobby-status"></div>
-  </div>
-  <div class="col" id="lobby-seats"></div>
-  <div class="row" style="margin-top:12px">
-    <button class="primary" id="btn-start" style="display:none">Start the rush</button>
-    <span class="hint" id="lobby-hint"></span>
+  <div class="lobby">
+    <div class="tbar"><h2>Table open</h2><div class="tnav"><button class="quiet" id="btn-leave-lobby">Leave</button></div></div>
+    <div class="code-card">
+      <div class="mlbl">Share this code and this page's link</div>
+      <div class="code" id="lobby-code">----</div>
+      <div class="fine" id="lobby-status"></div>
+    </div>
+    <div class="lobby-seats" id="lobby-seats"></div>
+    <div class="lobby-foot">
+      <button class="primary" id="btn-start" style="display:none">Start the rush</button>
+      <p class="fine" id="lobby-hint"></p>
+    </div>
   </div>
 </section>
 
 <!-- ===== TABLE ===== -->
 <section id="s-table" class="screen">
-  <div class="topbar">
+  <header class="tbar">
     <h2 id="t-title">Round 1</h2>
     <div class="score" id="t-score"></div>
-    <div class="row"><button class="ghost" id="btn-hints">Hints: on</button><button class="ghost" id="btn-rules2">Rules</button><button class="ghost" id="btn-log">Log</button><button class="ghost" id="btn-quit">Leave</button></div>
+    <nav class="tnav"><button class="quiet" id="btn-rules2">Rules</button><button class="quiet" id="btn-log">Log</button><button class="quiet" id="btn-quit">Leave</button></nav>
+  </header>
+  <div class="felt" id="t-felt">
+    <div id="t-others"></div>
+    <div class="center" id="t-center"></div>
   </div>
-  <div id="t-legend"></div>
-  <div class="others" id="t-others"></div>
-  <div class="center" id="t-center"></div>
   <div class="coach" id="t-coach" style="display:none"></div>
   <div class="me" id="t-me"></div>
-  <div class="log" id="t-log" style="display:none"></div>
 </section>
 </div>
+<aside class="drawer" id="t-log" style="display:none" aria-label="Table info">
+  <div class="dhead"><h3>Table info</h3><button class="quiet" id="btn-log-close">Close</button></div>
+  <div class="dsec"><span class="mlbl">Hints</span><button id="btn-hints" aria-pressed="true">Hints: on</button><span class="fine">Shows what each play needs and lists the plays you can make.</span></div>
+  <div class="dsec"><span class="mlbl">Tile backs show the number range</span><div class="legend" id="t-legend"></div></div>
+  <div class="dsec" id="t-hist"></div>
+  <div class="dsec"><span class="mlbl">Recent moves</span><div class="loglines" id="t-loglines"></div></div>
+</aside>
 <div id="overlay"></div>
 <script>
 // Dim Sum Rush — pure game engine (locked rules). No DOM. Works in browser and node.
@@ -1137,15 +1267,26 @@ body.tut-on .seat{min-height:0}
   let showLog = false;
   let hints = true; try { hints = localStorage.getItem('dsr-hints') !== 'off'; } catch (e) {}
   let tut = null;         // short scripted tutorial: { step, bots, focused } (see SHORT TUTORIAL below)
-  const help = (t) => hints && !tut ? `<div class="help">${t}</div>` : '';
+  let allChips = false;   // show every legal play, not just the first few
+  const showHints = () => hints && !tut;
   const BANDINFO = [['steamer', '1–3'], ['plate', '4–6'], ['bowl', '7–9'], ['sweets', '10–12']];
-  function legendHTML() { return `<div class="legend"><span class="muted">Tile backs show the number range:</span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
+  const BACKS_TITLE = 'Tile backs, in cart order. ' + BANDINFO.map(([k, r]) => `${ART.bands[k].name} ${r}`).join(', ');
+  function legendHTML(v) { const bands = v ? E.bandOf(v.ranks) + 1 : 4; return BANDINFO.slice(0, bands).map(([k, r], b) => `<span>${backHTML(b)} ${ART.bands[k].name} ${r}</span>`).join(''); }
   function needText(v) {
     const t = v.trick; if (!t || !t.top) return '';
     const c = t.top;
-    if (c.bomb) return `To beat it you need a stronger Chef's Special (a set beats a run; then an equal or higher number).`;
-    const kind = c.type === 'single' ? 'a single tile' : c.type === 'set' ? `${c.size === 2 ? 'a pair' : 'three of a kind'}` : `a run of ${c.size} tiles`;
-    return `To play you need ${kind} with a number of ${c.top} or higher, or a Chef's Special (four of one number, or a run of four, all from your own hand).`;
+    if (c.bomb) return `Needs a stronger Chef's Special: a set beats a run, then an equal or higher number.`;
+    const kind = c.type === 'single' ? `a single ${c.top}` : c.type === 'set' ? (c.size === 2 ? `a pair of ${c.top}s` : c.size === 3 ? `three ${c.top}s` : `four ${c.top}s`) : `a run of ${c.size} up to ${c.top}`;
+    return `Needs ${kind} or higher, or a Chef's Special.`;
+  }
+  // short name of a combination, for captions and buttons
+  function shortCombo(c) {
+    if (!c) return '';
+    const set = (n, r) => n === 2 ? `pair of ${r}s` : n === 3 ? `three ${r}s` : `four ${r}s`;
+    if (c.bomb) return `Chef's Special · ${c.type === 'set' ? set(c.size, c.top) : 'run to ' + c.top}`;
+    if (c.type === 'single') return `single ${c.top}`;
+    if (c.type === 'set') return set(c.size, c.top);
+    return `run to ${c.top}`;
   }
 
   function bagHTML(n) {
@@ -1184,9 +1325,9 @@ body.tut-on .seat{min-height:0}
 
   // ---------- home ----------
   if (NET.SANDBOXED) {
-    const n = document.createElement('div'); n.className = 'card-panel'; n.style.cssText = 'border:3px solid var(--red);margin-bottom:14px';
-    n.innerHTML = '<strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.';
-    const grid = document.querySelector('.home-grid'); grid.parentNode.insertBefore(n, grid);
+    const n = document.createElement('div'); n.className = 'hcard notice';
+    n.innerHTML = '<p><strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.</p>';
+    const grid = document.querySelector('.home-grid'); grid.insertBefore(n, grid.firstChild);
   }
   function startBots(modeValue) {
     coach.on = false; tut = null; overlay('');
@@ -1224,13 +1365,16 @@ body.tut-on .seat{min-height:0}
   };
   $('btn-leave-lobby').onclick = leave;
   $('btn-quit').onclick = () => { if (tut || confirm('Leave the table?')) leave(); };
-  $('btn-log').onclick = () => { showLog = !showLog; $('t-log').style.display = showLog ? 'block' : 'none'; };
-  function syncHintBtn() { $('btn-hints').textContent = hints ? 'Hints: on' : 'Hints: off'; }
+  function setLog(on) { showLog = on; $('t-log').style.display = showLog ? 'flex' : 'none'; $('btn-log').setAttribute('aria-expanded', String(showLog)); if (showLog && view) renderLog(view); }
+  $('btn-log').onclick = () => setLog(!showLog);
+  $('btn-log-close').onclick = () => setLog(false);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && showLog) setLog(false); });
+  function syncHintBtn() { $('btn-hints').textContent = hints ? 'Hints: on' : 'Hints: off'; $('btn-hints').setAttribute('aria-pressed', String(hints)); }
   syncHintBtn();
   $('btn-hints').onclick = () => { hints = !hints; try { localStorage.setItem('dsr-hints', hints ? 'on' : 'off'); } catch (e) {} syncHintBtn(); if (view) render(); };
   $('btn-start').onclick = () => { session.startGame(); show('s-table'); };
 
-  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; tut = null; document.body.classList.remove('tut-on'); overlay(''); show('s-home'); }
+  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; tut = null; document.body.classList.remove('tut-on'); overlay(''); setLog(false); show('s-home'); }
 
   function wireSession() {
     session.onUpdate(() => {
@@ -1247,19 +1391,20 @@ body.tut-on .seat{min-height:0}
     if (st.error) { $('lobby-status').textContent = st.error; return; }
     $('lobby-code').textContent = st.code || '----';
     const { mode, N } = { mode: st.mode, N: st.N };
-    $('lobby-status').textContent = (st.relay ? 'via ' + st.relay + ' relay · ' : '') + (mode === 'team' ? `Teams · ${N} players · seats alternate Jade / Lantern` : `Every Server for Themselves · ${N} players`) + (session.kind === 'guest' ? ' · waiting for the host to start' : '');
+    $('lobby-status').textContent = (mode === 'team' ? `Teams · ${N} players` : `Every Server for Themselves · ${N} players`) + (st.relay ? ' · via the ' + st.relay + ' relay' : '') + (session.kind === 'guest' ? ' · waiting for the host to start' : '');
     const mySeat = session.seat;
     const humans = st.seats.map((s, i) => ({ i, name: s.name })).filter(x => !st.seats[x.i].bot);
     $('lobby-seats').innerHTML = st.seats.map((s, i) => {
-      const team = mode === 'team' ? `<span class="pill ${i % 2 ? 'lantern' : ''}">${TEAMNAME[i % 2]}</span>` : `<span class="pill gray">Seat ${i + 1}</span>`;
-      const who = s.bot ? '<span class="muted">open seat · a bot will sit here</span>' : `<strong>${esc(s.name)}</strong>${i === mySeat ? ' (you)' : ''}${s.connected ? '' : ' <span class="muted">· reconnecting…</span>'}`;
+      const tcls = mode === 'team' ? (i % 2 ? 'lantern' : 'jade') : '';
+      const team = mode === 'team' ? `<span class="tname ${tcls}">${TEAMNAME[i % 2]}</span>` : `Seat ${i + 1}`;
+      const who = s.bot ? `<span class="muted">Open seat · a bot will sit here</span>` : `<strong>${esc(s.name)}</strong>${i === mySeat ? ' <span class="muted">(you)</span>' : ''}${s.connected ? '' : ' <span class="muted">· reconnecting…</span>'}`;
       let ctl = '';
       if (session.kind === 'host' && !st.started) {
         ctl = `<select data-seatsel="${i}" aria-label="Who sits in seat ${i + 1}"><option value="bot" ${s.bot ? 'selected' : ''}>Bot</option>${humans.map(h => `<option value="${h.i}" ${h.i === i ? 'selected' : ''}>${esc(h.name)}</option>`).join('')}</select>`;
       } else if (session.kind === 'guest' && !st.started && s.bot) {
-        ctl = `<button class="ghost" data-sit="${i}">Sit here</button>`;
+        ctl = `<button data-sit="${i}">Sit here</button>`;
       }
-      return `<div class="lobby-seat"><div>${who}</div><div class="row">${team}${ctl}</div></div>`;
+      return `<div class="lobby-seat ${tcls}"><div class="ls-who">${who}<span class="fine">${team}</span></div>${ctl}</div>`;
     }).join('');
     document.querySelectorAll('[data-seatsel]').forEach(el => el.onchange = () => {
       const to = +el.dataset.seatsel, v = el.value;
@@ -1268,14 +1413,14 @@ body.tut-on .seat{min-height:0}
     });
     document.querySelectorAll('[data-sit]').forEach(el => el.onclick = () => session.sit(+el.dataset.sit));
     $('btn-start').style.display = session.kind === 'host' && !st.started ? 'inline-block' : 'none';
-    $('lobby-hint').textContent = session.kind === 'host' ? 'Use the menus to seat people (teammates sit opposite each other: seats 1 & 3, 2 & 4). Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
+    $('lobby-hint').textContent = session.kind === 'host' ? (mode === 'team' ? 'Seats alternate Jade and Lantern, so teammates sit opposite each other. ' : '') + 'Use the menus to seat people. Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
   }
 
   // ---------- table ----------
   function render() {
     const v = view; if (!v) return;
     const key = `${v.round}-${v.phase}-${v.trick ? v.trick.turn : ''}-${v.tricksPlayed}`;
-    if (key !== lastPhaseKey) { sel = { hi: -1, hj: -1, slots: [] }; pm = null; pickIdx = -1; setMsg(''); lastPhaseKey = key; }
+    if (key !== lastPhaseKey) { sel = { hi: -1, hj: -1, slots: [] }; pm = null; pickIdx = -1; allChips = false; setMsg(''); lastPhaseKey = key; }
     $('t-title').textContent = tut ? 'Tutorial' : `Round ${v.round} of ${v.maxRounds}`;
     document.body.classList.toggle('tut-on', !!tut);
     $('btn-hints').style.display = $('btn-log').style.display = tut ? 'none' : '';
@@ -1285,60 +1430,75 @@ body.tut-on .seat{min-height:0}
 
   function renderScore(v) {
     if (v.mode === 'team') {
-      $('t-score').innerHTML = `<span class="pill">Jade</span><span class="box">${v.scores[0]}</span><span class="pill lantern">Lantern</span><span class="box">${v.scores[1]}</span><span class="muted">penalty points · lower is better</span>`;
+      $('t-score').innerHTML = `<span class="tpill jade" title="Jade's penalty points"><i></i>Jade <b>${v.scores[0]}</b></span><span class="tpill lantern" title="Lantern's penalty points"><i></i>Lantern <b>${v.scores[1]}</b></span><span class="fine sc-note">penalty points · lowest wins</span>`;
     } else {
-      $('t-score').innerHTML = v.players.map((p, i) => `<span class="box" title="${esc(p.name)}: ${v.scores[i]} penalty points">${esc(pname(v, i)).slice(0, 6)} ${v.scores[i]}</span>`).join('') + `<span class="muted">penalty points · lower is better</span>`;
+      $('t-score').innerHTML = `<span class="tpill mine" title="Your penalty points">You <b>${v.scores[v.me]}</b></span><span class="fine sc-note">penalty points · lowest wins</span>`;
     }
   }
 
   function seatStatus(v, i) {
     const p = v.players[i];
-    if (v.phase === 'faceup') return p.picked ? 'has chosen a trolley tile' : 'choosing a trolley tile…';
-    if (p.out) return 'OUT — hand empty';
-    if (v.phase === 'chooseLeader') return i === v.chooser ? 'choosing who leads next' : '';
+    if (v.phase === 'faceup') return p.picked ? 'Ready' : 'Choosing…';
+    if (p.out) return 'Out';
+    if (v.phase === 'chooseLeader') return i === v.chooser ? 'Choosing who leads' : '';
     if (v.phase !== 'play') return '';
-    if (v.trick.turn === i) return 'THEIR TURN';
-    if (v.trick.passed.includes(i)) return 'passed — out of this trick';
-    if (v.trick.topSeat === i) return 'has the best play so far';
-    if (v.trick.leader === i && v.trick.plays.length === 0) return 'leads this trick';
-    return 'waiting';
+    if (v.trick.turn === i) return 'Playing…';
+    if (v.trick.passed.includes(i)) return 'Passed';
+    if (v.trick.topSeat === i) return 'Winning the trick';
+    if (v.trick.leader === i && v.trick.plays.length === 0) return 'Leads';
+    return '';
+  }
+  const teamKey = (v, i) => v.mode === 'team' ? (v.players[i].team ? 'lantern' : 'jade') : 'solo';
+
+  function seatHTML(v, i, pos) {
+    const p = v.players[i];
+    const turn = (v.phase === 'play' && v.trick.turn === i) || (v.phase === 'chooseLeader' && v.chooser === i);
+    const passed = v.phase === 'play' && v.trick.passed.includes(i);
+    const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm" title="Empty trolley spot"></div>`;
+    const backs = p.count ? p.backs.map(b => `<i class="mb b${b}"></i>`).join('') : `<span class="s-empty">Cart empty</span>`;
+    const st = seatStatus(v, i);
+    const pts = v.mode === 'team' ? '' : `${v.scores[i]} pt${v.scores[i] === 1 ? '' : 's'}`;
+    const team = v.mode === 'team' ? ` (${TEAMNAME[p.team]})` : '';
+    return `<div class="seat ${teamKey(v, i)} ${pos}${turn ? ' turn' : ''}${p.out ? ' out' : ''}${passed ? ' passed' : ''}" data-seat="${i}">
+      <div class="s-tile" title="${esc(p.name)}'s trolley tile">${slot}</div>
+      <div class="s-main"><div class="s-name" title="${esc(p.name)}${team}"><span class="s-nm">${esc(p.name)}</span><span class="s-cnt" title="${p.count} tile${p.count === 1 ? '' : 's'} in cart">${p.count}</span></div>
+      <div class="s-backs" title="${BACKS_TITLE}">${backs}</div>
+      <div class="s-st">${turn ? '<i class="pulse"></i>' : ''}${st}${pts ? (st ? ' · ' : '') + pts : ''}</div></div>
+    </div>`;
   }
 
+  // Seats sit around the table in turn order: the next player on your left, then across the top, the last on your right.
   function renderOthers(v) {
     const order = [];
     for (let k = 1; k < v.N; k++) order.push((v.me + k) % v.N);
-    $('t-legend').innerHTML = legendHTML() + help('Other players sit above. You see the backs of their tiles on their racks, in the order they hold them, and the one face-up tile each has put on the trolley.');
-    $('t-others').innerHTML = order.map(i => {
-      const p = v.players[i];
-      const turn = v.phase === 'play' && v.trick.turn === i;
-      const backs = p.backs.map(b => backHTML(b)).join('');
-      const team = v.mode === 'team' ? `<span class="pill ${p.team ? 'lantern' : ''}">${TEAMNAME[p.team]}</span>` : '';
-      const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm">empty</div>`;
-      return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
-        <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? ' <span class="muted">(bot)</span>' : ''}</span>${team}</div>
-        <div class="lbl">Hand · ${p.count} tile${p.count === 1 ? '' : 's'}</div>
-        <div class="backs rack">${p.count ? backs : '<span class="muted" style="color:#E2CFAE">empty</span>'}</div>
-        <div class="foot"><div style="display:flex;flex-direction:column;align-items:center;gap:2px">${slot}<span class="lbl">trolley</span></div><div class="st">${seatStatus(v, i)}</div></div>
-      </div>`;
-    }).join('');
+    const u = order.length >= 3;
+    $('t-felt').className = 'felt ' + (u ? 'u' : 'row');
+    const el = $('t-others');
+    el.style.setProperty('--cols', Math.min(3, order.length));
+    el.innerHTML = u
+      ? seatHTML(v, order[0], 'pos-left') + `<div class="seats-top">${order.slice(1, -1).map(i => seatHTML(v, i, 'pos-top')).join('')}</div>` + seatHTML(v, order[order.length - 1], 'pos-right')
+      : `<div class="seats-top">${order.map(i => seatHTML(v, i, 'pos-top')).join('')}</div>`;
   }
 
   function renderCenter(v) {
-    let status = '', detail = '';
     const t = v.trick;
-    if (v.phase === 'faceup') { status = 'Setup: draw your tiles from the bag, then pick one to put face up on the trolley.'; detail = help('Each player puts one tile from their hand face up in front of them. Those tiles form the trolley. Later, you can add your own team\'s trolley tiles to the tiles you play.'); }
-    else if (v.phase === 'chooseLeader') { status = v.chooser === v.me ? 'You won the trick. Choose who leads the next one.' : `${esc(pname(v, v.chooser))} won the trick and is choosing who leads next.`; detail = help('A trick ends when everyone else has passed. The winner picks a player on their team to start the next trick.'); }
-    else if (v.phase === 'play') {
-      if (t.plays.length === 0) { status = t.turn === v.me ? 'You lead this trick: play any single tile, pair, three of a kind, or run.' : `${esc(pname(v, t.turn))} leads this trick.`; detail = help('The leader starts a new trick with any valid group of tiles. Everyone after must play a stronger group of the same kind and size, or pass.'); }
-      else { status = t.turn === v.me ? `Your turn. ${esc(pname(v, t.topSeat))} played ${comboName(t.top)}.` : `${esc(pname(v, t.turn))}'s turn to beat ${comboName(t.top)}.`; detail = help((t.turn === v.me ? needText(v) + ' ' : '') + 'Dashed borders mark tiles that came from the trolley.'); }
-    } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') status = 'Round over.';
-    let plays = '';
-    if (t && t.plays.length) {
-      plays = `<div class="trick">${t.plays.map((pl, idx) => `<div class="play ${idx === t.plays.length - 1 ? 'top' : ''} ${pl.combo.bomb ? 'bomb' : ''}"><span class="who">${esc(pname(v, pl.seat))} · ${comboName(pl.combo)}${idx === t.plays.length - 1 ? ' · best so far' : ''}</span><div class="cards">${pl.cards.map(c => cardHTML(c.r, idx === t.plays.length - 1 ? '' : 'sm', c.src === 'slot' ? 'style="border-style:dashed"' : '')).join('')}</div></div>`).join('')}</div>`;
-    } else if (v.lastTrick && v.phase === 'play') {
-      plays = `<div class="muted">Last trick was won by ${esc(pname(v, v.lastTrick.winner))}. The table is clear.</div>`;
-    }
-    $('t-center').innerHTML = `<div class="lbl">The table · trick ${(v.tricksPlayed || 0) + 1}</div><div class="status">${status}</div>${detail}${plays}`;
+    let html = '';
+    if (v.phase === 'faceup') {
+      const me = v.players[v.me], ds = drawState(v), left = (me.hand || []).length - ds.count;
+      html = !me.picked && left > 0 ? `<div class="bag">${bagHTML(left)}</div><div class="cap">${left} tile${left === 1 ? '' : 's'} left to draw</div>`
+        : `<div class="cap">Everyone puts one tile from their cart face up on the trolley.</div>`;
+    } else if (t && t.plays.length) {
+      const n = t.plays.length;
+      html = `<div class="trick">${t.plays.map((pl, idx) => {
+        const top = idx === n - 1;
+        return `<div class="play ${top ? 'top' : 'prev'}${pl.combo.bomb ? ' bomb' : ''}"><div class="cards">${pl.cards.map(c => cardHTML(c.r, top ? 'lg' : 'sm', c.src === 'slot' ? 'style="border-style:dashed" title="From the trolley"' : '')).join('')}</div><span class="who">${esc(pname(v, pl.seat))} · ${esc(shortCombo(pl.combo))}</span></div>`;
+      }).join('')}</div>`;
+    } else if (v.phase === 'play') {
+      html = `<div class="cap">${v.lastTrick ? esc(pname(v, v.lastTrick.winner)) + ' won the last trick. ' : ''}${t.turn === v.me ? 'Your lead.' : esc(pname(v, t.turn)) + ' leads.'}</div>`;
+    } else if (v.phase === 'chooseLeader') {
+      html = `<div class="cap">${esc(pname(v, v.chooser))} won the trick.</div>`;
+    } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') html = `<div class="cap">Round over</div>`;
+    $('t-center').innerHTML = html;
   }
 
   // accessible trolley seats for me
@@ -1349,128 +1509,145 @@ body.tut-on .seat{min-height:0}
     const me = v.players[v.me];
     const hand = me.hand || [];
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
-    const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
-    let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team}</div></div>`;
-    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbors\''}</div>`;
-
-    // trolley row
-    const tseats = myTrolleySeats(v);
-    html += `<div class="trolley">` + tseats.map(i => {
-      const p = v.players[i]; const label = i === v.me ? 'You' : esc(p.name);
-      let c;
-      if (p.slot != null) {
-        const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
-        const clickable = tut ? tutAllowSlot(v, i) : (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
-        c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
-      } else {
-        const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
-        c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}">${target ? 'put it here' : 'empty spot'}</div>`;
-      }
-      return `<div class="tc">${c}<span>${label}</span></div>`;
-    }).join('') + `</div>`;
-
-    // setup: draw tiles from the bag one at a time (visual only; the hand is already dealt)
+    const tk = teamKey(v, v.me);
     const ds = drawState(v);
     const drawing = v.phase === 'faceup' && !me.picked && ds.count < hand.length;
-    if (drawing) {
-      const left = hand.length - ds.count;
-      html += `<div class="lbl" style="margin-top:10px">Your rack · ${ds.count} of ${hand.length} tiles drawn</div>` + help('Each tile you draw goes on the right end of your rack. That order is fixed for the whole round, so watch how your hand takes shape.');
-      html += `<div class="hand rack">` + hand.slice(0, ds.count).map((r, i) => cardHTML(r, i === ds.count - 1 ? 'just-drawn' : '', `data-hand="${i}"`)).join('') + `</div>`;
-      html += `<div class="bagrow"><div class="bag">${bagHTML(left)}</div><div class="col"><button class="primary" id="btn-draw">Draw a tile</button><button class="ghost" id="btn-drawall">Draw the rest</button><span class="hint">${left} tile${left === 1 ? '' : 's'} still to draw from the bag.</span></div></div>`;
-      html += `<div class="msg" id="t-msg"></div>`;
-      $('t-me').innerHTML = html;
-      $('btn-draw').onclick = () => { drawn.count = Math.min(hand.length, drawn.count + 1); renderMe(v); renderCoach(v); };
-      $('btn-drawall').onclick = () => { drawn.count = hand.length; renderMe(v); renderCoach(v); };
-      return;
+    let status = '', hint = '', actions = '', chips = '', msgText = msg;
+    let legal = [];
+
+    // the trolley spots you may use (not shown while the carts are being drawn)
+    let trolley = '';
+    if (v.phase !== 'faceup') {
+      const tseats = myTrolleySeats(v);
+      trolley = `<div class="m-trolley"><div class="mlbl" title="${v.mode === 'team' ? "Face-up tiles you may add to a play: yours and your teammates'" : "Face-up tiles you may add to a play: yours and your two neighbors'"}">Trolley</div><div class="trolley">` + tseats.map(i => {
+        const p = v.players[i]; const label = i === v.me ? 'You' : esc(p.name);
+        let c;
+        if (p.slot != null) {
+          const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
+          const clickable = tut ? tutAllowSlot(v, i) : (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
+          c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
+        } else {
+          const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
+          const chosen = pm && pm.kind === 'fill' && pm.slotSeat === i;
+          c = `<div class="slot ${target || chosen ? 'target' : ''}" data-emptyslot="${i}">${chosen ? 'here' : target ? 'put it here' : 'empty'}</div>`;
+        }
+        return `<div class="tc">${c}<span>${label}</span></div>`;
+      }).join('') + `</div></div>`;
     }
-    // hand
-    const handClickable = (v.phase === 'faceup' && !me.picked) || myTurn || (pm && (pm.kind === 'fill' || pm.kind === 'swap'));
-    if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
-      // choose insert position: show hand without the given tile, with gaps
+
+    // your cart
+    const teamTag = v.mode === 'team' ? `<span class="tname ${tk}"><i class="tdot ${tk}"></i>${TEAMNAME[me.team]}</span>` : '';
+    let cartInner;
+    if (drawing) {
+      cartInner = hand.slice(0, ds.count).map((r, i) => cardHTML(r, i === ds.count - 1 ? 'just-drawn' : '', `data-hand="${i}"`)).join('');
+    } else if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
+      // choose where the trolley tile goes: the cart without the given tile, with gaps
       const h = hand.slice(); h.splice(pm.handIndex, 1);
-      let row = '<div class="insert-row">';
+      cartInner = '';
       for (let i = 0; i <= h.length; i++) {
-        row += `<div class="gap" data-gap="${i}" title="insert here"></div>`;
-        if (i < h.length) row += cardHTML(h[i], 'dim');
+        cartInner += `<div class="gap" data-gap="${i}" title="Put it here"></div>`;
+        if (i < h.length) cartInner += cardHTML(h[i], 'dim');
       }
-      row += '</div>';
-      html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap. (This is the only way a tile ever changes position.)</div>` + row;
     } else {
-      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} tile${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help('Your tiles stay in this order all round. You may only play tiles that are next to each other.') + `<div class="hand rack">` + hand.map((r, i) => {
+      const handClickable = (v.phase === 'faceup' && !me.picked) || myTurn || (pm && (pm.kind === 'fill' || pm.kind === 'swap'));
+      cartInner = hand.map((r, i) => {
         let cls = '';
         if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
         else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
         else if (sel.hi >= 0 && i >= sel.hi && i <= sel.hj) cls = 'sel';
         return cardHTML(r, cls + ((tut ? tutAllowHand(v, i) : handClickable) ? ' clickable' : ''), `data-hand="${i}"`);
-      }).join('') + `</div>`;
+      }).join('');
     }
+    const count = drawing ? `${ds.count} of ${hand.length}` : `${hand.length} tile${hand.length === 1 ? '' : 's'}`;
+    const cart = `<div class="m-cart"><div class="mlbl">Your cart ${teamTag ? '· ' + teamTag : ''} · ${count}</div><div class="hand rack${hand.length ? '' : ' empty'}">${cartInner}</div></div>`;
 
-    // actions
-    html += `<div class="actions" id="t-actions">`;
-    if (v.phase === 'faceup') {
-      if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
-      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this tile on the trolley</button><span class="hint">Tap one tile in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
+    // what to do now, and the buttons to do it
+    if (drawing) {
+      status = 'Draw your cart from the bag';
+      if (showHints()) hint = 'Each tile goes on the right end of your cart, and that order is fixed for the whole round.';
+      actions = `<button class="quiet" id="btn-drawall">Draw the rest</button><button class="primary" id="btn-draw">Draw a tile</button>`;
+    } else if (v.phase === 'faceup') {
+      if (me.picked) status = 'Waiting for the others…';
+      else {
+        status = 'Put one tile face up on the trolley';
+        if (showHints()) hint = 'Tap a tile in your cart, then confirm. Everyone sees it; your section may add it to plays.';
+        actions = `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put it on the trolley</button>`;
+      }
     } else if (myTurn && !pm) {
-      const legal = E.legalPlaysFromView(v);
+      legal = E.legalPlaysFromView(v);
       const cur = currentCombo(v);
       const canLead = v.trick.plays.length === 0;
       const legalNow = cur && legal.some(pl => samePlay(pl, sel)) && (!tut || tutSelReady(v));
       const td = tut ? tutDo(v) : null;
-      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected tiles'}</button>`;
-      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : tut && !(td && td.type === 'pass') ? 'disabled' : ''}>Pass (sit out this trick)</button>`;
-      if (!tut) html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
-      const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.hi >= 0 || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those tiles do not form a valid group (same number, or numbers in a row).') : (canLead ? 'Tap tiles that sit next to each other in your hand, or tap a play from the list below.' : 'Tap tiles in your hand, or tap a play from the list below. Nothing fits? Pass.');
-      html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || selMsg)}</div>`;
-      if (tut) { // only the move this step teaches; the coach says which
-        const chips = tutChips(v, legal);
-        if (chips.length) html += `<div class="lbl" style="margin-top:8px">The play the coach is asking for · tap it to select it</div><div class="chips">` + chips.map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + `</div>`;
-        $('t-me').innerHTML = html; wireMe(v, legal); return;
+      status = canLead ? `<span class="you">Your lead</span>` : `<span class="you">Your turn</span> · beat ${esc(pname(v, v.trick.topSeat))}'s ${esc(shortCombo(v.trick.top))}`;
+      if (showHints()) hint = canLead ? 'Play any single, set of 2 or 3, or run of 2 to 4: tiles side by side in your cart, plus any trolley tiles.' : needText(v);
+      if (!legal.length && !canLead) hint = 'Nothing you hold beats the table. Pass; you may still fill or swap.';
+      if (!msgText && (sel.hi >= 0 || sel.slots.length)) msgText = cur && !legalNow ? (tut ? '' : 'That group does not beat the table.') : !cur ? 'Those tiles do not form a group: same number, or numbers in a row.' : '';
+      actions = (sel.hi >= 0 || sel.slots.length) && !tut ? `<button class="quiet" id="btn-clear">Clear</button>` : '';
+      const stuck = !canLead && !legal.length; // nothing beats the table: passing is the one thing to do
+      if (!canLead) actions += `<button ${stuck ? 'class="primary" ' : ''}id="btn-pass" ${tut && !(td && td.type === 'pass') ? 'disabled' : ''}>Pass</button>`;
+      actions += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}${stuck ? ' hidden' : ''}>${cur && legalNow ? 'Play ' + esc(shortCombo(cur)) : 'Play'}</button>`;
+      const list = tut ? tutChips(v, legal) : showHints() ? chipList(v, legal) : [];
+      if (list.length) {
+        const max = tut || allChips ? list.length : 8;
+        chips = `<span class="mlbl">Plays</span>` + list.slice(0, max).map((c, k) => `<button class="chip${c.pl.combo.bomb ? ' bomb' : ''}${samePlay(c.pl, sel) ? ' on' : ''}" data-chip="${k}" title="* uses a trolley tile · ★ is a Chef's Special">${c.label}</button>`).join('')
+          + (list.length > max ? `<button class="chip more" id="btn-morechips">+${list.length - max} more</button>` : '');
       }
-      const chips = chipList(v, legal);
-      html += `<div class="lbl" style="margin-top:8px">${legal.length ? 'Plays you can make right now · tap one to select it' : 'No play can beat the table'}</div>`;
-      html += `<div class="chips">` + chips.slice(0, 16).map((c, k) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more</span>` : '') + (legal.length === 0 ? '<span class="hint">Press Pass. You can still fill or swap a trolley tile as you pass.</span>' : '') + `</div>` + (legal.length ? help('* means the play uses a trolley tile. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
-      $('t-me').innerHTML = html; wireMe(v, legal); return;
     } else if (pm) {
-      html += renderPassControls(v);
+      const pu = passUI(v); status = pu.status; hint = pu.hint; actions = pu.actions;
     } else if (v.phase === 'play') {
-      html += `<span class="muted">${me.out ? 'Your hand is empty — you are out for this round. Your trolley tile stays in play for your team.' : v.trick.passed.includes(v.me) ? 'You passed, so you sit out until this trick ends.' : 'Waiting for ' + esc(pname(v, v.trick.turn)) + '…'}</span>`;
-    } else if (v.phase === 'chooseLeader' && tut && v.chooser === v.me) {
-      // in the tutorial the choice sits here, next to the coach, instead of in a dialog that would cover it
-      const td = tutDo(v);
-      html += `<div style="flex-basis:100%"><strong>You won the trick.</strong> Choose who in Jade leads the next one.</div>` + v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}" ${td && td.leader === i ? '' : 'disabled'}>${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('');
+      if (me.out) { status = 'Your cart is empty: you are out this round'; if (showHints() && v.mode === 'team') hint = 'Your trolley tile stays in play for your section.'; }
+      else if (v.trick.passed.includes(v.me)) { status = 'You passed'; if (showHints()) hint = 'You sit out until this trick ends.'; }
+      else status = `${esc(pname(v, v.trick.turn))} is playing…`;
+    } else if (v.phase === 'chooseLeader' && v.chooser === v.me) {
+      const td = tut ? tutDo(v) : null;
+      status = `<span class="you">You won the trick</span>`;
+      hint = v.mode === 'team' ? `Choose who in ${TEAMNAME[me.team]} leads the next trick. No table talk.` : 'Choose who leads the next trick.';
+      actions = v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}" ${!tut || (td && td.leader === i) ? '' : 'disabled'}>${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:500;opacity:.8">· ${v.players[i].count} left</span></button>`).join('');
     } else if (v.phase === 'chooseLeader') {
-      html += `<span class="muted">${v.chooser === v.me ? 'Choose the leader above.' : 'Waiting for the leader to be chosen…'}</span>`;
-    } else if (tut && (v.phase === 'roundEnd' || v.phase === 'gameEnd')) {
-      html += `<span class="muted">Your cart is empty. Jade has emptied every cart.</span>`;
+      status = `${esc(pname(v, v.chooser))} is choosing who leads next…`;
+    } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') {
+      status = tut ? 'Your cart is empty. Jade has emptied every cart.' : 'Round over';
     }
-    html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg)}</div>`;
-    $('t-me').innerHTML = html; wireMe(v, []);
+
+    const needsMe = drawing || (v.phase === 'faceup' && !me.picked) || myTurn || (v.phase === 'chooseLeader' && v.chooser === v.me);
+    const root = $('t-me');
+    root.className = `me ${tk}${needsMe ? ' myturn' : ''}`;
+    root.innerHTML = `<div class="m-status"><div class="m-line">${status}</div>${hint ? `<div class="m-hint">${hint}</div>` : ''}<div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msgText)}</div></div>`
+      + `<div class="m-tiles">${trolley}${cart}</div>${chips ? `<div class="m-chips">${chips}</div>` : ''}<div class="m-actions" id="t-actions">${actions}</div>`;
+    if (drawing) {
+      $('btn-draw').onclick = () => { drawn.count = Math.min(hand.length, drawn.count + 1); renderMe(v); renderCenter(v); renderCoach(v); };
+      $('btn-drawall').onclick = () => { drawn.count = hand.length; renderMe(v); renderCenter(v); renderCoach(v); };
+      return;
+    }
+    const more = $('btn-morechips'); if (more) more.onclick = () => { allChips = true; renderMe(v); };
+    wireMe(v, legal);
   }
 
-  function renderPassControls(v) {
+  function passUI(v) {
     const me = v.players[v.me];
     const tseats = myTrolleySeats(v);
     const empties = tseats.filter(i => v.players[i].slot == null);
     const filled = tseats.filter(i => v.players[i].slot != null);
     if (pm.kind === 'menu') {
-      return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may tidy your hand in one of these ways:</div>
-        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length && !tutBlocks('fill') ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
-        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length && !tutBlocks('swap') ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.</span></div>
-        <div class="pm-opt"><button class="primary" id="btn-pm-none" ${tutBlocks('none') ? 'disabled' : ''}>Just pass</button><span class="hint">Do nothing else.</span></div>
-        <button class="ghost" id="btn-pm-cancel">Back</button>`;
+      return { status: 'Pass', hint: 'You sit out until this trick ends. First you may fill an empty trolley spot with a cart tile, or swap a cart tile for a trolley tile.',
+        actions: `<button class="quiet" id="btn-pm-cancel">Back</button>
+        <button id="btn-pm-fill" ${empties.length && me.hand.length && !tutBlocks('fill') ? '' : 'disabled'} title="Put one cart tile face up on an empty spot you may use">Fill an empty spot</button>
+        <button id="btn-pm-swap" ${filled.length && me.hand.length && !tutBlocks('swap') ? '' : 'disabled'} title="Take a trolley tile into your cart, where you choose, and put one of yours in its place">Swap with a trolley tile</button>
+        <button class="primary" id="btn-pm-none" ${tutBlocks('none') ? 'disabled' : ''}>Just pass</button>` };
     }
     if (pm.kind === 'fill') {
       const ready = pm.handIndex != null && pm.slotSeat != null;
-      return `<span class="hint" style="flex-basis:100%"><strong>Fill:</strong> ${pm.handIndex == null ? 'tap the tile in your hand you want to put face up.' : pm.slotSeat == null ? 'now tap the empty trolley spot (highlighted) to put it on.' : `put the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat)}'s spot?`}</span>
-        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Fill and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+      const step = pm.handIndex == null ? 'tap the cart tile to put face up' : pm.slotSeat == null ? 'now tap an empty trolley spot' : `put the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat) === 'You' ? 'your' : esc(pname(v, pm.slotSeat)) + "'s"} spot?`;
+      return { status: `Fill: ${step}`, hint: '', actions: `<button class="quiet" id="btn-pm-cancel">Back</button><button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Fill and pass</button>` };
     }
     if (pm.kind === 'swap') {
       const ready = pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null;
-      const step = pm.slotSeat == null ? 'tap the trolley tile you want to take.' : pm.handIndex == null ? 'tap the tile in your hand you will give in return.' : pm.insertAt == null ? 'tap a gap to say where the new tile goes.' : `take the ${v.players[pm.slotSeat].slot} and give the ${me.hand[pm.handIndex]}?`;
-      return `<span class="hint" style="flex-basis:100%"><strong>Swap:</strong> ${step}</span>
-        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Swap and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+      const step = pm.slotSeat == null ? 'tap the trolley tile to take' : pm.handIndex == null ? 'tap the cart tile to give in return' : pm.insertAt == null ? `tap a gap: where should the ${v.players[pm.slotSeat].slot} go?` : `take the ${v.players[pm.slotSeat].slot} and give the ${me.hand[pm.handIndex]}?`;
+      return { status: `Swap: ${step}`, hint: pm.insertAt == null && pm.handIndex != null && showHints() ? 'A swap is the only way a tile ever moves in your cart.' : '',
+        actions: `<button class="quiet" id="btn-pm-cancel">Back</button><button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Swap and pass</button>` };
     }
-    return '';
+    return { status: '', hint: '', actions: '' };
   }
 
   function currentCombo(v) {
@@ -1574,10 +1751,11 @@ body.tut-on .seat{min-height:0}
   }
 
   function renderLog(v) {
+    if (!showLog) return; // the drawer is closed; it renders when opened
     const lines = v.logTail.map(e => {
       const n = (s) => pname(v, s);
       switch (e.t) {
-        case 'round': return `— Round ${e.round} —`;
+        case 'round': return `<div class="rd">Round ${e.round}</div>`;
         case 'faceup': return `Trolley: ${e.slots.map((r, i) => n(i) + ' ' + r).join(', ')}`;
         case 'play': return `${n(e.seat)} plays ${e.cards.join(' ')}${e.combo.bomb ? ' — Chef\'s Special!' : ''}`;
         case 'pass': return `${n(e.seat)} passes`;
@@ -1590,7 +1768,17 @@ body.tut-on .seat{min-height:0}
         default: return '';
       }
     }).filter(Boolean);
-    $('t-log').innerHTML = lines.map(l => `<div>${esc(l)}</div>`).join('');
+    $('t-loglines').innerHTML = lines.map(l => l.startsWith('<div') ? l : `<div>${esc(l)}</div>`).join('');
+    $('t-legend').innerHTML = legendHTML(v);
+    $('t-hist').innerHTML = v.roundHistory.length ? `<span class="mlbl">Penalty points by round</span>${historyTable(v)}` : '';
+  }
+  // rounds down, players or sections across; lower is better
+  function historyTable(v) {
+    const H = v.roundHistory;
+    if (v.mode === 'team') {
+      return `<table class="tbl"><tr><th>Round</th><th class="num">Jade</th><th class="num">Lantern</th></tr>${H.map(s => `<tr><td>${s.round}</td><td class="num">${s.loserTeam === 0 ? s.penalty : 0}</td><td class="num">${s.loserTeam === 1 ? s.penalty : 0}</td></tr>`).join('')}<tr class="total"><td>Total</td><td class="num">${v.scores[0]}</td><td class="num">${v.scores[1]}</td></tr></table>`;
+    }
+    return `<table class="tbl"><tr><th>Player</th>${H.map(s => `<th class="num">R${s.round}</th>`).join('')}<th class="num">Total</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${H.map(s => `<td class="num">${s.hands[i]}</td>`).join('')}<td class="num"><strong>${v.scores[i]}</strong></td></tr>`).join('')}</table>`;
   }
 
   function renderOverlay(v) {
@@ -1598,38 +1786,35 @@ body.tut-on .seat{min-height:0}
       if (!$('btn-rules-close') && !$('tut-finish')) overlay('');
       return;
     }
-    if (v.phase === 'chooseLeader' && v.chooser === v.me) {
-      const cs = coach.on && !coach.hidden ? coachSuggest(v) : null;
-      overlay(`<h3>You won the trick</h3><p>In this game the winner chooses who on their team <strong>leads</strong> (starts) the next trick. Leading is an advantage: you set the kind and size everyone else must match. Give it to whoever needs it most. No table talk!</p>${cs ? `<p class="muted">${suggestionText(v, cs)}</p>` : ''}<div class="col">${v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}">${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('')}</div>`);
-      document.querySelectorAll('[data-lead]').forEach(b => b.onclick = () => { session.act({ type: 'lead', leader: +b.dataset.lead }); overlay(''); });
-      return;
-    }
     if (v.phase === 'roundEnd' || v.phase === 'gameEnd') {
+      if ($('btn-rules-close')) return; // reading the rules; the summary comes back when they close
       const s = v.roundHistory[v.roundHistory.length - 1];
-      let body;
+      const fin = v.phase === 'gameEnd';
+      let head, sub;
       if (v.mode === 'team') {
-        body = `<p><strong>${TEAMNAME[s.winnerTeam]}</strong> emptied every cart. <strong>${TEAMNAME[s.loserTeam]}</strong> takes <strong>${s.penalty}</strong> penalty point${s.penalty === 1 ? '' : 's'} for its fullest cart.</p>`;
+        head = `${TEAMNAME[s.winnerTeam]} emptied every cart`;
+        sub = `<span class="tname ${s.loserTeam ? 'lantern' : 'jade'}">${TEAMNAME[s.loserTeam]}</span> takes <strong>${s.penalty}</strong> penalty point${s.penalty === 1 ? '' : 's'}, one per tile in its fullest cart.`;
       } else {
-        body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else takes penalty points for their own cart.</p>`;
+        head = s.winner === v.me ? 'You emptied your cart first' : `${esc(pname(v, s.winner))} emptied their cart first`;
+        sub = 'Everyone else takes a penalty point for each tile left in their cart.';
       }
-      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Tiles left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
-      body += `<h3 style="font-size:20px;margin-top:12px">Totals after round ${s.round}</h3>`;
-      body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.scores[i]}`).join(' · ')}</p>`;
-      if (v.phase === 'gameEnd') {
-        const f = finalFromView(v);
-        body += `<h3>${f}</h3>`;
-        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-home">Back to the kitchen</button></div>`;
-      } else if (session.canControlRounds()) {
-        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-next">Draw round ${s.round + 1}</button></div>`;
+      let body = `<div class="mlbl">${fin ? 'Final scores' : `Round ${s.round} of ${v.maxRounds}`}</div><h3>${fin ? esc(finalFromView(v)) : head}</h3><p>${fin ? head + '. ' : ''}${sub}</p>`;
+      if (v.mode === 'team') {
+        body += `<table class="tbl"><tr><th>Player</th><th class="num">Tiles left</th></tr>${v.players.map((p, i) => `<tr><td><span class="tname ${p.team ? 'lantern' : 'jade'}"><i class="tdot ${p.team ? 'lantern' : 'jade'}"></i>${esc(pname(v, i))}</span></td><td class="num">${s.hands[i]}</td></tr>`).join('')}</table>`;
+        body += fin ? `<div class="mlbl" style="margin-top:16px">Penalty points by round</div>${historyTable(v)}`
+          : `<div class="totals"><span class="tpill jade"><i></i>Jade <b>${v.scores[0]}</b></span><span class="tpill lantern"><i></i>Lantern <b>${v.scores[1]}</b></span><span class="fine" style="align-self:center">total penalty points</span></div>`;
       } else {
-        body += `<p class="muted">Waiting for the host to draw the next round…</p>`;
+        body += historyTable(v);
       }
-      overlay(`<h3>Round ${s.round} over</h3>${body}`);
+      if (fin) body += `<div class="acts"><button class="primary" id="btn-home">Back to the menu</button></div>`;
+      else if (session.canControlRounds()) body += `<div class="acts"><button class="primary" id="btn-next">Draw round ${s.round + 1}</button></div>`;
+      else body += `<p class="fine" style="margin-top:14px">Waiting for the host to draw the next round…</p>`;
+      overlay(body);
       const bn = $('btn-next'); if (bn) bn.onclick = () => { session.act({ type: 'nextRound' }); overlay(''); };
       const bh = $('btn-home'); if (bh) bh.onclick = leave;
       return;
     }
-    overlay('');
+    if (!$('btn-rules-close')) overlay('');
   }
   function finalFromView(v) {
     if (v.mode === 'team') { const [a, b] = v.scores; return a === b ? 'A shared victory!' : (a < b ? 'Jade' : 'Lantern') + ' wins the rush!'; }
@@ -1697,7 +1882,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
 </div>`;
   }
   function showRules() {
-    overlay(`<h3>How to play</h3>${rulesHTML()}<div class="row" style="margin-top:12px"><button class="primary" id="btn-rules-close">Close</button></div>`);
+    overlay(`<h3>How to play</h3>${rulesHTML()}<div class="mclose"><button class="primary" id="btn-rules-close">Close</button></div>`);
     document.querySelector('.modal').classList.add('wide');
     $('btn-rules-close').onclick = () => { overlay(''); if (view) renderOverlay(view); };
   }
@@ -1840,7 +2025,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     const act = waiting ? `<span class="cue wait">Watching the table…</span>`
       : s.next ? `<button class="go" id="tut-next">${typeof s.next === 'string' ? s.next : 'Next'}</button>`
       : `<span class="cue">Your move</span>`;
-    box.innerHTML = `<div class="av">C</div><div class="body"><div class="ctop"><span class="lbl">Coach · step ${k} of ${n}</span><span class="prog" aria-hidden="true"><i style="width:${Math.round(k / n * 100)}%"></i></span></div><h3>${esc(s.title)}</h3><p>${text}</p>${extra}<div class="acts">${act}<button class="exit" id="tut-exit">Exit tutorial</button></div></div>`;
+    box.innerHTML = `<div class="body"><div class="ctop"><span class="lbl">Coach · step ${k} of ${n}</span><span class="prog" aria-hidden="true"><i style="width:${Math.round(k / n * 100)}%"></i></span></div><h3>${esc(s.title)}</h3><p>${text}</p>${extra}<div class="acts">${act}<button class="exit" id="tut-exit">Exit tutorial</button></div></div>`;
     const nb = $('tut-next'); if (nb) nb.onclick = tutNext;
     $('tut-exit').onclick = leave;
     tutDecorate(v, waiting);
@@ -1895,8 +2080,8 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     overlay(`<div id="tut-finish"><h3>Ready for the lunch rush</h3>
 <p>That's the whole game. Play tiles that sit side by side in your cart, plus any of your section's trolley tiles. Follow with the same kind and size at an equal or higher number, or play a Chef's Special. When you pass, you may fill an empty spot or swap. The trick winner picks who in their section leads next, and the round ends when one section has emptied every cart.</p>
 <p>A full round starts with 14 tiles each, drawn from the bag one at a time onto the right end of your rack. Then everyone picks one tile to put face up on the trolley. Watch the tile backs: their colors show the number ranges in every cart.</p>
-<div class="col" style="margin-top:12px"><button class="primary" id="tut-play">Play against bots</button><button class="jade" id="tut-menu">Back to the menu</button><button class="ghost" id="tut-again">Replay the tutorial</button><button class="ghost" id="tut-coached">Play a full round with the coach (about 15 minutes)</button></div>
-<p class="muted" style="margin:10px 0 0">Play against bots starts a 3-round game at the 4-player team table: you and Lin against Bao and Jun. Other tables are on the menu.</p></div>`);
+<div class="acts"><button class="primary" id="tut-play">Play against bots</button><button id="tut-menu">Back to the menu</button><button class="quiet" id="tut-again">Replay the tutorial</button><button class="quiet" id="tut-coached">Play a full round with the coach (about 15 minutes)</button></div>
+<p class="fine" style="margin:12px 0 0">Play against bots starts a 3-round game at the 4-player team table: you and Lin against Bao and Jun. Other tables are on the menu.</p></div>`);
     $('tut-play').focus();
     $('tut-play').onclick = () => startBots('team4');
     $('tut-menu').onclick = leave;
@@ -2009,15 +2194,15 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}
     if (tut) { renderTutCoach(v); return; }
     if (!coach.on) { box.style.display = 'none'; return; }
     box.style.display = 'flex';
-    if (coach.hidden) { box.innerHTML = `<div class="av">?</div><div class="body">Coach is quiet. <button class="ghost" id="coach-show">Show tips</button></div>`; $('coach-show').onclick = () => { coach.hidden = false; renderCoach(v); }; return; }
+    if (coach.hidden) { box.innerHTML = `<div class="body">Coach is quiet. <button class="ghost" id="coach-show">Show tips</button></div>`; $('coach-show').onclick = () => { coach.hidden = false; renderCoach(v); }; return; }
     let tip = pickTip(v), extra = null;
     if (tip === 'trolley' && v.phase === 'play' && v.trick.turn === v.me) extra = pickTip(v);
     const s = coachSuggest(v);
     coach.suggestion = s;
     const sText = suggestionText(v, s);
     const seenCount = LESSONS.filter(id => coach.seen.has(id)).length;
-    const head = LESSON_TITLES[tip] ? `<div class="lbl" style="color:var(--gold);margin-bottom:4px">Coach · ${LESSON_TITLES[tip]} · lesson ${seenCount} of ${LESSONS.length}</div>` : `<div class="lbl" style="color:var(--gold);margin-bottom:4px">Coach</div>`;
-    box.innerHTML = `<div class="av">C</div><div class="body">${head}${TIPS[tip]}${extra ? '<div style="margin-top:6px">' + TIPS[extra] + '</div>' : ''}${sText ? `<div style="margin-top:6px">${sText}</div>` : ''}<div class="acts">${s && s.kind !== 'lead' ? `<button id="coach-apply">Set up the coach's pick for me</button>` : ''}<button class="ghost" id="coach-hide">Hide coach</button><button class="ghost" id="coach-rules">Full rules</button></div></div>`;
+    const head = LESSON_TITLES[tip] ? `<div class="lbl" style="color:var(--jade-ink);margin-bottom:4px">Coach · ${LESSON_TITLES[tip]} · lesson ${seenCount} of ${LESSONS.length}</div>` : `<div class="lbl" style="color:var(--jade-ink);margin-bottom:4px">Coach</div>`;
+    box.innerHTML = `<div class="body">${head}${TIPS[tip]}${extra ? '<div style="margin-top:6px">' + TIPS[extra] + '</div>' : ''}${sText ? `<div style="margin-top:6px">${sText}</div>` : ''}<div class="acts">${s && s.kind !== 'lead' ? `<button id="coach-apply">Set up the coach's pick for me</button>` : ''}<button class="ghost" id="coach-hide">Hide coach</button><button class="ghost" id="coach-rules">Full rules</button></div></div>`;
     const a = $('coach-apply'); if (a) a.onclick = () => applySuggestion(v, s);
     $('coach-hide').onclick = () => { coach.hidden = true; renderCoach(v); };
     $('coach-rules').onclick = showRules;
