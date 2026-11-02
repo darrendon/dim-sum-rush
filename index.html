@@ -339,12 +339,12 @@ table.tbl tr.win td{font-weight:700}
   <div class="home">
     <header class="hero">
       <h1>Dim Sum Rush</h1>
-      <p class="sub">A climbing game for 2–6 servers: teams of 2 or 3, or every server for themselves. Three rounds. Shown here with tiles; it plays the same with cards.</p>
+      <p class="sub">A partnership climbing game where you can only help your partner through the face-up tiles you share. 2–6 players, three rounds.</p>
     </header>
     <div class="home-grid">
       <div class="hcard learn">
         <h3>Learn to play</h3>
-        <p>A coach walks you through the end of a round at a 4-player table, one move at a time. About 4 minutes.</p>
+        <p>Four-minute tutorial at a 4-player table.</p>
         <div class="push"><button class="primary" id="btn-tutorial">Start the tutorial</button><button class="quiet" id="btn-rules">Read the rules</button></div>
       </div>
       <div class="hcard">
@@ -359,7 +359,7 @@ table.tbl tr.win td{font-weight:700}
           <div class="col"><span class="mlbl">Host a table</span><select id="host-mode" aria-label="Table to host"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2 players</option><option value="solo3">Every Server · 3 players</option><option value="solo4">Every Server · 4 players</option><option value="solo5">Every Server · 5 players</option><option value="solo6">Every Server · 6 players</option></select><button id="btn-host">Open a table</button></div>
           <div class="col"><span class="mlbl">Join a table</span><input id="join-code" maxlength="5" placeholder="CODE" aria-label="Table code" autocomplete="off"><button id="btn-join">Take a seat</button></div>
         </div>
-        <p class="fine">Hosting gives you a 5-letter code to share. Empty seats are filled with bots when you start. Your browser runs the game, so keep this tab open.</p>
+        <p class="fine">Share the code or link. Bots fill empty seats. Keep this tab open while you host.</p>
         <div class="home-msg" id="home-msg" role="status"></div>
       </div>
     </div>
@@ -371,7 +371,7 @@ table.tbl tr.win td{font-weight:700}
   <div class="lobby">
     <div class="tbar"><h2>Table open</h2><div class="tnav"><button class="quiet" id="btn-leave-lobby">Leave</button></div></div>
     <div class="code-card">
-      <div class="mlbl">Share this code and this page's link</div>
+      <div class="mlbl">Share this code or link</div>
       <div class="code" id="lobby-code">----</div>
       <div class="fine" id="lobby-status"></div>
     </div>
@@ -1211,7 +1211,7 @@ table.tbl tr.win td{font-weight:700}
     async connect() {
       const mqtt = await loadLib();
       const broker = BROKERS.find(b => b.key === this.code[0]);
-      if (!broker || this.code.length !== 5) throw new Error('That does not look like a table code (5 letters).');
+      if (!broker || this.code.length !== 5) throw new Error('Table codes are 5 letters.');
       this.token = cleanId(token() + '-' + this.name.toLowerCase());
       this.topic = TOPIC_ROOT + this.code;
       const my = this.topic + '/g/' + this.token;
@@ -1221,7 +1221,7 @@ table.tbl tr.win td{font-weight:700}
       const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
       await new Promise((resolve, reject) => {
         let settled = false;
-        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table with that code. The host must keep their tab open.')); } }, 12000);
         client.on('message', (t, payload) => {
           if (t !== my) return;
           const m = parse(payload); if (!m) return;
@@ -1326,7 +1326,7 @@ table.tbl tr.win td{font-weight:700}
   // ---------- home ----------
   if (NET.SANDBOXED) {
     const n = document.createElement('div'); n.className = 'hcard notice';
-    n.innerHTML = '<p><strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.</p>';
+    n.innerHTML = '<p><strong>Online tables don’t work in this preview.</strong> Bots and the tutorial work here; use the hosted version to play online.</p>';
     const grid = document.querySelector('.home-grid'); grid.insertBefore(n, grid.firstChild);
   }
   function startBots(modeValue) {
@@ -1413,7 +1413,7 @@ table.tbl tr.win td{font-weight:700}
     });
     document.querySelectorAll('[data-sit]').forEach(el => el.onclick = () => session.sit(+el.dataset.sit));
     $('btn-start').style.display = session.kind === 'host' && !st.started ? 'inline-block' : 'none';
-    $('lobby-hint').textContent = session.kind === 'host' ? (mode === 'team' ? 'Seats alternate Jade and Lantern, so teammates sit opposite each other. ' : '') + 'Use the menus to seat people. Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
+    $('lobby-hint').textContent = session.kind === 'host' ? (mode === 'team' ? 'Teammates sit opposite each other. ' : '') + 'Open seats become bots when you start. Players who refresh get their seat back.' : 'Tap "Sit here" to change seats.';
   }
 
   // ---------- table ----------
