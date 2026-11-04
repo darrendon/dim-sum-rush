@@ -44,6 +44,7 @@ button{font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--line-2
 button:hover:not(:disabled){border-color:var(--ink-2)}
 button:disabled{opacity:.38;cursor:default}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.card[role=button]:focus-visible,.slot[role=button]:focus-visible,.gap[role=button]:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 button.primary{background:var(--red);border-color:var(--red);color:#FFF8EC;box-shadow:0 1px 0 var(--red-d)}
 button.primary:hover:not(:disabled){background:#8E1C16;border-color:#8E1C16}
 button.jade{background:var(--jade);border-color:var(--jade);color:#F3FAF5;box-shadow:0 1px 0 var(--jade-d)}
@@ -1703,7 +1704,26 @@ table.tbl tr.win td{font-weight:700}
       if (pm.kind === 'fill') doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
       else doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
     });
+    // keyboard: every tappable tile, empty trolley spot and gap is a focusable button (Enter/Space handled below)
+    root.querySelectorAll('.card.clickable,[data-emptyslot],[data-gap]').forEach(el => {
+      el.tabIndex = 0; el.setAttribute('role', 'button');
+      if (el.classList.contains('card')) {
+        el.setAttribute('aria-pressed', el.classList.contains('sel') ? 'true' : 'false');
+        const rk = el.querySelector('.rk'), nm = el.querySelector('.nm');
+        el.setAttribute('aria-label', (el.dataset.slot != null ? 'Trolley tile ' : 'Cart tile ') + (rk ? rk.textContent : '') + (nm ? ', ' + nm.textContent : ''));
+      } else el.setAttribute('aria-label', el.dataset.gap != null ? 'Put it here' : 'Trolley spot, ' + el.textContent.trim());
+    });
+    if (kbFocus) { const t = root.querySelector(kbFocus); if (t) t.focus({ preventScroll: true }); kbFocus = null; }
   }
+  let kbFocus = null;
+  document.addEventListener('keydown', (e) => {
+    const el = e.target;
+    if ((e.key !== 'Enter' && e.key !== ' ') || !(el instanceof HTMLElement) || el.tagName === 'BUTTON' || el.getAttribute('role') !== 'button' || !el.closest('#t-me')) return;
+    e.preventDefault();
+    const k = ['hand', 'slot', 'emptyslot', 'gap'].find(k => el.dataset[k] != null);
+    kbFocus = k ? `[data-${k}="${el.dataset[k]}"]` : null;
+    el.click();
+  });
   function doPass(pass) {
     const r = act({ type: 'pass', pass });
     if (r && r.ok === false) setMsg(r.error, true); else { pm = null; setMsg(''); }
