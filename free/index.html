@@ -1,0 +1,1892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dim Sum Rush · free hand</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Noto+Serif+TC:wght@700&family=Figtree:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#FBF4E8; --panel:#F3E6CF; --face:#FFFDF7; --red:#A3221B; --red-d:#6E120D; --gold:#F2C56B; --cream:#FBF1DE;
+  --jade:#1F6B4F; --jade-l:#2E8564; --ink:#2A1A12; --brown:#6B4B32; --brown-d:#4A3324; --rule:#E2CFAE; --rule-d:#C9B79B;
+  --b0:#B07A2A; --b1:#2F5D9E; --b2:#A8462A; --b3:#1F6B4F; --b0d:#8A5A16; --b1d:#234A80; --b2d:#7E3220; --b3d:#154D39;
+  --shadow:0 2px 0 rgba(42,26,18,.18);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; } }
+:root[data-theme="dark"]{ --bg:#1C1410; --panel:#2A1F18; --face:#F7EEDD; --rule:#3A2C22; --rule-d:#4A3A2E; }
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Figtree','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body{color:#F3E6CF} }
+h1,h2,h3{font-family:'Bagel Fat One','Arial Rounded MT Bold',sans-serif;font-weight:400;margin:0;color:var(--red)}
+button{font:inherit;cursor:pointer;border:2px solid var(--ink);border-radius:12px;background:var(--face);color:var(--ink);padding:10px 14px;font-weight:700;min-height:44px;box-shadow:var(--shadow)}
+button:disabled{opacity:.45;cursor:default;box-shadow:none}
+button.primary{background:var(--red);color:var(--cream);border-color:var(--red-d)}
+button.jade{background:var(--jade);color:var(--cream);border-color:var(--b3d)}
+button.ghost{background:transparent;border-color:var(--rule-d);box-shadow:none;font-weight:600}
+input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--face);color:var(--ink);min-height:44px}
+.wrap{max-width:1100px;margin:0 auto;padding:12px 16px 24px}
+.screen{display:none}.screen.active{display:block}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.col{display:flex;flex-direction:column;gap:10px}
+.card-panel{background:var(--panel);border-radius:16px;padding:14px 16px}
+.muted{color:var(--brown);font-size:13px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .muted{color:#C9B79B} }
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;color:var(--cream);background:var(--jade)}
+.pill.lantern{background:var(--red)}
+.pill.gray{background:var(--brown)}
+
+/* ---- home ---- */
+.hero{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:10px 0 18px}
+.hero h1{font-size:44px;line-height:1}
+.hero .sub{font-size:14px;color:var(--brown)}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.home-grid h3{font-size:22px;margin-bottom:8px}
+
+/* ---- cards ---- */
+.card.dim{opacity:.4}
+.card.clickable{cursor:pointer}
+.slot.target{border-color:var(--gold);border-style:solid;background:rgba(242,197,107,.25);cursor:pointer}
+.trolley-card{cursor:pointer}
+.trolley-card.sel{box-shadow:0 0 0 3px var(--gold),0 6px 10px rgba(0,0,0,.3);transform:translateY(-6px)}
+
+
+/* ---- tiles (mahjong look) ---- */
+:root{--bone:#F8F2E4;--bone-d:#E6DBC3;--bone-s:#CDBFA3;--rack:#5A3A1E;--rack-d:#3A2410;--rack-l:#8A5E36;--felt:#2A6A4E;--felt-d:#1D4F3A}
+.card{position:relative;display:inline-flex;flex-direction:column;justify-content:space-between;width:58px;height:82px;border-radius:5px;background:linear-gradient(170deg,#FFFCF4 0%,var(--bone) 45%,var(--bone-d) 100%);border:1px solid #D4C6A8;padding:3px 4px 2px;color:var(--ink);user-select:none;flex:none;transform-style:preserve-3d;transition:transform .15s,box-shadow .15s;
+  box-shadow:inset 0 1px 0 #fff,inset -1px 0 0 rgba(0,0,0,.06),0 1px 0 #BFB094,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 4px 4px rgba(0,0,0,.3)}
+.card .rk{font-family:'Bagel Fat One',sans-serif;font-size:20px;line-height:1;text-shadow:0 1px 0 #fff,0 -1px 0 rgba(0,0,0,.08)}
+.card .art{position:absolute;left:4px;right:4px;top:21px;bottom:21px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 1px 0 rgba(255,255,255,.8))}
+.card .art svg{width:100%;height:100%}
+.card .lbl{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
+.card .zh{font-family:'Noto Serif TC','Songti TC','PMingLiU',serif;font-weight:700;font-size:10px;letter-spacing:.08em}
+.card .nm{font-size:6px;font-weight:800;line-height:1;letter-spacing:.08em;text-transform:uppercase;text-align:center;white-space:nowrap}
+.card.b0 .lbl{color:var(--b0)}.card.b1 .lbl{color:var(--b1)}.card.b2 .lbl{color:var(--b2)}.card.b3 .lbl{color:var(--b3)}
+.card.b0{--edge:var(--b0);--edge-d:#6b4510}.card.b1{--edge:var(--b1);--edge-d:#1d3a66}.card.b2{--edge:var(--b2);--edge-d:#6b2b18}.card.b3{--edge:var(--b3);--edge-d:#123f2e}
+.card.b0 .rk{color:var(--b0)}.card.b1 .rk{color:var(--b1)}.card.b2 .rk{color:var(--b2)}.card.b3 .rk{color:var(--b3)}
+.card.sm{width:40px;height:56px;padding:2px 3px 1px;box-shadow:inset 0 1px 0 #fff,0 1px 0 var(--edge,#8A5A16),0 2px 0 var(--edge-d,#6b4510),0 3px 3px rgba(0,0,0,.28)}.card.sm .rk{font-size:15px}.card.sm .lbl{display:none}.card.sm .art{top:16px;bottom:3px}
+.card.lg{width:76px;height:108px}.card.lg .rk{font-size:26px}.card.lg .zh{font-size:13px}.card.lg .nm{font-size:7px}.card.lg .art{top:27px;bottom:26px}
+.card.clickable:active{transform:translateY(2px) scale(.98)}
+.card.sel{transform:translateY(-14px) rotateX(0deg);box-shadow:0 0 0 3px var(--gold),inset 0 1px 0 #fff,0 1px 0 #BFB094,0 2px 0 var(--edge,#8A5A16),0 3px 0 var(--edge-d,#6b4510),0 14px 12px rgba(0,0,0,.35)}
+.back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;border-radius:3px;border:1px solid rgba(0,0,0,.35);flex:none;margin-left:-6px;background-image:linear-gradient(170deg,rgba(255,255,255,.35),rgba(255,255,255,0) 40%,rgba(0,0,0,.12));box-shadow:0 1px 0 rgba(0,0,0,.3),0 2px 2px rgba(0,0,0,.35);transform:rotateX(-8deg)}
+.back:first-child{margin-left:0}
+.back svg{width:16px;height:22px;opacity:.9}
+.back.b0{background-color:var(--b0)}.back.b1{background-color:var(--b1)}.back.b2{background-color:var(--b2)}.back.b3{background-color:var(--b3)}
+.back.lg{width:34px;height:48px;margin-left:-10px}.back.lg svg{width:24px;height:34px}
+.rack{position:relative;background:linear-gradient(180deg,var(--rack-l) 0,var(--rack) 22%,#4A2E16 70%,var(--rack-d));background-image:linear-gradient(180deg,var(--rack-l) 0,var(--rack) 22%,#4A2E16 70%,var(--rack-d)),repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 6px,rgba(0,0,0,.04) 6px 11px);border-radius:8px;padding:8px 10px 6px;box-shadow:inset 0 2px 3px rgba(255,255,255,.12),inset 0 -3px 6px rgba(0,0,0,.45),0 3px 0 var(--rack-d),0 6px 8px rgba(0,0,0,.3);perspective:700px}
+.rack::after{content:"";position:absolute;left:0;right:0;bottom:0;height:7px;border-radius:0 0 8px 8px;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45))}
+.seat .backs.rack{min-height:46px;gap:0;padding:6px 8px 5px}
+.hand.rack{padding:18px 12px 12px;min-height:116px;gap:12px 3px;align-items:flex-end;flex-wrap:wrap}
+.hand.rack .card{transform:rotateX(14deg);transform-origin:50% 100%}
+.hand.rack .card.sel{transform:translateY(-14px) rotateX(0deg)}
+.hand.rack .card.hint-pulse{transform:rotateX(14deg)}
+.slot{width:58px;height:82px;border-radius:8px;border:2px dashed rgba(42,26,18,.35);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--brown);text-align:center;padding:4px;flex:none;background:rgba(0,0,0,.05);box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.slot.sm{width:40px;height:56px;font-size:9px}
+.gap{width:18px;height:82px;border-radius:6px;border:2px dashed var(--gold);background:rgba(242,197,107,.2);cursor:pointer;flex:none}
+/* ---- table ---- */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.topbar h2{font-size:26px}
+.score{display:flex;gap:8px;align-items:center;font-weight:700}
+.score .box{background:var(--face);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;color:var(--ink)}
+.others{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:10px}
+.seat{background:var(--face);color:var(--ink);border:2px solid var(--rule-d);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.seat.jade{border-color:var(--jade)}.seat.lantern{border-color:var(--red)}
+.seat.turn{outline:3px solid var(--gold);outline-offset:1px}
+.seat.out{opacity:.7}
+.seat .hd{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.seat .nm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .st{font-size:11px;font-weight:700;color:var(--brown)}
+.seat .backs{display:flex;flex-wrap:wrap;gap:2px 0;min-height:34px;align-items:center}
+.seat .foot{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--brown)}
+.center{background:var(--panel);border-radius:16px;padding:12px 14px;margin-bottom:10px;min-height:150px}
+.center .status{font-weight:800;font-size:16px;margin-bottom:8px}
+.trick{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.play{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.play .who{font-size:11px;font-weight:700;color:var(--brown)}
+.play .cards{display:flex;gap:3px}
+.play.top .who{color:var(--red)}
+.play.bomb .cards .card{box-shadow:0 0 0 3px var(--red),var(--shadow)}
+.me{background:var(--face);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:12px 14px}
+.me .hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.hand{display:flex;gap:4px;flex-wrap:wrap;padding-top:10px;min-height:96px}
+.trolley{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding-top:14px}
+.trolley .tc{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--brown)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:2px solid var(--rule-d);background:var(--bg);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700;min-height:32px;box-shadow:none}
+.chip.bomb{border-color:var(--red);color:var(--red)}
+.msg{font-size:13px;color:var(--brown-d);min-height:18px;margin-top:6px}
+.err{color:var(--red);font-weight:700}
+.log{font-size:12px;color:var(--brown-d);max-height:140px;overflow:auto;background:var(--face);border-radius:10px;padding:8px 10px;margin-top:10px;color:var(--ink)}
+.overlay{position:fixed;inset:0;background:rgba(42,26,18,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{background:var(--bg);border-radius:18px;padding:18px;max-width:520px;width:100%;max-height:92vh;overflow:auto;border:3px solid var(--ink)}
+.modal h3{font-size:26px;margin-bottom:8px}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:3px solid var(--ink);border-radius:18px 18px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));z-index:9;max-height:70vh;overflow:auto;box-shadow:0 -8px 24px rgba(0,0,0,.25)}
+.sheet h3{font-size:22px;margin-bottom:6px}
+table.tbl{border-collapse:collapse;width:100%;font-size:14px}
+table.tbl th,table.tbl td{padding:6px 8px;border-top:1px solid var(--rule-d);text-align:left}
+table.tbl th{background:var(--jade);color:var(--cream)}
+.code{font-family:'Bagel Fat One',sans-serif;font-size:40px;letter-spacing:.12em;color:var(--red)}
+.lobby-seat{display:flex;justify-content:space-between;align-items:center;background:var(--face);color:var(--ink);border-radius:10px;padding:8px 12px;border:2px solid var(--rule-d)}
+.hint{font-size:12px;color:var(--brown)}
+.insert-row{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+.gap:hover,.gap.sel{background:var(--gold)}
+.lbl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
+.help{font-size:13px;color:var(--brown-d);line-height:1.4;margin:4px 0 6px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:700;margin-bottom:6px}
+.legend .lg{display:inline-flex;align-items:center;gap:4px}
+.legend .back{margin-left:0}
+.pm-opt{display:flex;flex-direction:column;gap:3px;flex:1 1 200px}
+.pm-opt .hint{font-size:12px}
+.chip .ck{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brown);margin-right:4px}
+.chip.bomb .ck{color:var(--red)}
+.coach{background:var(--jade);color:var(--cream);border-radius:16px;padding:12px 14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.coach .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--jade);font-family:'Bagel Fat One',sans-serif;font-size:22px}
+.coach .body{flex:1 1 auto;font-size:14px;line-height:1.4}
+.coach .body strong{color:var(--gold)}
+.coach .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.coach button{min-height:36px;padding:6px 12px;border-color:var(--cream);background:var(--cream);color:var(--jade);box-shadow:none}
+.coach button.ghost{background:transparent;color:var(--cream);border-color:rgba(251,241,222,.5)}
+.card.hint-pulse{animation:pulse 1.1s ease-in-out infinite;outline:3px solid var(--gold);outline-offset:2px}
+@keyframes pulse{0%,100%{transform:rotateX(14deg) translateY(0)}50%{transform:rotateX(14deg) translateY(-8px)}}
+.rules h3{font-size:22px;margin:14px 0 4px}
+.rules h3:first-child{margin-top:0}
+.rules p{margin:6px 0}
+.rules .ex{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.rules .ex .lbl{font-size:12px;font-weight:700;color:var(--brown);margin-right:6px;min-width:120px}
+.rules .ok{color:var(--jade);font-weight:800}.rules .no{color:var(--red);font-weight:800}
+.rules table{border-collapse:collapse;font-size:13px;margin:6px 0}
+.rules td,.rules th{padding:4px 8px;border-top:1px solid var(--rule-d);text-align:left}
+.modal.wide{max-width:760px}
+@media (max-width:600px){ .card{width:48px;height:68px}.card .rk{font-size:17px}.card .nm{display:none}.card .zh{font-size:9px}.card .art{top:18px;bottom:14px} .hero h1{font-size:34px} .others{grid-template-columns:repeat(2,minmax(0,1fr))} .gap{height:68px} }
+/* ---- bag ---- */
+.bagrow{display:flex;gap:16px;align-items:center;margin-top:22px;flex-wrap:wrap;position:relative;z-index:0}
+.bag{filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.card.just-drawn{animation:drawin .35s ease-out}
+@keyframes drawin{0%{transform:rotateX(14deg) translateY(-10px);opacity:0}100%{transform:rotateX(14deg) translateY(0);opacity:1}}
+/* ---- felt table (overrides) ---- */
+.center{background:radial-gradient(ellipse at 50% 30%,#35795A,var(--felt) 55%,var(--felt-d));color:var(--cream);border:6px solid var(--rack);box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 3px 0 var(--rack-d)}
+.center .lbl,.center .help,.center .muted,.center .play .who{color:#D9E8DE}
+.center .play.top .who{color:var(--gold)}
+.center .status{color:#fff}
+.trick{padding:6px 0 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<!-- ===== HOME ===== -->
+<section id="s-home" class="screen active">
+  <div class="hero"><h1>Dim Sum Rush</h1><div class="sub">Free-hand test build · play any tiles together · teams of 2 or 3, or every server for themselves · 3 rounds</div></div>
+  <div class="card-panel" style="margin-bottom:14px">
+    <label style="font-weight:800">Your name</label>
+    <div class="row" style="margin-top:6px"><input id="name" maxlength="16" placeholder="e.g. Mei" style="flex:1 1 200px"></div>
+  </div>
+  <div class="home-grid">
+    <div class="card-panel" style="border:3px solid var(--jade)">
+      <h3>Learn to play</h3>
+      <p class="muted" style="margin:0 0 8px">A guided 4-player table against bots. A coach explains each situation as it comes up and can show you its pick. About 15 minutes.</p>
+      <div class="col"><button class="jade" id="btn-tutorial">Start the tutorial</button><button class="ghost" id="btn-rules">Read the full rules</button></div>
+    </div>
+    <div class="card-panel">
+      <h3>Play against bots</h3>
+      <div class="col">
+        <label>Table <select id="solo-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
+        <button class="primary" id="btn-solo">Draw tiles</button>
+      </div>
+    </div>
+    <div class="card-panel">
+      <h3>Host an online table</h3>
+      <p class="muted" style="margin:0 0 8px">You get a 5-letter code. Friends open this same link, enter the code, and take seats. Empty seats are filled with bots when you start. Your browser runs the game, so keep this tab open.</p>
+      <div class="col">
+        <label>Table <select id="host-mode"><option value="team4">Teams · 4 players</option><option value="team6">Teams · 6 players</option><option value="solo2">Every Server · 2</option><option value="solo3">Every Server · 3</option><option value="solo4">Every Server · 4</option><option value="solo5">Every Server · 5</option><option value="solo6">Every Server · 6</option></select></label>
+        <button class="jade" id="btn-host">Open a table</button>
+      </div>
+    </div>
+    <div class="card-panel">
+      <h3>Join a table</h3>
+      <div class="col">
+        <input id="join-code" maxlength="5" placeholder="CODE" style="text-transform:uppercase;letter-spacing:.2em;font-weight:800">
+        <button class="jade" id="btn-join">Take a seat</button>
+      </div>
+    </div>
+  </div>
+  <div class="muted" style="margin-top:14px" id="home-msg"></div>
+  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Rules in brief</summary>
+  <div class="card-panel" style="margin-top:8px;font-size:14px">
+    <p><strong>Your cart</strong> is your hand, in a fixed order you can never rearrange. <strong>The trolley</strong> is the face-up tile in front of each player; you may use your own section's trolley tiles in any combination, in any position. Combinations: single, set of 2–3, run of 2–4; never more than four tiles. Two players use numbers 1–6. Tiles from your cart must be side by side, and a run's cart tiles must already be in rising or falling order.</p>
+    <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four, all from your own cart. A set beats a run; then an equal or higher number. No combination may have more than four tiles.</p>
+    <p><strong>Passing</strong> takes you out of the trick. When you pass you may fill any empty spot on your side with a cart tile, or swap a cart tile with a trolley tile (the taken tile goes anywhere in your cart). Used trolley tiles are not replaced.</p>
+    <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
+    <p><strong>Every Server for Themselves:</strong> no sections; you may use, fill and swap only your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
+  </div></details>
+</section>
+
+<!-- ===== LOBBY ===== -->
+<section id="s-lobby" class="screen">
+  <div class="topbar"><h2>Table open</h2><button class="ghost" id="btn-leave-lobby">Leave</button></div>
+  <div class="card-panel" style="text-align:center;margin-bottom:12px">
+    <div class="muted">Share this code (and this page's link)</div>
+    <div class="code" id="lobby-code">----</div>
+    <div class="muted" id="lobby-status"></div>
+  </div>
+  <div class="col" id="lobby-seats"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" id="btn-start" style="display:none">Start the rush</button>
+    <span class="hint" id="lobby-hint"></span>
+  </div>
+</section>
+
+<!-- ===== TABLE ===== -->
+<section id="s-table" class="screen">
+  <div class="topbar">
+    <h2 id="t-title">Round 1</h2>
+    <div class="score" id="t-score"></div>
+    <div class="row"><button class="ghost" id="btn-hints">Hints: on</button><button class="ghost" id="btn-rules2">Rules</button><button class="ghost" id="btn-log">Log</button><button class="ghost" id="btn-quit">Leave</button></div>
+  </div>
+  <div id="t-legend"></div>
+  <div class="others" id="t-others"></div>
+  <div class="center" id="t-center"></div>
+  <div class="coach" id="t-coach" style="display:none"></div>
+  <div class="me" id="t-me"></div>
+  <div class="log" id="t-log" style="display:none"></div>
+</section>
+</div>
+<div id="overlay"></div>
+<script>window.DSR_FREE = true;</script>
+<script>
+// Dim Sum Rush — pure game engine (locked rules). No DOM. Works in browser and node.
+// Cards are plain ranks (1..12). Trolley spots hold one rank or null.
+(function (root) {
+  'use strict';
+
+  const COPIES = 7;
+  const MAX_MELD = 4; // no combination, Chef's Specials included, may have more than 4 cards
+
+  function configFor(mode, N, free) {
+    if (free) {
+      // Free-hand numbers: tuned so Chef's Specials (four of a kind) land in roughly 25-40% of tricks
+      if (mode === 'team') {
+        if (N === 4) return { ranks: 8, hand: 14 };
+        if (N === 6) return { ranks: 12, hand: 13 };
+        throw new Error('team mode needs 4 or 6 players');
+      }
+      if (N < 2 || N > 6) throw new Error('2-6 players');
+      return [null, null, { ranks: 7, hand: 14 }, { ranks: 9, hand: 14 }, { ranks: 9, hand: 14 }, { ranks: 10, hand: 14 }, { ranks: 12, hand: 13 }][N];
+    }
+    if (mode === 'team') {
+      if (N === 4) return { ranks: 9, hand: 14 };
+      if (N === 6) return { ranks: 12, hand: 13 };
+      throw new Error('team mode needs 4 or 6 players');
+    }
+    if (N < 2 || N > 6) throw new Error('2-6 players');
+    if (N === 2) return { ranks: 6, hand: 14 };
+    if (N <= 4) return { ranks: 9, hand: 14 };
+    if (N === 5) return { ranks: 12, hand: 14 };
+    return { ranks: 12, hand: 13 };
+  }
+
+  function bandOf(r) { return r <= 3 ? 0 : r <= 6 ? 1 : r <= 9 ? 2 : 3; }
+
+  // ---------- RNG (seedable for tests) ----------
+  function makeRng(seed) {
+    let s = (seed >>> 0) || 0x9e3779b9;
+    return function () {
+      s += 0x6D2B79F5; let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- Combination classification ----------
+  // handCards: ranks in hand order (adjacent slice). slotCards: ranks taken from trolley.
+  // Returns {type:'single'|'set'|'run', size, top, bomb} or null.
+  function classify(handCards, slotCards, rules) {
+    const all = handCards.concat(slotCards);
+    const n = all.length;
+    if (n === 0 || n > MAX_MELD) return null;
+    if (n === 1) return { type: 'single', size: 1, top: all[0], bomb: false };
+    const first = all[0];
+    if (all.every(r => r === first)) {
+      if (n >= 4) return { type: 'set', size: n, top: first, bomb: slotCards.length === 0 };
+      return { type: 'set', size: n, top: first, bomb: false };
+    }
+    // run: distinct consecutive, hand portion already in rising or falling order
+    const sorted = all.slice().sort((a, b) => a - b);
+    for (let i = 1; i < n; i++) if (sorted[i] !== sorted[i - 1] + 1) return null;
+    if (handCards.length >= 2) {
+      let up = true, down = true;
+      for (let i = 1; i < handCards.length; i++) {
+        if (handCards[i] <= handCards[i - 1]) up = false;
+        if (handCards[i] >= handCards[i - 1]) down = false;
+      }
+      if (!up && !down) return null;
+    }
+    return { type: 'run', size: n, top: sorted[n - 1], bomb: n >= 4 && slotCards.length === 0 && !(rules && rules.noRunSpecial) };
+  }
+
+  // Does combo b beat combo a (a is on the table)?
+  function beats(b, a) {
+    if (!a) return true;
+    if (b.bomb && !a.bomb) return true;
+    if (!b.bomb && a.bomb) return false;
+    if (b.bomb && a.bomb) {
+      if (b.size !== a.size) return b.size > a.size;
+      if (b.type !== a.type) return b.type === 'set'; // set beats run at equal size
+      return b.top >= a.top; // match or beat, same as ordinary combinations
+    }
+    return b.type === a.type && b.size === a.size && b.top >= a.top; // match or beat
+  }
+
+  // ---------- State ----------
+  function newGame(opts) {
+    const mode = opts.mode || 'team';
+    const N = opts.players.length;
+    const free = opts.freeHand !== undefined ? !!opts.freeHand : (typeof root !== 'undefined' && root.DSR_FREE === true);
+    const cfg = configFor(mode, N, free);
+    if (opts.handSize) cfg.hand = opts.handSize;
+    if (opts.ranks) cfg.ranks = opts.ranks;
+    if (cfg.hand * N > cfg.ranks * COPIES) throw new Error('not enough tiles');
+    const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
+    const g = {
+      mode, N, ranks: cfg.ranks, handSize: cfg.hand,
+      freeHand: free,
+      noRunSpecial: opts.noRunSpecial !== undefined ? !!opts.noRunSpecial : free, // free hands: only four of a kind is a Special
+      players: opts.players.map((p, i) => ({
+        name: p.name, bot: !!p.bot, team: mode === 'team' ? i % 2 : i,
+        hand: [], slot: null, out: false, pick: null,
+      })),
+      round: 0, maxRounds: 3,
+      scores: mode === 'team' ? [0, 0] : opts.players.map(() => 0),
+      roundHistory: [],
+      firstLeader: opts.firstLeader != null ? opts.firstLeader : Math.floor(rng() * N),
+      phase: 'lobby',
+      trick: null,
+      log: [],
+      seedState: null,
+      _rng: rng,
+    };
+    startRound(g);
+    return g;
+  }
+
+  function startRound(g) {
+    g.round += 1;
+    const deck = [];
+    for (let r = 1; r <= g.ranks; r++) for (let c = 0; c < COPIES; c++) deck.push(r);
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(g._rng() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    g.players.forEach(p => { p.hand = []; p.slot = null; p.out = false; p.pick = null; });
+    for (let k = 0; k < g.handSize; k++) for (let i = 0; i < g.N; i++) g.players[i].hand.push(deck.pop());
+    g.players.forEach(p => { p.dealt = p.hand.slice(); if (g.freeHand) p.hand.sort((a, b) => a - b); });
+    g.phase = 'faceup';
+    g.trick = null;
+    g.discard = [];
+    g.tricksPlayed = 0;
+    if (g.round > 1) g.firstLeader = (g.firstLeader + 1) % g.N;
+    g.log.push({ t: 'round', round: g.round });
+  }
+
+  // Every player picks one hand index to put face up. When all have picked, reveal.
+  function pickFaceUp(g, seat, handIndex) {
+    if (g.phase !== 'faceup') return err('Not the face-up phase');
+    const p = g.players[seat];
+    if (p.pick != null) return err('Already picked');
+    if (handIndex < 0 || handIndex >= p.hand.length) return err('Bad tile');
+    p.pick = handIndex;
+    if (g.players.every(q => q.pick != null)) {
+      g.players.forEach(q => { q.slot = q.hand.splice(q.pick, 1)[0]; q.pick = null; });
+      g.phase = 'play';
+      g.trick = { leader: g.firstLeader, turn: g.firstLeader, plays: [], passed: [], top: null, topSeat: null };
+      g.log.push({ t: 'faceup', slots: g.players.map(q => q.slot) });
+    }
+    return ok();
+  }
+
+  // A play names hand tiles by index: play.idx (any indices) or the older play.hi..play.hj slice.
+  // In the fixed-order game the indices must be one contiguous block; in the free-hand game, any tiles.
+  function playIdx(play) {
+    if (play.idx) return play.idx.slice().sort((a, b) => a - b);
+    if (play.hi == null || play.hi < 0) return [];
+    const out = []; for (let i = play.hi; i <= play.hj; i++) out.push(i); return out;
+  }
+  function contiguous(idx) { for (let k = 1; k < idx.length; k++) if (idx[k] !== idx[k - 1] + 1) return false; return true; }
+  function sortHand(g, p) { if (g.freeHand) p.hand.sort((a, b) => a - b); }
+
+  function ok(extra) { return Object.assign({ ok: true }, extra || {}); }
+  function err(m) { return { ok: false, error: m }; }
+
+  // Which trolley spots (seat indexes) may `seat` use?
+  function accessibleSlots(g, seat) {
+    const out = [];
+    if (g.mode === 'team') {
+      for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[seat].team) out.push(i);
+    } else {
+      const set = new Set([seat, (seat + 1) % g.N, (seat + g.N - 1) % g.N]);
+      for (let i = 0; i < g.N; i++) if (set.has(i)) out.push(i);
+    }
+    return out;
+  }
+
+  // Enumerate legal plays for seat. Each play: {hi, hj (inclusive hand slice, or hi=-1 none), slots:[seat indexes], combo}
+  function legalPlays(g, seat, opts) {
+    const p = g.players[seat];
+    const res = [];
+    if (g.phase !== 'play' || p.out) return res;
+    const top = g.trick.top;
+    const slotSeats = accessibleSlots(g, seat).filter(i => g.players[i].slot != null);
+    const slotRanks = slotSeats.map(i => g.players[i].slot);
+    const maxSlice = Math.min(p.hand.length, MAX_MELD);
+    const subsets = [];
+    for (let m = 0; m < (1 << slotSeats.length); m++) {
+      const seats = [], ranks = [];
+      for (let b = 0; b < slotSeats.length; b++) if (m & (1 << b)) { seats.push(slotSeats[b]); ranks.push(slotRanks[b]); }
+      subsets.push({ seats, ranks });
+    }
+    const tryAdd = (hi, hj, hand, sub) => {
+      const c = classify(hand, sub.ranks, g);
+      if (!c) return;
+      if (top && !beats(c, top)) return;
+      if (!top && opts && opts.leadNoBomb && c.bomb) return;
+      res.push({ hi, hj, idx: hi >= 0 ? playIdx({ hi, hj }) : [], slots: sub.seats, combo: c });
+    };
+    if (g.freeHand) {
+      // hand is sorted; pick tiles by rank: sets (k copies of one rank) and runs (distinct ranks)
+      const pos = {}; p.hand.forEach((r, i) => { (pos[r] = pos[r] || []).push(i); });
+      const ranks = Object.keys(pos).map(Number).sort((a, b) => a - b);
+      const picks = [[]];
+      for (const r of ranks) for (let k = 1; k <= Math.min(pos[r].length, MAX_MELD); k++) picks.push(pos[r].slice(0, k));
+      const choose = (start, chosen) => {
+        if (chosen.length >= 2) picks.push(chosen.map(r => pos[r][0]));
+        if (chosen.length === MAX_MELD) return;
+        for (let k = start; k < ranks.length; k++) {
+          if (chosen.length && ranks[k] - chosen[0] > MAX_MELD - 1) break; // a run spans at most 4 numbers
+          choose(k + 1, chosen.concat(ranks[k]));
+        }
+      };
+      choose(0, []);
+      for (const sub of subsets) for (const idx of picks) {
+        if (idx.length + sub.ranks.length === 0 || idx.length + sub.ranks.length > MAX_MELD) continue;
+        const c = classify(idx.map(i => p.hand[i]), sub.ranks, g);
+        if (!c) continue;
+        if (top && !beats(c, top)) continue;
+        if (!top && opts && opts.leadNoBomb && c.bomb) continue;
+        res.push({ idx, slots: sub.seats, combo: c });
+      }
+      return res;
+    }
+    for (const sub of subsets) {
+      if (sub.seats.length > 0) tryAdd(-1, -1, [], sub); // trolley-only
+      for (let i = 0; i < p.hand.length; i++) {
+        for (let j = i; j < p.hand.length && j - i < maxSlice; j++) {
+          const hand = p.hand.slice(i, j + 1);
+          // quick prune: a hand slice with a non-monotonic, non-equal pattern can't be anything
+          tryAdd(i, j, hand, sub);
+        }
+      }
+    }
+    return res;
+  }
+
+  function canPlay(g, seat) { return legalPlays(g, seat).length > 0; }
+
+  function describePlay(g, seat, play) {
+    const p = g.players[seat];
+    const hand = playIdx(play).map(i => p.hand[i]);
+    const slots = play.slots.map(i => g.players[i].slot);
+    return { hand, slots };
+  }
+
+  function applyPlay(g, seat, play) {
+    if (g.phase !== 'play') return err('Not playing');
+    if (g.trick.turn !== seat) return err('Not your turn');
+    const p = g.players[seat];
+    const idx = playIdx(play);
+    if (idx.some(i => i < 0 || i >= p.hand.length) || new Set(idx).size !== idx.length) return err('Bad tile');
+    if (!g.freeHand && !contiguous(idx)) return err('Tiles from your hand must sit next to each other');
+    const hand = idx.map(i => p.hand[i]);
+    const slotRanks = [];
+    const acc = accessibleSlots(g, seat);
+    for (const i of play.slots) {
+      if (!acc.includes(i) || g.players[i].slot == null) return err('Bad trolley tile');
+      slotRanks.push(g.players[i].slot);
+    }
+    if (hand.length + slotRanks.length === 0) return err('Empty play');
+    const c = classify(hand, slotRanks, g);
+    if (!c) return err('Not a legal combination');
+    if (g.trick.top && !beats(c, g.trick.top)) return err('Does not beat the table');
+    // apply
+    const cards = hand.map(r => ({ r, src: 'hand' })).concat(play.slots.map(i => ({ r: g.players[i].slot, src: 'slot', owner: i })));
+    for (let k = idx.length - 1; k >= 0; k--) p.hand.splice(idx[k], 1);
+    for (const i of play.slots) g.players[i].slot = null;
+    g.trick.plays.push({ seat, cards, combo: c });
+    g.trick.top = c; g.trick.topSeat = seat;
+    g.log.push({ t: 'play', seat, cards: cards.map(x => x.r), combo: c });
+    if (p.hand.length === 0) { p.out = true; g.log.push({ t: 'out', seat }); }
+    if (checkRoundEnd(g)) return ok({ roundEnded: true });
+    advanceTurn(g);
+    return ok();
+  }
+
+  // pass: {kind:'none'} | {kind:'fill', handIndex, slotSeat} | {kind:'swap', slotSeat, handIndex, insertAt}
+  function applyPass(g, seat, pass) {
+    if (g.phase !== 'play') return err('Not playing');
+    if (g.trick.turn !== seat) return err('Not your turn');
+    if (g.trick.plays.length === 0) return err('The leader cannot pass');
+    const p = g.players[seat];
+    const acc = accessibleSlots(g, seat);
+    pass = pass || { kind: 'none' };
+    if (pass.kind === 'fill') {
+      if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot != null) return err('That spot is not empty');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad tile');
+      g.players[pass.slotSeat].slot = p.hand.splice(pass.handIndex, 1)[0];
+      g.log.push({ t: 'fill', seat, slotSeat: pass.slotSeat, r: g.players[pass.slotSeat].slot });
+      if (p.hand.length === 0) { p.out = true; g.log.push({ t: 'out', seat }); }
+    } else if (pass.kind === 'swap') {
+      if (!acc.includes(pass.slotSeat) || g.players[pass.slotSeat].slot == null) return err('That spot is empty');
+      if (pass.handIndex < 0 || pass.handIndex >= p.hand.length) return err('Bad tile');
+      const taken = g.players[pass.slotSeat].slot;
+      const given = p.hand.splice(pass.handIndex, 1)[0];
+      let at = pass.insertAt == null ? p.hand.length : pass.insertAt;
+      at = Math.max(0, Math.min(p.hand.length, at));
+      p.hand.splice(at, 0, taken);
+      sortHand(g, p);
+      g.players[pass.slotSeat].slot = given;
+      g.log.push({ t: 'swap', seat, slotSeat: pass.slotSeat, took: taken, gave: given });
+    } else {
+      g.log.push({ t: 'pass', seat });
+    }
+    g.trick.passed.push(seat);
+    if (checkRoundEnd(g)) return ok({ roundEnded: true });
+    advanceTurn(g);
+    return ok();
+  }
+
+  function stillIn(g, seat) {
+    return !g.players[seat].out && !g.trick.passed.includes(seat);
+  }
+
+  function advanceTurn(g) {
+    const t = g.trick;
+    // candidates: players still in the trick other than the top seat
+    const others = [];
+    for (let k = 1; k < g.N; k++) {
+      const s = (t.topSeat + k) % g.N;
+      if (stillIn(g, s)) others.push(s);
+    }
+    if (others.length === 0) { endTrick(g); return; }
+    // next in seat order after current turn who is still in
+    for (let k = 1; k <= g.N; k++) {
+      const s = (t.turn + k) % g.N;
+      if (s === t.topSeat) continue; // the top seat does not play on itself; others get a turn first
+      if (stillIn(g, s)) { t.turn = s; return; }
+    }
+    endTrick(g);
+  }
+
+  function endTrick(g) {
+    const t = g.trick;
+    const winner = t.topSeat;
+    g.tricksPlayed += 1;
+    g.discard.push(...t.plays.flatMap(pl => pl.cards.map(c => c.r)));
+    g.log.push({ t: 'trickEnd', winner, bomb: t.top.bomb });
+    g.lastTrick = { plays: t.plays, winner };
+    if (g.mode === 'team') {
+      const options = leaderOptions(g, winner);
+      if (options.length === 0) { // whole team out: round should have ended already
+        checkRoundEnd(g); return;
+      }
+      g.phase = 'chooseLeader';
+      g.chooser = winner;
+      g.leaderOptions = options;
+    } else {
+      startTrick(g, winner);
+    }
+  }
+
+  function leaderOptions(g, winner) {
+    const opts = [];
+    for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[winner].team && !g.players[i].out) opts.push(i);
+    return opts;
+  }
+
+  function chooseLeader(g, seat, leader) {
+    if (g.phase !== 'chooseLeader') return err('Not choosing');
+    if (seat !== g.chooser) return err('Not your choice');
+    if (!g.leaderOptions.includes(leader)) return err('Not a legal leader');
+    g.log.push({ t: 'lead', chooser: seat, leader });
+    startTrick(g, leader);
+    return ok();
+  }
+
+  function startTrick(g, leader) {
+    g.phase = 'play';
+    g.trick = { leader, turn: leader, plays: [], passed: [], top: null, topSeat: null };
+  }
+
+  function checkRoundEnd(g) {
+    let ended = false;
+    if (g.mode === 'team') {
+      for (const team of [0, 1]) {
+        if (g.players.every(p => p.team !== team || p.out)) { ended = true; g.roundWinner = team; }
+      }
+    } else {
+      const w = g.players.findIndex(p => p.out);
+      if (w >= 0) { ended = true; g.roundWinner = w; }
+    }
+    if (!ended) return false;
+    // scoring
+    const pens = g.players.map(p => p.hand.length);
+    let summary;
+    if (g.mode === 'team') {
+      const loser = 1 - g.roundWinner;
+      const pen = Math.max(...g.players.filter(p => p.team === loser).map(p => p.hand.length));
+      g.scores[loser] += pen;
+      summary = { round: g.round, winnerTeam: g.roundWinner, loserTeam: loser, penalty: pen, hands: pens };
+    } else {
+      g.players.forEach((p, i) => { g.scores[i] += p.hand.length; });
+      summary = { round: g.round, winner: g.roundWinner, hands: pens };
+    }
+    g.roundHistory.push(summary);
+    g.log.push({ t: 'roundEnd', summary });
+    g.phase = g.round >= g.maxRounds ? 'gameEnd' : 'roundEnd';
+    return true;
+  }
+
+  function nextRound(g) {
+    if (g.phase !== 'roundEnd') return err('Round not over');
+    startRound(g);
+    return ok();
+  }
+
+  function finalStandings(g) {
+    if (g.mode === 'team') {
+      const [a, b] = g.scores;
+      return { winners: a === b ? [0, 1] : a < b ? [0] : [1], scores: g.scores.slice() };
+    }
+    const min = Math.min(...g.scores);
+    return { winners: g.scores.map((s, i) => s === min ? i : -1).filter(i => i >= 0), scores: g.scores.slice() };
+  }
+
+  // ---------- Bots ----------
+  // Free-hand helpers: a hand is a multiset, so cost and Specials come from rank counts.
+  const costMemo = new Map();
+  function countsOf(hand) { const c = new Array(13).fill(0); for (const r of hand) c[r]++; return c; }
+  function freeCost(c) {
+    const key = c.join(',');
+    if (costMemo.has(key)) return costMemo.get(key);
+    let r = 1; while (r <= 12 && c[r] === 0) r++;
+    let best = 0;
+    if (r <= 12) {
+      best = Infinity;
+      c[r]--; best = Math.min(best, 1.2 + freeCost(c)); c[r]++;                       // single
+      for (let k = 2; k <= Math.min(c[r], MAX_MELD); k++) { c[r] -= k; best = Math.min(best, 1 + freeCost(c)); c[r] += k; } // set
+      for (let L = 2; L <= MAX_MELD && r + L - 1 <= 12; L++) {                          // run r..r+L-1
+        let okRun = true; for (let q = r; q < r + L; q++) if (!c[q]) okRun = false;
+        if (!okRun) break;
+        for (let q = r; q < r + L; q++) c[q]--; best = Math.min(best, 1 + freeCost(c)); for (let q = r; q < r + L; q++) c[q]++;
+      }
+    }
+    if (costMemo.size > 200000) costMemo.clear();
+    costMemo.set(key, best);
+    return best;
+  }
+  function freeBombs(hand) {
+    const c = countsOf(hand); let n = 0;
+    for (let r = 1; r <= 12; r++) while (c[r] >= 4) { c[r] -= 4; n++; }
+    if (!freeBombs.noRun) for (let r = 1; r <= 9; r++) while (c[r] && c[r + 1] && c[r + 2] && c[r + 3]) { for (let q = r; q < r + 4; q++) c[q]--; n++; }
+    return n;
+  }
+
+  // A cheap "cost" of a hand: how many plays it would take to shed it greedily, lower is better.
+  function handCost(hand) {
+    if (handCost.free) return freeCost(countsOf(hand));
+    let i = 0, cost = 0;
+    while (i < hand.length) {
+      let j = i;
+      // same-rank block
+      while (j + 1 < hand.length && hand[j + 1] === hand[i]) j++;
+      if (j > i) { cost += 1; i = j + 1; continue; }
+      // monotone consecutive run
+      let k = i;
+      while (k + 1 < hand.length && Math.abs(hand[k + 1] - hand[k]) === 1 && (k === i || (hand[k + 1] - hand[k]) === (hand[k] - hand[k - 1]))) k++;
+      if (k > i) { cost += 1; i = k + 1; continue; }
+      cost += 1.2; i++;
+    }
+    return cost;
+  }
+
+  // number of hand-only Chef's Specials currently sitting in a hand (non-overlapping scan)
+  function countBombs(hand) {
+    if (handCost.free) return freeBombs(hand);
+    let n = 0, i = 0;
+    while (i < hand.length) {
+      let j = i; while (j + 1 < hand.length && hand[j + 1] === hand[i]) j++;
+      if (j - i + 1 >= 4) { n++; i = j + 1; continue; }
+      let k = i;
+      while (k + 1 < hand.length && Math.abs(hand[k + 1] - hand[k]) === 1 && (k === i || (hand[k + 1] - hand[k]) === (hand[k] - hand[k - 1]))) k++;
+      if (k - i + 1 >= 4) { n++; i = k + 1; continue; }
+      i++;
+    }
+    return n;
+  }
+
+  function isOrphan(hand, idx) {
+    const r = hand[idx];
+    if (handCost.free) { let same = 0, near = false; for (const x of hand) { if (x === r) same++; else if (Math.abs(x - r) === 1) near = true; } return same === 1 && !near; }
+    const l = idx > 0 ? hand[idx - 1] : null, rr = idx + 1 < hand.length ? hand[idx + 1] : null;
+    const near = x => x != null && Math.abs(x - r) <= 1;
+    return !near(l) && !near(rr);
+  }
+
+  function botFaceUpPick(g, seat) {
+    handCost.free = !!g.freeHand; freeBombs.noRun = !!g.noRunSpecial;
+    const h = g.players[seat].hand;
+    let best = 0, bestScore = -1e9;
+    for (let i = 0; i < h.length; i++) {
+      let s = isOrphan(h, i) ? 10 : 0;
+      s -= Math.abs(h[i] - (g.ranks + 1) / 2) * 0.3; // middling cards are most useful as bridges
+      s += g._rng() * 0.5;
+      if (s > bestScore) { bestScore = s; best = i; }
+    }
+    return best;
+  }
+
+  function teamOf(g, seat) { return g.players[seat].team; }
+
+  function botDecide(g, seat) {
+    handCost.free = !!g.freeHand; freeBombs.noRun = !!g.noRunSpecial;
+    const p = g.players[seat];
+    const t = g.trick;
+    const leading = t.plays.length === 0;
+    const plays = legalPlays(g, seat);
+    const rng = g._rng;
+    const opponentsTop = !leading && (g.mode !== 'team' || teamOf(g, t.topSeat) !== p.team);
+    const trailing = g.mode === 'team'
+      ? Math.max(...g.players.filter(q => q.team === p.team).map(q => q.hand.length)) >= Math.max(...g.players.filter(q => q.team !== p.team).map(q => q.hand.length))
+      : true;
+
+    const score = pl => {
+      const used = new Set(playIdx(pl));
+      const handLeft = p.hand.filter((_, i) => !used.has(i));
+      const nHand = used.size;
+      let s = -handCost(handLeft) * 2;         // leave a cheap hand
+      if (!pl.combo.bomb) s -= 3 * (countBombs(p.hand) - countBombs(handLeft)); // don't break a Special
+      s += nHand * 1.0;                          // shed hand cards
+      s -= pl.combo.top * 0.15;                  // keep high cards for later
+      s -= pl.slots.length * 0.6;                // trolley cards are shared tools; don't burn them idly
+      if (pl.combo.bomb) s -= leading ? 6 : (opponentsTop ? -3 : 4);
+      if (handLeft.length === 0) s += 8;         // going out is great
+      return s + rng() * 0.3;
+    };
+
+    if (leading) {
+      let best = null, bs = -1e9;
+      for (const pl of plays) { const s = score(pl); if (s > bs) { bs = s; best = pl; } }
+      return { action: 'play', play: best };
+    }
+    // Following: decide between best play and passing
+    let best = null, bs = -1e9;
+    for (const pl of plays) { const s = score(pl); if (s > bs) { bs = s; best = pl; } }
+    // partner is on top with an ordinary play: usually let it ride
+    const partnerTop = g.mode === 'team' && teamOf(g, t.topSeat) === p.team;
+    let play = best;
+    if (partnerTop && best && !best.combo.bomb && rng() < 0.7) play = null;
+    if (best && best.combo.bomb && !(opponentsTop && (trailing || p.hand.length <= 6 || rng() < 0.6))) play = null;
+    if (play) return { action: 'play', play };
+    return { action: 'pass', pass: botPassChoice(g, seat) };
+  }
+
+  function botPassChoice(g, seat) {
+    handCost.free = !!g.freeHand; freeBombs.noRun = !!g.noRunSpecial;
+    const p = g.players[seat];
+    const acc = accessibleSlots(g, seat);
+    const rng = g._rng;
+    // 1. fill an empty spot with an orphan (never our last card unless it wins the round for us)
+    const empty = acc.filter(i => g.players[i].slot == null);
+    const orphans = p.hand.map((r, i) => i).filter(i => isOrphan(p.hand, i));
+    if (empty.length && p.hand.length > 1 && orphans.length) {
+      // prefer middling orphan
+      orphans.sort((a, b) => Math.abs(p.hand[a] - (g.ranks + 1) / 2) - Math.abs(p.hand[b] - (g.ranks + 1) / 2));
+      const slotSeat = empty.includes(seat) ? seat : empty[0];
+      return { kind: 'fill', handIndex: orphans[0], slotSeat };
+    }
+    // 2. swap: take a trolley card that lowers hand cost, give an orphan
+    const filled = acc.filter(i => g.players[i].slot != null);
+    let best = null, bestGain = 0.5;
+    const base = handCost(p.hand);
+    for (const si of filled) {
+      const r = g.players[si].slot;
+      for (const gi of (orphans.length ? orphans : p.hand.map((_, i) => i))) {
+        const h = p.hand.slice(); h.splice(gi, 1);
+        for (let at = 0; at <= (g.freeHand ? 0 : h.length); at++) {
+          const h2 = h.slice(); h2.splice(at, 0, r);
+          const gain = base - handCost(h2) + 2 * (countBombs(h2) - countBombs(p.hand));
+          if (gain > bestGain) { bestGain = gain; best = { kind: 'swap', slotSeat: si, handIndex: gi, insertAt: at }; }
+        }
+      }
+    }
+    if (best) return best;
+    if (empty.length && p.hand.length > 1 && rng() < 0.5) return { kind: 'fill', handIndex: 0, slotSeat: empty[0] };
+    return { kind: 'none' };
+  }
+
+  function botChooseLeader(g, seat) {
+    const opts = g.leaderOptions;
+    // give the lead to the teammate with the most cards (they need tempo), keep it if we are close
+    let best = opts[0], most = -1;
+    for (const i of opts) { const n = g.players[i].hand.length + (i === seat ? 1 : 0); if (n > most) { most = n; best = i; } }
+    return best;
+  }
+
+  // Run one bot step if it's a bot's turn. Returns true if something happened.
+  function botStep(g) {
+    if (g.phase === 'faceup') {
+      let did = false;
+      g.players.forEach((p, i) => { if (p.bot && p.pick == null) { pickFaceUp(g, i, botFaceUpPick(g, i)); did = true; } });
+      return did;
+    }
+    if (g.phase === 'play') {
+      const s = g.trick.turn;
+      if (!g.players[s].bot) return false;
+      const d = botDecide(g, s);
+      const r = d.action === 'play' ? applyPlay(g, s, d.play) : applyPass(g, s, d.pass);
+      if (!r.ok) { // should not happen; fail safe
+        const pl = legalPlays(g, s);
+        if (pl.length) applyPlay(g, s, pl[0]); else applyPass(g, s, { kind: 'none' });
+      }
+      return true;
+    }
+    if (g.phase === 'chooseLeader') {
+      if (!g.players[g.chooser].bot) return false;
+      chooseLeader(g, g.chooser, botChooseLeader(g, g.chooser));
+      return true;
+    }
+    return false;
+  }
+
+  // ---------- Views (hidden information) ----------
+  function viewFor(g, seat) {
+    return {
+      mode: g.mode, N: g.N, ranks: g.ranks, round: g.round, maxRounds: g.maxRounds, freeHand: !!g.freeHand, noRunSpecial: !!g.noRunSpecial,
+      scores: g.scores.slice(), roundHistory: g.roundHistory, phase: g.phase,
+      me: seat,
+      players: g.players.map((p, i) => ({
+        name: p.name, bot: p.bot, team: p.team, slot: p.slot, out: p.out,
+        count: p.hand.length,
+        picked: p.pick != null,
+        backs: p.hand.map(bandOf),
+        hand: i === seat ? p.hand.slice() : undefined,
+        dealt: i === seat && g.phase === 'faceup' ? (p.dealt || p.hand).slice() : undefined,
+      })),
+      trick: g.trick ? { leader: g.trick.leader, turn: g.trick.turn, plays: g.trick.plays, passed: g.trick.passed, top: g.trick.top, topSeat: g.trick.topSeat } : null,
+      lastTrick: g.lastTrick || null,
+      chooser: g.chooser, leaderOptions: g.phase === 'chooseLeader' ? g.leaderOptions : null,
+      firstLeader: g.firstLeader,
+      logTail: g.log.slice(-12),
+      tricksPlayed: g.tricksPlayed,
+    };
+  }
+
+  // A view is enough to compute legal plays for `me` (hand + slots). Build a shim.
+  function legalPlaysFromView(v) {
+    if (v.phase !== 'play' || v.trick.turn !== v.me) return [];
+    const g = { mode: v.mode, N: v.N, freeHand: !!v.freeHand, noRunSpecial: !!v.noRunSpecial, phase: 'play', players: v.players.map((p, i) => ({ team: p.team, slot: p.slot, out: p.out, hand: i === v.me ? p.hand : [] })), trick: { top: v.trick.top } };
+    return legalPlays(g, v.me);
+  }
+  function accessibleFromView(v, seat) {
+    const g = { mode: v.mode, N: v.N, players: v.players.map(p => ({ team: p.team })) };
+    return accessibleSlots(g, seat);
+  }
+
+  const api = { playIdx, countBombs, configFor, bandOf, classify, beats, newGame, pickFaceUp, legalPlays, applyPlay, applyPass, chooseLeader, nextRound, finalStandings, accessibleSlots, botStep, botDecide, botFaceUpPick, botChooseLeader, viewFor, legalPlaysFromView, accessibleFromView, describePlay, handCost, makeRng };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.DSR = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>window.DSR_ART = {"art": {"1": {"name": "Har Gow", "zh": "蝦餃", "band": "steamer", "svg": "<path d=\"M18 154 C 12 104, 56 38, 134 38 C 212 38, 250 104, 242 154 Z\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M78 104 l 8 -26\" stroke=\"#B07A2A\" stroke-width=\"10\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M104 92 l 8 -26\" stroke=\"#B07A2A\" stroke-width=\"10\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 80 l 8 -26\" stroke=\"#B07A2A\" stroke-width=\"10\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M156 92 l 8 -26\" stroke=\"#B07A2A\" stroke-width=\"10\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M182 104 l 8 -26\" stroke=\"#B07A2A\" stroke-width=\"10\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "2": {"name": "Siu Mai", "zh": "燒賣", "band": "steamer", "svg": "<ellipse cx=\"130\" cy=\"58\" rx=\"80\" ry=\"22\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M50 58 L66 158 C 96 176, 164 176, 194 158 L210 58\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M98 92 L102 158 M130 96 L130 166 M162 92 L158 158\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><circle cx=\"130\" cy=\"56\" r=\"9\" fill=\"#B07A2A\"></circle>"}, "3": {"name": "Char Siu Bao", "zh": "叉燒包", "band": "steamer", "svg": "<path d=\"M130 46 C 70 46, 26 98, 34 152 C 70 172, 190 172, 226 152 C 234 98, 190 46, 130 46 Z\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 46 C 123 72, 88 91, 62 100\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 46 C 133 72, 109 102, 90 120\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 46 C 144 67, 137 104, 128 128\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 46 C 152 58, 163 94, 166 120\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 46 C 156 48, 182 77, 196 100\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M18 182 L242 182\" fill=\"none\" stroke=\"#B07A2A\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "4": {"name": "Cheung Fun", "zh": "腸粉", "band": "plate", "svg": "<path d=\"M204 40 L56 40 C 28 40, 28 100, 56 100 L204 100\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"204\" cy=\"70\" rx=\"20\" ry=\"30\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M204 70 C 204 61, 215 61, 215 70 C 215 84, 194 84, 194 70 C 194 54, 212 49, 219 59\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M204 112 L56 112 C 28 112, 28 172, 56 172 L204 172\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"204\" cy=\"142\" rx=\"20\" ry=\"30\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M204 142 C 204 133, 215 133, 215 142 C 215 156, 194 156, 194 142 C 194 126, 212 121, 219 131\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "5": {"name": "Turnip Cake", "zh": "蘿蔔糕", "band": "plate", "svg": "<path d=\"M52 92 L84 60 L208 60 L208 132 L176 164 L52 164 Z\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M52 92 L176 92 L208 60 M176 92 L176 164\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M80 118 h14 M118 132 h18 M92 144 h10\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "6": {"name": "Spring Roll", "zh": "春卷", "band": "plate", "svg": "<g transform=\"translate(130 106) rotate(-32) scale(0.92) translate(-142 -108)\"><path d=\"M60 64 L196 64 C 240 64, 240 152, 196 152 L60 152\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"60\" cy=\"108\" rx=\"26\" ry=\"44\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"62\" cy=\"108\" rx=\"17\" ry=\"33\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M50 96 Q 56 88, 62 94 Q 70 90, 70 100 Q 76 106, 70 112 Q 74 122, 64 122 Q 58 130, 52 122 Q 44 116, 50 108 Q 44 100, 50 96 Z\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M98 64 C 140 74, 172 116, 186 152\" fill=\"none\" stroke=\"#2F5D9E\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path></g>"}, "7": {"name": "Congee", "zh": "粥", "band": "bowl", "svg": "<ellipse cx=\"130\" cy=\"92\" rx=\"104\" ry=\"44\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M26 92 C 30 150, 76 178, 130 178 C 184 178, 230 150, 234 92\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M100 178 L100 188 L160 188 L160 178\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><rect x=\"84\" y=\"80\" width=\"80\" height=\"20\" rx=\"10\" transform=\"rotate(-10 124 90)\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect><circle cx=\"182\" cy=\"96\" r=\"8\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle><circle cx=\"66\" cy=\"100\" r=\"8\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle>"}, "8": {"name": "Wonton Soup", "zh": "雲吞湯", "band": "bowl", "svg": "<ellipse cx=\"130\" cy=\"92\" rx=\"104\" ry=\"44\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M26 92 C 30 150, 76 178, 130 178 C 184 178, 230 150, 234 92\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M100 178 L100 188 L160 188 L160 178\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M101.0 92.0 Q 107.4 101.0, 94.6 102.6 Q 89.8 112.3, 80.2 105.3 Q 67.8 108.3, 68.7 97.9 Q 58.0 92.0, 68.7 86.1 Q 67.8 75.7, 80.2 78.7 Q 89.8 71.7, 94.6 81.4 Q 107.4 83.0, 101.0 92.0 Z\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><circle cx=\"84\" cy=\"92\" r=\"5\" fill=\"#A8462A\"></circle><path d=\"M149.0 110.0 Q 155.4 119.0, 142.6 120.6 Q 137.8 130.3, 128.2 123.3 Q 115.8 126.3, 116.7 115.9 Q 106.0 110.0, 116.7 104.1 Q 115.8 93.7, 128.2 96.7 Q 137.8 89.7, 142.6 99.4 Q 155.4 101.0, 149.0 110.0 Z\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><circle cx=\"132\" cy=\"110\" r=\"5\" fill=\"#A8462A\"></circle><path d=\"M195.0 86.0 Q 201.4 95.0, 188.6 96.6 Q 183.8 106.3, 174.2 99.3 Q 161.8 102.3, 162.7 91.9 Q 152.0 86.0, 162.7 80.1 Q 161.8 69.7, 174.2 72.7 Q 183.8 65.7, 188.6 75.4 Q 201.4 77.0, 195.0 86.0 Z\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><circle cx=\"178\" cy=\"86\" r=\"5\" fill=\"#A8462A\"></circle>"}, "9": {"name": "Tofu Pudding", "zh": "豆腐花", "band": "bowl", "svg": "<ellipse cx=\"130\" cy=\"92\" rx=\"104\" ry=\"44\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M26 92 C 30 150, 76 178, 130 178 C 184 178, 230 150, 234 92\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M100 178 L100 188 L160 188 L160 178\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M64 108 C 76 84, 116 78, 132 94\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M100 120 C 114 96, 158 90, 176 106\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M126 88 C 142 74, 180 74, 194 92\" fill=\"none\" stroke=\"#A8462A\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "10": {"name": "Egg Tart", "zh": "蛋撻", "band": "sweets", "svg": "<path d=\"M30 96 L62 162 L198 162 L230 96\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><ellipse cx=\"130\" cy=\"96\" rx=\"100\" ry=\"24\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><ellipse cx=\"130\" cy=\"96\" rx=\"70\" ry=\"13\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></ellipse><path d=\"M66 124 L74 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M98 124 L102 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M130 124 L130 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M162 124 L158 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M194 124 L186 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "11": {"name": "Sesame Ball", "zh": "煎堆", "band": "sweets", "svg": "<circle cx=\"130\" cy=\"104\" r=\"70\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></circle><path d=\"M96 70 L108 70\" transform=\"rotate(30 102 70)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M134 62 L146 62\" transform=\"rotate(-20 140 62)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M166 90 L178 90\" transform=\"rotate(60 172 90)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M82 106 L94 106\" transform=\"rotate(-40 88 106)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M120 98 L132 98\" transform=\"rotate(10 126 98)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M156 124 L168 124\" transform=\"rotate(-30 162 124)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M102 138 L114 138\" transform=\"rotate(50 108 138)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M140 146 L152 146\" transform=\"rotate(0 146 146)\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"7\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path>"}, "12": {"name": "Mango Pudding", "zh": "芒果布甸", "band": "sweets", "svg": "<path d=\"M58 160 L76 84 C 78 74, 182 74, 184 84 L202 160 Z\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M106 92 L100 152 M154 92 L160 152\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"8\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><path d=\"M28 176 L232 176\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"11\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></path><rect x=\"112\" y=\"38\" width=\"36\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#1F6B4F\" stroke-width=\"9\" stroke-linejoin=\"round\" stroke-linecap=\"round\"></rect>"}}, "icons": {"steamer": "<rect x=\"32\" y=\"22\" width=\"8\" height=\"5\" rx=\"2\" fill=\"#FBF1DE\"></rect><path d=\"M12 36 C 14 26, 58 26, 60 36 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><rect x=\"11\" y=\"37\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></rect><rect x=\"11\" y=\"50\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></rect><line x1=\"16\" y1=\"40\" x2=\"16\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"19\" y1=\"53\" x2=\"19\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"23\" y1=\"40\" x2=\"23\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"26\" y1=\"53\" x2=\"26\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"30\" y1=\"40\" x2=\"30\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"33\" y1=\"53\" x2=\"33\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"37\" y1=\"40\" x2=\"37\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"40\" y1=\"53\" x2=\"40\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"44\" y1=\"40\" x2=\"44\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"47\" y1=\"53\" x2=\"47\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"51\" y1=\"40\" x2=\"51\" y2=\"46\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line><line x1=\"54\" y1=\"53\" x2=\"54\" y2=\"59\" stroke=\"#FBF1DE\" stroke-width=\"1.5\"></line>", "plate": "<ellipse cx=\"36\" cy=\"52\" rx=\"22\" ry=\"14\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\"></ellipse><ellipse cx=\"36\" cy=\"52\" rx=\"12\" ry=\"7\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\"></ellipse>", "bowl": "<path d=\"M14 44 L58 44 C 56 62, 46 68, 36 68 C 26 68, 16 62, 14 44 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"3\" stroke-linejoin=\"round\"></path><path d=\"M28 36 C 26 30, 32 28, 30 22\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\" stroke-linecap=\"round\"></path><path d=\"M42 36 C 40 30, 46 28, 44 22\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.0999999999999996\" stroke-linecap=\"round\"></path>", "sweets": "<path d=\"M 56 52 Q 61.1 58.7 53.3 62.0 Q 54.4 70.4 46.0 69.3 Q 42.7 77.1 36.0 72.0 Q 29.3 77.1 26.0 69.3 Q 17.6 70.4 18.7 62.0 Q 10.9 58.7 16.0 52.0 Q 10.9 45.3 18.7 42.0 Q 17.6 33.6 26.0 34.7 Q 29.3 26.9 36.0 32.0 Q 42.7 26.9 46.0 34.7 Q 54.4 33.6 53.3 42.0 Q 61.1 45.3 56.0 52.0 Z\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.4000000000000004\" stroke-linejoin=\"round\"></path><circle cx=\"36\" cy=\"52\" r=\"10\" fill=\"none\" stroke=\"#FBF1DE\" stroke-width=\"2.4000000000000004\"></circle><circle cx=\"36\" cy=\"52\" r=\"3\" fill=\"#FBF1DE\"></circle>"}, "iconsInk": {"steamer": "<rect x=\"32\" y=\"22\" width=\"8\" height=\"5\" rx=\"2\" fill=\"currentColor\"></rect><path d=\"M12 36 C 14 26, 58 26, 60 36 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"></path><rect x=\"11\" y=\"37\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></rect><rect x=\"11\" y=\"50\" width=\"50\" height=\"12\" rx=\"3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></rect><line x1=\"16\" y1=\"40\" x2=\"16\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"19\" y1=\"53\" x2=\"19\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"23\" y1=\"40\" x2=\"23\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"26\" y1=\"53\" x2=\"26\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"30\" y1=\"40\" x2=\"30\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"33\" y1=\"53\" x2=\"33\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"37\" y1=\"40\" x2=\"37\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"40\" y1=\"53\" x2=\"40\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"44\" y1=\"40\" x2=\"44\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"47\" y1=\"53\" x2=\"47\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"51\" y1=\"40\" x2=\"51\" y2=\"46\" stroke=\"currentColor\" stroke-width=\"2.0\"></line><line x1=\"54\" y1=\"53\" x2=\"54\" y2=\"59\" stroke=\"currentColor\" stroke-width=\"2.0\"></line>", "plate": "<ellipse cx=\"36\" cy=\"52\" rx=\"22\" ry=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\"></ellipse><ellipse cx=\"36\" cy=\"52\" rx=\"12\" ry=\"7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\"></ellipse>", "bowl": "<path d=\"M14 44 L58 44 C 56 62, 46 68, 36 68 C 26 68, 16 62, 14 44 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"></path><path d=\"M28 36 C 26 30, 32 28, 30 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\"></path><path d=\"M42 36 C 40 30, 46 28, 44 22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.8\" stroke-linecap=\"round\"></path>", "sweets": "<path d=\"M 56 52 Q 61.1 58.7 53.3 62.0 Q 54.4 70.4 46.0 69.3 Q 42.7 77.1 36.0 72.0 Q 29.3 77.1 26.0 69.3 Q 17.6 70.4 18.7 62.0 Q 10.9 58.7 16.0 52.0 Q 10.9 45.3 18.7 42.0 Q 17.6 33.6 26.0 34.7 Q 29.3 26.9 36.0 32.0 Q 42.7 26.9 46.0 34.7 Q 54.4 33.6 53.3 42.0 Q 61.1 45.3 56.0 52.0 Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.2\" stroke-linejoin=\"round\"></path><circle cx=\"36\" cy=\"52\" r=\"10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3.2\"></circle><circle cx=\"36\" cy=\"52\" r=\"3\" fill=\"currentColor\"></circle>"}, "bands": {"steamer": {"name": "Bamboo steamer", "color": "#B07A2A", "dark": "#8A5A16"}, "plate": {"name": "Porcelain plate", "color": "#2F5D9E", "dark": "#234A80"}, "bowl": {"name": "Clay bowl", "color": "#A8462A", "dark": "#7E3220"}, "sweets": {"name": "Dessert tray", "color": "#1F6B4F", "dark": "#154D39"}}, "iconCY": {"steamer": 43, "plate": 52, "bowl": 45, "teapot": 50, "sweets": 52}, "artViewBox": "0 20 260 170"};</script>
+<script>
+// Sessions: Local (you + bots), Host (you + friends through a public MQTT relay + bots), Guest (thin client).
+(function (root) {
+  'use strict';
+  const E = root.DSR;
+  const BOT_DELAY = 1000;
+
+  function parseMode(v) { const m = v.startsWith('team') ? 'team' : 'solo'; return { mode: m, N: parseInt(v.replace(/\D/g, ''), 10) }; }
+
+  // ---------------- Local / Host game runner ----------------
+  class GameRunner {
+    constructor() { this.g = null; this.listeners = []; this.timer = null; this.botDelay = BOT_DELAY; }
+    onUpdate(cb) { this.listeners.push(cb); }
+    emit() { for (const cb of this.listeners) cb(); }
+    start(mode, players, seed) {
+      this.g = E.newGame({ mode, players, seed });
+      this.emit();
+      this.scheduleBots(200);
+    }
+    scheduleBots(delay) {
+      clearTimeout(this.timer);
+      const g = this.g; if (!g) return;
+      const needsBot = () => (g.phase === 'faceup' && g.players.some(p => p.bot && p.pick == null))
+        || (g.phase === 'play' && g.players[g.trick.turn].bot)
+        || (g.phase === 'chooseLeader' && g.players[g.chooser].bot);
+      if (!needsBot()) return;
+      this.timer = setTimeout(() => {
+        const did = E.botStep(g);
+        if (did) this.emit();
+        this.scheduleBots(g.phase === 'faceup' ? 50 : this.botDelay);
+      }, delay == null ? this.botDelay : delay);
+    }
+    act(seat, a) {
+      const g = this.g; if (!g) return { ok: false, error: 'No game' };
+      let r;
+      if (a.type === 'pick') r = E.pickFaceUp(g, seat, a.handIndex);
+      else if (a.type === 'play') r = E.applyPlay(g, seat, a.play);
+      else if (a.type === 'pass') r = E.applyPass(g, seat, a.pass);
+      else if (a.type === 'lead') r = E.chooseLeader(g, seat, a.leader);
+      else if (a.type === 'nextRound') r = E.nextRound(g);
+      else r = { ok: false, error: 'Unknown action' };
+      if (r.ok) { this.emit(); this.scheduleBots(); }
+      return r;
+    }
+    view(seat) { return this.g ? E.viewFor(this.g, seat) : null; }
+    stop() { clearTimeout(this.timer); }
+  }
+
+  class LocalSession {
+    constructor(modeValue, name, opts) {
+      const { mode, N } = parseMode(modeValue);
+      opts = opts || {};
+      this.kind = 'local'; this.seat = 0; this.runner = new GameRunner(); this.tutorial = !!opts.tutorial; this.seed = opts.seed;
+      if (this.tutorial) this.runner.botDelay = 1500;
+      const names = ['Bao', 'Lin', 'Jun', 'Mei', 'Kai', 'Yu'];
+      const players = [{ name: name || 'You', bot: false }];
+      for (let i = 1; i < N; i++) players.push({ name: names[i - 1], bot: true });
+      this.runner.onUpdate(() => this.cb && this.cb());
+      this.mode = mode; this.players = players;
+    }
+    begin() { this.runner.start(this.mode, this.players, this.seed); }
+    game() { return this.runner.g; }
+    onUpdate(cb) { this.cb = cb; }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
+    canControlRounds() { return true; }
+    leave() { this.runner.stop(); }
+  }
+
+  // ---------------- Relay transport (MQTT over WebSockets, public brokers) ----------------
+  // Every message goes through a broker, so no peer-to-peer connection is needed and NAT/firewalls don't matter.
+  const BROKERS = [
+    { key: 'E', url: 'wss://broker.emqx.io:8084/mqtt', name: 'EMQX' },
+    { key: 'H', url: 'wss://broker.hivemq.com:8884/mqtt', name: 'HiveMQ' },
+    { key: 'M', url: 'wss://test.mosquitto.org:8081', name: 'Mosquitto' },
+  ];
+  const TOPIC_ROOT = (typeof window !== 'undefined' && window.DSR_FREE === true) ? 'whatsgood/dimsumrush/free1/' : 'whatsgood/dimsumrush/v1/';
+  const SANDBOXED = /claude/i.test(location.hostname) || /claudeusercontent|anthropic/i.test(location.hostname);
+  const LIB_SOURCES = [
+    'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js',
+  ];
+  let libLoad = null;
+  function loadLib() {
+    if (root.mqtt) return Promise.resolve(root.mqtt);
+    if (libLoad) return libLoad;
+    libLoad = new Promise((resolve, reject) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= LIB_SOURCES.length) { libLoad = null; reject(new Error('Could not load the networking library. Check your connection or ad blocker.')); return; }
+        const s = document.createElement('script'); s.src = LIB_SOURCES[i++];
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; s.remove(); tryNext(); } }, 9000);
+        s.onload = () => { if (done) return; done = true; clearTimeout(t); if (root.mqtt) resolve(root.mqtt); else { s.remove(); tryNext(); } };
+        s.onerror = () => { if (done) return; done = true; clearTimeout(t); s.remove(); tryNext(); };
+        document.head.appendChild(s);
+      };
+      tryNext();
+    });
+    return libLoad;
+  }
+  function makeCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; let c = ''; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; }
+  function token() { try { let t = localStorage.getItem('dsr-token'); if (!t) { t = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('dsr-token', t); } return t; } catch (e) { return 'anon-' + Math.random().toString(36).slice(2); } }
+  function cleanId(s) { return String(s).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40); }
+
+  // Connect to one broker; resolves the client or rejects after a timeout.
+  function connectBroker(mqtt, broker, opts) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const client = mqtt.connect(broker.url, Object.assign({ clean: true, connectTimeout: 7000, reconnectPeriod: 2000, keepalive: 30, clientId: 'dsr_' + Math.random().toString(16).slice(2, 12) }, opts || {}));
+      const to = setTimeout(() => { if (!done) { done = true; try { client.end(true); } catch (e) {} reject(new Error('timeout')); } }, 8000);
+      client.once('connect', () => { if (!done) { done = true; clearTimeout(to); resolve(client); } });
+      const fail = (e) => { if (!done) { done = true; clearTimeout(to); try { client.end(true); } catch (e2) {} reject(e || new Error('connection closed')); } };
+      client.on('error', fail);
+      client.on('close', () => fail(new Error('connection refused')));
+      client.on('offline', () => fail(new Error('offline')));
+    });
+  }
+  async function connectAny(mqtt, list, optsFor) {
+    let last = null;
+    for (const b of list) {
+      try { const c = await connectBroker(mqtt, b, optsFor ? optsFor(b) : null); return { client: c, broker: b }; }
+      catch (e) { last = e; }
+    }
+    throw new Error('Could not reach any relay server' + (last ? ' (' + (last.message || last) + ')' : '') + (SANDBOXED ? '. This page is running inside claude.ai, which blocks outside connections; use the copy of the game hosted elsewhere for online play.' : '. Try again, or try a different network.'));
+  }
+  function parse(payload) { try { return JSON.parse(payload.toString()); } catch (e) { return null; } }
+
+  // ---------------- Host ----------------
+  class HostSession {
+    constructor(modeValue, name) {
+      const { mode, N } = parseMode(modeValue);
+      this.kind = 'host'; this.mode = mode; this.N = N; this.seat = 0; this.name = name || 'Host';
+      this.hostSeat = () => this.seats.findIndex(x => x.token === 'host');
+      this.seats = [{ name: this.name, bot: false, token: 'host', connected: true, last: 0 }];
+      for (let i = 1; i < N; i++) this.seats.push({ name: null, bot: true, token: null, connected: false, last: 0 });
+      this.runner = new GameRunner();
+      this.runner.onUpdate(() => { this.broadcastViews(); this.cb && this.cb(); });
+      this.started = false;
+    }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    async open() {
+      const mqtt = await loadLib();
+      const { client, broker } = await connectAny(mqtt, BROKERS);
+      this.client = client; this.broker = broker;
+      this.code = broker.key + makeCode();
+      this.topic = TOPIC_ROOT + this.code;
+      await new Promise((res, rej) => client.subscribe(this.topic + '/h', { qos: 1 }, (e) => e ? rej(e) : res()));
+      client.on('message', (t, payload) => { if (t === this.topic + '/h') this.onMessage(parse(payload)); });
+      client.on('offline', () => this.lobbyCb && this.lobbyCb({ error: 'Relay connection lost; reconnecting…' }));
+      client.on('connect', () => { this.pushLobby(); if (this.started) this.broadcastViews(); });
+      this.presenceTimer = setInterval(() => this.checkPresence(), 10000);
+      return this.code;
+    }
+    sendTo(seatIdx, m) {
+      const s = this.seats[seatIdx]; if (!s || !s.token || s.bot) return;
+      try { this.client.publish(this.topic + '/g/' + s.token, JSON.stringify(m), { qos: 1 }); } catch (e) {}
+    }
+    checkPresence() {
+      const now = Date.now(); let changed = false;
+      for (const s of this.seats) { if (!s.bot && s.token !== 'host' && s.connected && now - s.last > 45000) { s.connected = false; changed = true; } }
+      if (changed) this.pushLobby();
+    }
+    onMessage(m) {
+      if (!m || typeof m !== 'object' || !m.from) return;
+      const tok = cleanId(m.from);
+      let seat = this.seats.findIndex(s => s.token === tok);
+      if (m.t === 'hello') {
+        const name = String(m.name || 'Guest').slice(0, 16) || 'Guest';
+        if (seat < 0) {
+          if (this.started) { this.replyRaw(tok, { t: 'rejected', reason: 'The game has already started.' }); return; }
+          seat = this.seats.findIndex(s => s.bot && !s.token);
+          if (seat < 0) { this.replyRaw(tok, { t: 'rejected', reason: 'The table is full.' }); return; }
+          this.seats[seat] = { name, bot: false, token: tok, connected: true, last: Date.now() };
+        } else {
+          this.seats[seat].connected = true; this.seats[seat].last = Date.now(); this.seats[seat].name = name;
+        }
+        this.sendTo(seat, { t: 'welcome', seat, code: this.code });
+        this.pushLobby();
+        if (this.started) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) });
+        return;
+      }
+      if (seat < 0) return;
+      this.seats[seat].last = Date.now();
+      if (!this.seats[seat].connected) { this.seats[seat].connected = true; this.pushLobby(); }
+      if (m.t === 'ping') { if (this.started && m.needView) this.sendTo(seat, { t: 'view', view: this.runner.view(seat) }); return; }
+      if (m.t === 'bye') { this.seats[seat].connected = false; this.pushLobby(); return; }
+      if (m.t === 'sit') { const to = m.seat | 0; if (!this.started && this.seats[to] && this.seats[to].bot) this.moveSeat(seat, to); return; }
+      if (m.t === 'act') {
+        if (m.a && m.a.type === 'nextRound') { this.sendTo(seat, { t: 'err', msg: 'Only the host can start the next round.' }); return; }
+        const r = this.runner.act(seat, m.a || {});
+        if (!r.ok) this.sendTo(seat, { t: 'err', msg: r.error });
+      }
+    }
+    replyRaw(tok, m) { try { this.client.publish(this.topic + '/g/' + tok, JSON.stringify(m), { qos: 1 }); } catch (e) {} }
+    // Move whoever is in `from` to `to`, swapping with the current occupant. Lobby only.
+    moveSeat(from, to) {
+      if (this.started || from === to || from < 0 || to < 0 || from >= this.N || to >= this.N) return;
+      const a = this.seats[from], b = this.seats[to];
+      this.seats[to] = a; this.seats[from] = b;
+      this.seat = this.hostSeat();
+      this.pushLobby();
+    }
+    lobbyState() {
+      return { code: this.code, mode: this.mode, N: this.N, started: this.started, relay: this.broker && this.broker.name, seats: this.seats.map(s => ({ name: s.bot ? null : s.name, bot: s.bot, connected: s.connected })) };
+    }
+    pushLobby() {
+      const st = this.lobbyState();
+      this.seats.forEach((s, i) => { if (!s.bot && s.token !== 'host') this.sendTo(i, { t: 'lobby', state: st, seat: i }); });
+      this.lobbyCb && this.lobbyCb(st);
+    }
+    startGame() {
+      if (this.started) return;
+      this.started = true;
+      const names = ['Bao', 'Lin', 'Jun', 'Mei', 'Kai', 'Yu'];
+      let bi = 0;
+      const players = this.seats.map(s => s.bot ? { name: names[bi++ % names.length] + ' (bot)', bot: true } : { name: s.name, bot: false });
+      this.players = players;
+      this.pushLobby();
+      this.runner.start(this.mode, players);
+    }
+    broadcastViews() {
+      this.seats.forEach((s, i) => { if (!s.bot && s.token !== 'host') this.sendTo(i, { t: 'view', view: this.runner.view(i) }); });
+    }
+    view() { return this.runner.view(this.seat); }
+    act(a) { return this.runner.act(this.seat, a); }
+    canControlRounds() { return true; }
+    leave() { this.runner.stop(); clearInterval(this.presenceTimer); try { this.seats.forEach((s, i) => this.sendTo(i, { t: 'closed' })); this.client && this.client.end(); } catch (e) {} }
+  }
+
+  // ---------------- Guest ----------------
+  class GuestSession {
+    constructor(code, name) { this.kind = 'guest'; this.code = code.toUpperCase().replace(/[^A-Z]/g, ''); this.name = name || 'Guest'; this.seat = null; this._view = null; }
+    onUpdate(cb) { this.cb = cb; }
+    onLobby(cb) { this.lobbyCb = cb; }
+    async connect() {
+      const mqtt = await loadLib();
+      const broker = BROKERS.find(b => b.key === this.code[0]);
+      if (!broker || this.code.length !== 5) throw new Error('That does not look like a table code (5 letters).');
+      this.token = cleanId(token() + '-' + this.name.toLowerCase());
+      this.topic = TOPIC_ROOT + this.code;
+      const my = this.topic + '/g/' + this.token;
+      const { client } = await connectAny(mqtt, [broker], () => ({ will: { topic: this.topic + '/h', payload: JSON.stringify({ t: 'bye', from: this.token }), qos: 1 } }));
+      this.client = client;
+      await new Promise((res, rej) => client.subscribe(my, { qos: 1 }, (e) => e ? rej(e) : res()));
+      const hello = () => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'hello', name: this.name, from: this.token }), { qos: 1 }); } catch (e) {} };
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const to = setTimeout(() => { if (!settled) { settled = true; reject(new Error('No table answered with that code. Check the code and that the host still has the page open.')); } }, 12000);
+        client.on('message', (t, payload) => {
+          if (t !== my) return;
+          const m = parse(payload); if (!m) return;
+          if (m.t === 'welcome') { this.seat = m.seat; if (!settled) { settled = true; clearTimeout(to); resolve(); } }
+          else if (m.t === 'rejected') { if (!settled) { settled = true; clearTimeout(to); reject(new Error(m.reason)); } else this.lobbyCb && this.lobbyCb({ error: m.reason }); }
+          else if (m.t === 'lobby') { this.lobby = m.state; this.seat = m.seat; this.lobbyCb && this.lobbyCb(m.state); }
+          else if (m.t === 'view') { this._view = m.view; this.cb && this.cb(); }
+          else if (m.t === 'err') { this.errCb && this.errCb(m.msg); }
+          else if (m.t === 'closed') { this.lobbyCb && this.lobbyCb({ error: 'The host closed the table.' }); }
+        });
+        hello();
+      });
+      client.on('connect', () => hello()); // after an automatic reconnect, re-register
+      this.pingTimer = setInterval(() => { try { client.publish(this.topic + '/h', JSON.stringify({ t: 'ping', from: this.token, needView: !this._view }), { qos: 0 }); } catch (e) {} }, 15000);
+    }
+    sit(seat) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'sit', seat, from: this.token }), { qos: 1 }); } catch (e) {} }
+    view() { return this._view; }
+    act(a) { try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'act', a, from: this.token }), { qos: 1 }); } catch (e) { return { ok: false, error: 'Not connected' }; } return { ok: true, pending: true }; }
+    canControlRounds() { return false; }
+    leave() { clearInterval(this.pingTimer); try { this.client.publish(this.topic + '/h', JSON.stringify({ t: 'bye', from: this.token }), { qos: 1 }); this.client.end(); } catch (e) {} }
+  }
+
+  root.DSRNet = { LocalSession, HostSession, GuestSession, parseMode, SANDBOXED };
+})(window);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const E = window.DSR, NET = window.DSRNet, ART = window.DSR_ART;
+  const FREE = window.DSR_FREE === true; // free-hand build: hands stay sorted, play any tiles together
+  const $ = (id) => document.getElementById(id);
+  const BANDKEYS = ['steamer', 'plate', 'bowl', 'sweets'];
+  const TEAMNAME = ['Jade', 'Lantern'];
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  let session = null, view = null;
+  let sel = { idx: [], slots: [] };   // hand indices + trolley seats
+  let pm = null;          // pass-mode state: {kind:'menu'|'fill'|'swap', handIndex, slotSeat, insertAt}
+  let pickIdx = -1;       // face-up pick
+  let drawn = { round: 0, count: 0 }; // setup: tiles drawn from the bag so far (visual only)
+  let msg = '', msgErr = false;
+  let lastPhaseKey = '';
+  let showLog = false;
+  let hints = true; try { hints = localStorage.getItem('dsr-hints') !== 'off'; } catch (e) {}
+  const help = (t) => hints ? `<div class="help">${t}</div>` : '';
+  const BANDINFO = [['steamer', '1–3'], ['plate', '4–6'], ['bowl', '7–9'], ['sweets', '10–12']];
+  function legendHTML() { return `<div class="legend"><span class="muted">Tile backs show the number range:</span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
+  function needText(v) {
+    const t = v.trick; if (!t || !t.top) return '';
+    const c = t.top;
+    if (c.bomb) return FREE ? `To beat it you need four of an equal or higher number from your own hand.` : `To beat it you need a stronger Chef's Special (a set beats a run; then an equal or higher number).`;
+    const kind = c.type === 'single' ? 'a single tile' : c.type === 'set' ? `${c.size === 2 ? 'a pair' : 'three of a kind'}` : `a run of ${c.size} tiles`;
+    return `To play you need ${kind} with a number of ${c.top} or higher, or a Chef's Special (${FREE ? 'four of one number' : 'four of one number, or a run of four'}, all from your own hand).`;
+  }
+
+  function bagHTML(n) {
+    return `<svg width="96" height="110" viewBox="0 0 96 110" role="img" aria-label="Tile bag"><path d="M22 38 C 6 60, 6 96, 30 104 L 66 104 C 90 96, 90 60, 74 38 Z" fill="#7E3220" stroke="#2A1A12" stroke-width="3" stroke-linejoin="round"></path><path d="M24 40 C 14 60, 16 90, 34 100" fill="none" stroke="#A8462A" stroke-width="4" stroke-linecap="round" opacity=".7"></path><path d="M30 30 C 36 22, 60 22, 66 30 L 74 38 L 22 38 Z" fill="#A3221B" stroke="#2A1A12" stroke-width="3" stroke-linejoin="round"></path><path d="M20 36 C 40 30, 56 30, 76 36" fill="none" stroke="#F2C56B" stroke-width="4" stroke-linecap="round"></path><circle cx="18" cy="38" r="4" fill="#F2C56B" stroke="#2A1A12" stroke-width="2"></circle><circle cx="78" cy="38" r="4" fill="#F2C56B" stroke="#2A1A12" stroke-width="2"></circle><text x="48" y="80" text-anchor="middle" font-family="Bagel Fat One, Arial Rounded MT Bold, sans-serif" font-size="22" fill="#FBF1DE">${n}</text></svg>`;
+  }
+  function drawState(v) { if (drawn.round !== v.round) drawn = { round: v.round, count: 0 }; return drawn; }
+
+  // ---------- tile rendering ----------
+  function cardHTML(r, cls, attrs) {
+    const a = ART.art[r]; const b = E.bandOf(r);
+    return `<div class="card b${b} ${cls || ''}" ${attrs || ''}><div class="rk">${r}</div><div class="art"><svg viewBox="${ART.artViewBox || '0 0 260 200'}" aria-hidden="true">${a.svg}</svg></div><div class="lbl"><div class="zh">${esc(a.zh || '')}</div><div class="nm">${esc(a.name)}</div></div></div>`;
+  }
+  function backHTML(b, cls) {
+    const k = BANDKEYS[b];
+    return `<span class="back b${b} ${cls || ''}" title="${ART.bands[k].name}"><svg viewBox="4 ${ART.iconCY[k] - 32} 64 64" aria-hidden="true">${ART.icons[k]}</svg></span>`;
+  }
+  function comboName(c) {
+    if (!c) return '';
+    if (c.bomb) return `Chef's Special: ${c.type === 'set' ? c.size + ' of a kind (' + c.top + 's)' : 'run of ' + c.size + ' up to ' + c.top}`;
+    if (c.type === 'single') return `a single ${c.top}`;
+    if (c.type === 'set') return `${c.size === 2 ? 'a pair of ' + c.top + 's' : c.size === 3 ? 'three ' + c.top + 's' : c.size + ' ' + c.top + 's'}`;
+    return `a run of ${c.size} up to ${c.top}`;
+  }
+  function teamCls(v, i) { return v.mode === 'team' ? (v.players[i].team === 0 ? 'jade' : 'lantern') : ''; }
+  function pname(v, i) { return i === v.me ? 'You' : v.players[i].name; }
+
+  // ---------- screens ----------
+  function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0, 0); }
+  function overlay(html) { $('overlay').innerHTML = html ? `<div class="overlay"><div class="modal">${html}</div></div>` : ''; }
+  function setMsg(m, isErr) { msg = m || ''; msgErr = !!isErr; const el = $('t-msg'); if (el) { el.textContent = msg; el.className = 'msg' + (msgErr ? ' err' : ''); } }
+
+  function getName() { const n = $('name').value.trim(); try { localStorage.setItem('dsr-name', n); } catch (e) {} return n || 'Player'; }
+  try { $('name').value = localStorage.getItem('dsr-name') || ''; } catch (e) {}
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('code')) $('join-code').value = qs.get('code').toUpperCase();
+
+  // ---------- home ----------
+  if (NET.SANDBOXED) {
+    const n = document.createElement('div'); n.className = 'card-panel'; n.style.cssText = 'border:3px solid var(--red);margin-bottom:14px';
+    n.innerHTML = '<strong>Online play needs the hosted copy.</strong> Inside claude.ai this page cannot open outside connections, so hosting and joining tables will fail here. Playing against bots and the tutorial work fine. Use the link to the hosted version for online tables.';
+    const grid = document.querySelector('.home-grid'); grid.parentNode.insertBefore(n, grid);
+  }
+  $('btn-solo').onclick = () => {
+    coach.on = false;
+    session = new NET.LocalSession($('solo-mode').value, getName());
+    wireSession(); session.begin(); show('s-table');
+  };
+  $('btn-host').onclick = async () => {
+    $('home-msg').textContent = 'Opening a table…';
+    try {
+      session = new NET.HostSession($('host-mode').value, getName());
+      wireSession();
+      session.onLobby(renderLobby);
+      const code = await session.open();
+      $('home-msg').textContent = '';
+      renderLobby(session.lobbyState());
+      show('s-lobby');
+    } catch (e) { $('home-msg').textContent = e.message; session = null; }
+  };
+  $('btn-join').onclick = async () => {
+    const code = $('join-code').value.trim().toUpperCase();
+    if (code.length !== 5) { $('home-msg').textContent = 'Enter the 5-letter table code.'; return; }
+    $('home-msg').textContent = 'Looking for table ' + code + '…';
+    try {
+      session = new NET.GuestSession(code, getName());
+      wireSession();
+      session.onLobby(renderLobby);
+      session.errCb = (m) => setMsg(m, true);
+      await session.connect();
+      $('home-msg').textContent = '';
+      if (session.lobby) renderLobby(session.lobby);
+      show(session.view() ? 's-table' : 's-lobby');
+    } catch (e) { $('home-msg').textContent = e.message; session && session.leave(); session = null; }
+  };
+  $('btn-leave-lobby').onclick = leave;
+  $('btn-quit').onclick = () => { if (confirm('Leave the table?')) leave(); };
+  $('btn-log').onclick = () => { showLog = !showLog; $('t-log').style.display = showLog ? 'block' : 'none'; };
+  function syncHintBtn() { $('btn-hints').textContent = hints ? 'Hints: on' : 'Hints: off'; }
+  syncHintBtn();
+  $('btn-hints').onclick = () => { hints = !hints; try { localStorage.setItem('dsr-hints', hints ? 'on' : 'off'); } catch (e) {} syncHintBtn(); if (view) render(); };
+  $('btn-start').onclick = () => { session.startGame(); show('s-table'); };
+
+  function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; overlay(''); show('s-home'); }
+
+  function wireSession() {
+    session.onUpdate(() => {
+      view = session.view();
+      if (!view) return;
+      if (!$('s-table').classList.contains('active')) show('s-table');
+      render();
+    });
+  }
+
+  // ---------- lobby ----------
+  function renderLobby(st) {
+    if (!st) return;
+    if (st.error) { $('lobby-status').textContent = st.error; return; }
+    $('lobby-code').textContent = st.code || '----';
+    const { mode, N } = { mode: st.mode, N: st.N };
+    $('lobby-status').textContent = (st.relay ? 'via ' + st.relay + ' relay · ' : '') + (mode === 'team' ? `Teams · ${N} players · seats alternate Jade / Lantern` : `Every Server for Themselves · ${N} players`) + (session.kind === 'guest' ? ' · waiting for the host to start' : '');
+    const mySeat = session.seat;
+    const humans = st.seats.map((s, i) => ({ i, name: s.name })).filter(x => !st.seats[x.i].bot);
+    $('lobby-seats').innerHTML = st.seats.map((s, i) => {
+      const team = mode === 'team' ? `<span class="pill ${i % 2 ? 'lantern' : ''}">${TEAMNAME[i % 2]}</span>` : `<span class="pill gray">Seat ${i + 1}</span>`;
+      const who = s.bot ? '<span class="muted">open seat · a bot will sit here</span>' : `<strong>${esc(s.name)}</strong>${i === mySeat ? ' (you)' : ''}${s.connected ? '' : ' <span class="muted">· reconnecting…</span>'}`;
+      let ctl = '';
+      if (session.kind === 'host' && !st.started) {
+        ctl = `<select data-seatsel="${i}" aria-label="Who sits in seat ${i + 1}"><option value="bot" ${s.bot ? 'selected' : ''}>Bot</option>${humans.map(h => `<option value="${h.i}" ${h.i === i ? 'selected' : ''}>${esc(h.name)}</option>`).join('')}</select>`;
+      } else if (session.kind === 'guest' && !st.started && s.bot) {
+        ctl = `<button class="ghost" data-sit="${i}">Sit here</button>`;
+      }
+      return `<div class="lobby-seat"><div>${who}</div><div class="row">${team}${ctl}</div></div>`;
+    }).join('');
+    document.querySelectorAll('[data-seatsel]').forEach(el => el.onchange = () => {
+      const to = +el.dataset.seatsel, v = el.value;
+      if (v === 'bot') { const bot = st.seats.findIndex(x => x.bot); if (bot >= 0 && !st.seats[to].bot) session.moveSeat(to, bot); else renderLobby(session.lobbyState()); }
+      else session.moveSeat(+v, to);
+    });
+    document.querySelectorAll('[data-sit]').forEach(el => el.onclick = () => session.sit(+el.dataset.sit));
+    $('btn-start').style.display = session.kind === 'host' && !st.started ? 'inline-block' : 'none';
+    $('lobby-hint').textContent = session.kind === 'host' ? 'Use the menus to seat people (teammates sit opposite each other: seats 1 & 3, 2 & 4). Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
+  }
+
+  // ---------- table ----------
+  function render() {
+    const v = view; if (!v) return;
+    const key = `${v.round}-${v.phase}-${v.trick ? v.trick.turn : ''}-${v.tricksPlayed}`;
+    if (key !== lastPhaseKey) { sel = { idx: [], slots: [] }; pm = null; pickIdx = -1; setMsg(''); lastPhaseKey = key; }
+    $('t-title').textContent = `Round ${v.round} of ${v.maxRounds}`;
+    renderScore(v); renderOthers(v); renderCenter(v); renderMe(v); renderLog(v); renderOverlay(v); renderCoach(v);
+  }
+
+  function renderScore(v) {
+    if (v.mode === 'team') {
+      $('t-score').innerHTML = `<span class="pill">Jade</span><span class="box">${v.scores[0]}</span><span class="pill lantern">Lantern</span><span class="box">${v.scores[1]}</span><span class="muted">penalty points · lower is better</span>`;
+    } else {
+      $('t-score').innerHTML = v.players.map((p, i) => `<span class="box" title="${esc(p.name)}: ${v.scores[i]} penalty points">${esc(pname(v, i)).slice(0, 6)} ${v.scores[i]}</span>`).join('') + `<span class="muted">penalty points · lower is better</span>`;
+    }
+  }
+
+  function seatStatus(v, i) {
+    const p = v.players[i];
+    if (v.phase === 'faceup') return p.picked ? 'has chosen a trolley tile' : 'choosing a trolley tile…';
+    if (p.out) return 'OUT — hand empty';
+    if (v.phase === 'chooseLeader') return i === v.chooser ? 'choosing who leads next' : '';
+    if (v.phase !== 'play') return '';
+    if (v.trick.turn === i) return 'THEIR TURN';
+    if (v.trick.passed.includes(i)) return 'passed — out of this trick';
+    if (v.trick.topSeat === i) return 'has the best play so far';
+    if (v.trick.leader === i && v.trick.plays.length === 0) return 'leads this trick';
+    return 'waiting';
+  }
+
+  function renderOthers(v) {
+    const order = [];
+    for (let k = 1; k < v.N; k++) order.push((v.me + k) % v.N);
+    $('t-legend').innerHTML = legendHTML() + help(FREE ? 'Other players sit above. You see the backs of their tiles, so you know how many of each colour (number range) they hold, and the one face-up tile each has put on the trolley.' : 'Other players sit above. You see the backs of their tiles on their racks, in the order they hold them, and the one face-up tile each has put on the trolley.');
+    $('t-others').innerHTML = order.map(i => {
+      const p = v.players[i];
+      const turn = v.phase === 'play' && v.trick.turn === i;
+      const backs = p.backs.map(b => backHTML(b)).join('');
+      const team = v.mode === 'team' ? `<span class="pill ${p.team ? 'lantern' : ''}">${TEAMNAME[p.team]}</span>` : '';
+      const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm">empty</div>`;
+      return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
+        <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? ' <span class="muted">(bot)</span>' : ''}</span>${team}</div>
+        <div class="lbl">Hand · ${p.count} tile${p.count === 1 ? '' : 's'}</div>
+        <div class="backs rack">${p.count ? backs : '<span class="muted" style="color:#E2CFAE">empty</span>'}</div>
+        <div class="foot"><div style="display:flex;flex-direction:column;align-items:center;gap:2px">${slot}<span class="lbl">trolley</span></div><div class="st">${seatStatus(v, i)}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderCenter(v) {
+    let status = '', detail = '';
+    const t = v.trick;
+    if (v.phase === 'faceup') { status = 'Setup: draw your tiles from the bag, then pick one to put face up on the trolley.'; detail = help('Each player puts one tile from their hand face up in front of them. Those tiles form the trolley. Later, you can add your own team\'s trolley tiles to the tiles you play.'); }
+    else if (v.phase === 'chooseLeader') { status = v.chooser === v.me ? 'You won the trick. Choose who leads the next one.' : `${esc(pname(v, v.chooser))} won the trick and is choosing who leads next.`; detail = help('A trick ends when everyone else has passed. The winner picks a player on their team to start the next trick.'); }
+    else if (v.phase === 'play') {
+      if (t.plays.length === 0) { status = t.turn === v.me ? 'You lead this trick: play any single tile, pair, three of a kind, or run.' : `${esc(pname(v, t.turn))} leads this trick.`; detail = help('The leader starts a new trick with any valid group of tiles. Everyone after must play a stronger group of the same kind and size, or pass.'); }
+      else { status = t.turn === v.me ? `Your turn. ${esc(pname(v, t.topSeat))} played ${comboName(t.top)}.` : `${esc(pname(v, t.turn))}'s turn to beat ${comboName(t.top)}.`; detail = help((t.turn === v.me ? needText(v) + ' ' : '') + 'Dashed borders mark tiles that came from the trolley.'); }
+    } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') status = 'Round over.';
+    let plays = '';
+    if (t && t.plays.length) {
+      plays = `<div class="trick">${t.plays.map((pl, idx) => `<div class="play ${idx === t.plays.length - 1 ? 'top' : ''} ${pl.combo.bomb ? 'bomb' : ''}"><span class="who">${esc(pname(v, pl.seat))} · ${comboName(pl.combo)}${idx === t.plays.length - 1 ? ' · best so far' : ''}</span><div class="cards">${pl.cards.map(c => cardHTML(c.r, idx === t.plays.length - 1 ? '' : 'sm', c.src === 'slot' ? 'style="border-style:dashed"' : '')).join('')}</div></div>`).join('')}</div>`;
+    } else if (v.lastTrick && v.phase === 'play') {
+      plays = `<div class="muted">Last trick was won by ${esc(pname(v, v.lastTrick.winner))}. The table is clear.</div>`;
+    }
+    $('t-center').innerHTML = `<div class="lbl">The table · trick ${(v.tricksPlayed || 0) + 1}</div><div class="status">${status}</div>${detail}${plays}`;
+  }
+
+  // accessible trolley seats for me
+  function myTrolleySeats(v) { return E.accessibleFromView(v, v.me); }
+
+  function renderMe(v) {
+    const me = v.players[v.me];
+    const hand = me.hand || [];
+    const myTurn = v.phase === 'play' && v.trick.turn === v.me;
+    const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
+    let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team}</div></div>`;
+    html += `<div class="lbl">${v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbours\''}</div>`;
+
+    // trolley row
+    const tseats = myTrolleySeats(v);
+    html += `<div class="trolley">` + tseats.map(i => {
+      const p = v.players[i]; const label = i === v.me ? 'You' : esc(p.name);
+      let c;
+      if (p.slot != null) {
+        const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
+        const clickable = (myTurn && !pm) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
+        c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
+      } else {
+        const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
+        c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}">${target ? 'put it here' : 'empty spot'}</div>`;
+      }
+      return `<div class="tc">${c}<span>${label}</span></div>`;
+    }).join('') + `</div>`;
+
+    // setup: draw tiles from the bag one at a time (visual only; the hand is already dealt)
+    const ds = drawState(v);
+    const drawing = v.phase === 'faceup' && !me.picked && ds.count < hand.length;
+    if (drawing) {
+      const left = hand.length - ds.count;
+      html += `<div class="lbl" style="margin-top:10px">Your rack · ${ds.count} of ${hand.length} tiles drawn</div>` + help(FREE ? 'Draw your tiles from the bag. Your rack sorts itself, and you may play any of your tiles together, so the order you draw them in does not matter.' : 'Each tile you draw goes on the right end of your rack. That order is fixed for the whole round, so watch how your hand takes shape.');
+      if (FREE) {
+        const got = (me.dealt || hand).slice(0, ds.count), last = got[got.length - 1];
+        const shown = got.slice().sort((a, b) => a - b); const at = shown.lastIndexOf(last);
+        html += `<div class="hand rack">` + shown.map((r, i) => cardHTML(r, i === at ? 'just-drawn' : '')).join('') + `</div>`;
+      } else {
+        html += `<div class="hand rack">` + hand.slice(0, ds.count).map((r, i) => cardHTML(r, i === ds.count - 1 ? 'just-drawn' : '', `data-hand="${i}"`)).join('') + `</div>`;
+      }
+      html += `<div class="bagrow"><div class="bag">${bagHTML(left)}</div><div class="col"><button class="primary" id="btn-draw">Draw a tile</button><button class="ghost" id="btn-drawall">Draw the rest</button><span class="hint">${left} tile${left === 1 ? '' : 's'} still to draw from the bag.</span></div></div>`;
+      html += `<div class="msg" id="t-msg"></div>`;
+      $('t-me').innerHTML = html;
+      $('btn-draw').onclick = () => { drawn.count = Math.min(hand.length, drawn.count + 1); renderMe(v); renderCoach(v); };
+      $('btn-drawall').onclick = () => { drawn.count = hand.length; renderMe(v); renderCoach(v); };
+      return;
+    }
+    // hand
+    const handClickable = (v.phase === 'faceup' && !me.picked) || myTurn || (pm && (pm.kind === 'fill' || pm.kind === 'swap'));
+    if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
+      // choose insert position: show hand without the given tile, with gaps
+      const h = hand.slice(); h.splice(pm.handIndex, 1);
+      let row = '<div class="insert-row">';
+      for (let i = 0; i <= h.length; i++) {
+        row += `<div class="gap" data-gap="${i}" title="insert here"></div>`;
+        if (i < h.length) row += cardHTML(h[i], 'dim');
+      }
+      row += '</div>';
+      html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap. (This is the only way a tile ever changes position.)</div>` + row;
+    } else {
+      html += `<div class="lbl" style="margin-top:10px">Your hand ("cart") · ${hand.length} tile${hand.length === 1 ? '' : 's'}${me.out ? ' · you are out' : ''}</div>` + help(FREE ? 'Your rack keeps itself sorted. Tap any tiles to play them together.' : 'Your tiles stay in this order all round. You may only play tiles that are next to each other.') + `<div class="hand rack">` + hand.map((r, i) => {
+        let cls = '';
+        if (v.phase === 'faceup') cls = (i === pickIdx ? 'sel' : '') + (coach.on && !coach.hidden && coach.suggestion && coach.suggestion.kind === 'pick' && coach.suggestion.handIndex === i && pickIdx < 0 ? ' hint-pulse' : '');
+        else if (pm && (pm.kind === 'fill' || pm.kind === 'swap')) cls = pm.handIndex === i ? 'sel' : '';
+        else if (sel.idx.includes(i)) cls = 'sel';
+        return cardHTML(r, cls + (handClickable ? ' clickable' : ''), `data-hand="${i}"`);
+      }).join('') + `</div>`;
+    }
+
+    // actions
+    html += `<div class="actions" id="t-actions">`;
+    if (v.phase === 'faceup') {
+      if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
+      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this tile on the trolley</button><span class="hint">Tap one tile in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
+    } else if (myTurn && !pm) {
+      const legal = E.legalPlaysFromView(v);
+      const cur = currentCombo(v);
+      const canLead = v.trick.plays.length === 0;
+      const legalNow = cur && legal.some(pl => samePlay(pl, sel));
+      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected tiles'}</button>`;
+      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : ''}>Pass (sit out this trick)</button>`;
+      html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
+      const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.idx.length || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those tiles do not form a valid group (same number, or numbers in a row).') : (canLead ? (FREE ? 'Tap any tiles in your hand, or tap a play from the list below.' : 'Tap tiles that sit next to each other in your hand, or tap a play from the list below.') : 'Tap tiles in your hand, or tap a play from the list below. Nothing fits? Pass.');
+      html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || selMsg)}</div>`;
+      const chips = chipList(v, legal);
+      html += `<div class="lbl" style="margin-top:8px">${legal.length ? 'Plays you can make right now · tap one to select it' : 'No play can beat the table'}</div>`;
+      html += `<div class="chips">` + chips.map((c, k) => ({ c, k })).filter(({ c }, j, all) => { const bombs = all.filter(x => x.c.pl.combo.bomb).length; return c.pl.combo.bomb || all.slice(0, j).filter(x => !x.c.pl.combo.bomb).length < 16 - bombs; }).map(({ c, k }) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more · select tiles to see any play</span>` : '') + (legal.length === 0 ? '<span class="hint">Press Pass. You can still fill or swap a trolley tile as you pass.</span>' : '') + `</div>` + (legal.length ? help('* means the play uses a trolley tile. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
+      $('t-me').innerHTML = html; wireMe(v, legal); return;
+    } else if (pm) {
+      html += renderPassControls(v);
+    } else if (v.phase === 'play') {
+      html += `<span class="muted">${me.out ? 'Your hand is empty — you are out for this round. Your trolley tile stays in play for your team.' : v.trick.passed.includes(v.me) ? 'You passed, so you sit out until this trick ends.' : 'Waiting for ' + esc(pname(v, v.trick.turn)) + '…'}</span>`;
+    } else if (v.phase === 'chooseLeader') {
+      html += `<span class="muted">${v.chooser === v.me ? 'Choose the leader above.' : 'Waiting for the leader to be chosen…'}</span>`;
+    }
+    html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg)}</div>`;
+    $('t-me').innerHTML = html; wireMe(v, []);
+  }
+
+  function renderPassControls(v) {
+    const me = v.players[v.me];
+    const tseats = myTrolleySeats(v);
+    const empties = tseats.filter(i => v.players[i].slot == null);
+    const filled = tseats.filter(i => v.players[i].slot != null);
+    if (pm.kind === 'menu') {
+      return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may tidy your hand in one of these ways:</div>
+        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
+        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">${FREE ? 'Take a trolley tile into your hand and put one of your tiles in its place. Grab the tile you need and drop one you don\'t.' : 'Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.'}</span></div>
+        <div class="pm-opt"><button class="primary" id="btn-pm-none">Just pass</button><span class="hint">Do nothing else.</span></div>
+        <button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    if (pm.kind === 'fill') {
+      const ready = pm.handIndex != null && pm.slotSeat != null;
+      return `<span class="hint" style="flex-basis:100%"><strong>Fill:</strong> ${pm.handIndex == null ? 'tap the tile in your hand you want to put face up.' : pm.slotSeat == null ? 'now tap the empty trolley spot (highlighted) to put it on.' : `put the ${me.hand[pm.handIndex]} on ${pname(v, pm.slotSeat)}'s spot?`}</span>
+        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Fill and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    if (pm.kind === 'swap') {
+      const ready = pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null;
+      const step = pm.slotSeat == null ? 'tap the trolley tile you want to take.' : pm.handIndex == null ? 'tap the tile in your hand you will give in return.' : pm.insertAt == null ? 'tap a gap to say where the new tile goes.' : `take the ${v.players[pm.slotSeat].slot} and give the ${me.hand[pm.handIndex]}?`;
+      return `<span class="hint" style="flex-basis:100%"><strong>Swap:</strong> ${step}</span>
+        <button class="primary" id="btn-pm-confirm" ${ready ? '' : 'disabled'}>Swap and pass</button><button class="ghost" id="btn-pm-cancel">Back</button>`;
+    }
+    return '';
+  }
+
+  function currentCombo(v) {
+    const hand = v.players[v.me].hand;
+    const h = sel.idx.slice().sort((a, b) => a - b).map(i => hand[i]);
+    const s = sel.slots.map(i => v.players[i].slot);
+    if (!h.length && !s.length) return null;
+    return E.classify(h, s, { noRunSpecial: v.noRunSpecial });
+  }
+  // Same tiles? Compare the ranks picked from the hand (any copy of a number will do) and the trolley seats.
+  function samePlay(pl, s) {
+    const hand = view && view.players[view.me].hand || [];
+    const ranks = (ix) => ix.map(i => hand[i]).sort((x, y) => x - y).join(',');
+    const a = pl.slots.slice().sort().join(','), b = s.slots.slice().sort().join(',');
+    return a === b && ranks(E.playIdx(pl)) === ranks(s.idx) && (FREE || E.playIdx(pl).join(',') === s.idx.slice().sort((x, y) => x - y).join(','));
+  }
+  function chipList(v, legal) {
+    const sorted = legal.slice().sort((a, b) => (a.combo.bomb - b.combo.bomb) || (a.combo.size - b.combo.size) || (a.combo.top - b.combo.top));
+    const seen = new Set(), out = [];
+    for (const pl of sorted) { const label = chipLabel(v, pl); if (seen.has(label)) continue; seen.add(label); out.push({ pl, label }); }
+    return out;
+  }
+  function chipLabel(v, pl) {
+    const d = E.describePlay({ players: v.players.map(p => ({ hand: p.hand || [], slot: p.slot })) }, v.me, pl);
+    const parts = d.hand.map(String).concat(d.slots.map(r => r + '*'));
+    const c = pl.combo;
+    const kind = c.bomb ? '★ Special' : c.type === 'single' ? 'Single' : c.type === 'set' ? (c.size === 2 ? 'Pair' : c.size === 3 ? 'Three' : c.size + ' of a kind') : 'Run';
+    return `<span class="ck">${kind}</span> ${parts.join(' · ')}`;
+  }
+
+  function wireMe(v, legal) {
+    const root = $('t-me');
+    root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
+    root.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotTap(v, +el.dataset.slot));
+    root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
+    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; renderMe(v); });
+    const chips = chipList(v, legal);
+    root.querySelectorAll('[data-chip]').forEach(el => el.onclick = () => {
+      const pl = chips[+el.dataset.chip].pl; sel = { idx: E.playIdx(pl), slots: pl.slots.slice() }; setMsg(''); renderMe(v);
+    });
+    const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+    on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
+    on('btn-play', () => {
+      const pl = legal.find(p => samePlay(p, sel)); if (!pl) return;
+      const r = session.act({ type: 'play', play: { idx: sel.idx.slice().sort((a, b) => a - b), slots: pl.slots } });
+      if (r && r.ok === false) setMsg(r.error, true); else { sel = { idx: [], slots: [] }; setMsg(''); }
+    });
+    on('btn-pass', () => { pm = { kind: 'menu' }; sel = { idx: [], slots: [] }; renderMe(v); });
+    on('btn-clear', () => { sel = { idx: [], slots: [] }; setMsg(''); renderMe(v); });
+    on('btn-pm-fill', () => { pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
+    on('btn-pm-swap', () => { pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: FREE ? 0 : null }; renderMe(v); });
+    on('btn-pm-none', () => doPass({ kind: 'none' }));
+    on('btn-pm-cancel', () => { pm = pm && pm.kind !== 'menu' ? { kind: 'menu' } : null; renderMe(v); });
+    on('btn-pm-confirm', () => {
+      if (pm.kind === 'fill') doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
+      else doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
+    });
+  }
+  function doPass(pass) {
+    const r = session.act({ type: 'pass', pass });
+    if (r && r.ok === false) setMsg(r.error, true); else { pm = null; setMsg(''); }
+  }
+
+  function onHandTap(v, i) {
+    const me = v.players[v.me];
+    if (v.phase === 'faceup') { if (me.picked) return; pickIdx = pickIdx === i ? -1 : i; renderMe(v); return; }
+    if (pm) {
+      if (pm.kind === 'fill') { pm.handIndex = pm.handIndex === i ? null : i; renderMe(v); }
+      else if (pm.kind === 'swap' && pm.slotSeat != null) { pm.handIndex = i; pm.insertAt = FREE ? 0 : null; if (me.hand.length === 1) pm.insertAt = 0; renderMe(v); }
+      return;
+    }
+    if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
+    if (FREE) { const k = sel.idx.indexOf(i); if (k >= 0) sel.idx.splice(k, 1); else sel.idx.push(i); }
+    else {
+      // fixed order: the selection is one block of neighbouring tiles
+      const ix = sel.idx.slice().sort((a, b) => a - b), lo = ix[0], hi = ix[ix.length - 1];
+      if (!ix.length) sel.idx = [i];
+      else if (i === lo - 1 || i === hi + 1) sel.idx.push(i);
+      else if ((i === lo || i === hi) && ix.length > 1) sel.idx = ix.filter(x => x !== i);
+      else if (i === lo && ix.length === 1) sel.idx = [];
+      else sel.idx = [i];
+    }
+    setMsg(''); renderMe(v);
+  }
+  function onSlotTap(v, i) {
+    if (pm) { if (pm.kind === 'swap' && pm.slotSeat == null) { pm.slotSeat = i; renderMe(v); } return; }
+    if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
+    const k = sel.slots.indexOf(i);
+    if (k >= 0) sel.slots.splice(k, 1); else sel.slots.push(i);
+    setMsg(''); renderMe(v);
+  }
+  function onEmptySlotTap(v, i) {
+    if (pm && pm.kind === 'fill' && pm.handIndex != null) { pm.slotSeat = pm.slotSeat === i ? null : i; renderMe(v); }
+  }
+
+  function renderLog(v) {
+    const lines = v.logTail.map(e => {
+      const n = (s) => pname(v, s);
+      switch (e.t) {
+        case 'round': return `— Round ${e.round} —`;
+        case 'faceup': return `Trolley: ${e.slots.map((r, i) => n(i) + ' ' + r).join(', ')}`;
+        case 'play': return `${n(e.seat)} plays ${e.cards.join(' ')}${e.combo.bomb ? ' — Chef\'s Special!' : ''}`;
+        case 'pass': return `${n(e.seat)} passes`;
+        case 'fill': return `${n(e.seat)} passes and fills ${n(e.slotSeat)}'s spot with a ${e.r}`;
+        case 'swap': return `${n(e.seat)} passes and swaps: takes ${e.took} from ${n(e.slotSeat)}'s spot, puts out ${e.gave}`;
+        case 'out': return `${n(e.seat)} is out!`;
+        case 'trickEnd': return `${n(e.winner)} wins the trick`;
+        case 'lead': return `${n(e.chooser)} hands the lead to ${n(e.leader)}`;
+        case 'roundEnd': return `Round ${e.summary.round} over`;
+        default: return '';
+      }
+    }).filter(Boolean);
+    $('t-log').innerHTML = lines.map(l => `<div>${esc(l)}</div>`).join('');
+  }
+
+  function renderOverlay(v) {
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) {
+      const cs = coach.on && !coach.hidden ? coachSuggest(v) : null;
+      overlay(`<h3>You won the trick</h3><p>In this game the winner chooses who on their team <strong>leads</strong> (starts) the next trick. Leading is an advantage: you set the kind and size everyone else must match. Give it to whoever needs it most. No table talk!</p>${cs ? `<p class="muted">${suggestionText(v, cs)}</p>` : ''}<div class="col">${v.leaderOptions.map(i => `<button class="${i === v.me ? 'primary' : 'jade'}" data-lead="${i}">${i === v.me ? 'I lead' : esc(v.players[i].name) + ' leads'} <span style="font-weight:400;opacity:.8">· ${v.players[i].count} in cart</span></button>`).join('')}</div>`);
+      document.querySelectorAll('[data-lead]').forEach(b => b.onclick = () => { session.act({ type: 'lead', leader: +b.dataset.lead }); overlay(''); });
+      return;
+    }
+    if (v.phase === 'roundEnd' || v.phase === 'gameEnd') {
+      const s = v.roundHistory[v.roundHistory.length - 1];
+      let body;
+      if (v.mode === 'team') {
+        body = `<p><strong>${TEAMNAME[s.winnerTeam]}</strong> emptied every cart. <strong>${TEAMNAME[s.loserTeam]}</strong> takes <strong>${s.penalty}</strong> penalty point${s.penalty === 1 ? '' : 's'} for its fullest cart.</p>`;
+      } else {
+        body = `<p><strong>${esc(pname(v, s.winner))}</strong> emptied their cart first. Everyone else takes penalty points for their own cart.</p>`;
+      }
+      body += `<table class="tbl"><tr><th>Player</th>${v.mode === 'team' ? '<th>Section</th>' : ''}<th>Tiles left</th></tr>${v.players.map((p, i) => `<tr><td>${esc(pname(v, i))}</td>${v.mode === 'team' ? `<td>${TEAMNAME[p.team]}</td>` : ''}<td>${s.hands[i]}</td></tr>`).join('')}</table>`;
+      body += `<h3 style="font-size:20px;margin-top:12px">Totals after round ${s.round}</h3>`;
+      body += v.mode === 'team' ? `<p>Jade ${v.scores[0]} · Lantern ${v.scores[1]}</p>` : `<p>${v.players.map((p, i) => `${esc(pname(v, i))} ${v.scores[i]}`).join(' · ')}</p>`;
+      if (v.phase === 'gameEnd') {
+        const f = finalFromView(v);
+        body += `<h3>${f}</h3>`;
+        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-home">Back to the kitchen</button></div>`;
+      } else if (session.canControlRounds()) {
+        body += `<div class="row" style="margin-top:12px"><button class="primary" id="btn-next">Draw round ${s.round + 1}</button></div>`;
+      } else {
+        body += `<p class="muted">Waiting for the host to draw the next round…</p>`;
+      }
+      overlay(`<h3>Round ${s.round} over</h3>${body}`);
+      const bn = $('btn-next'); if (bn) bn.onclick = () => { session.act({ type: 'nextRound' }); overlay(''); };
+      const bh = $('btn-home'); if (bh) bh.onclick = leave;
+      return;
+    }
+    overlay('');
+  }
+  function finalFromView(v) {
+    if (v.mode === 'team') { const [a, b] = v.scores; return a === b ? 'A shared victory!' : (a < b ? 'Jade' : 'Lantern') + ' wins the rush!'; }
+    const min = Math.min(...v.scores); const w = v.players.map((p, i) => v.scores[i] === min ? pname(v, i) : null).filter(Boolean);
+    return (w.length > 1 ? w.join(' and ') + ' share the victory!' : w[0] + ' wins the rush!');
+  }
+  // =====================================================================
+  // RULES MODAL
+  // =====================================================================
+  function ex(label, tiles, verdict) {
+    return `<div class="ex"><span class="lbl">${label}</span>${tiles.map(c => typeof c === 'number' ? cardHTML(c, 'sm') : cardHTML(c.r, 'sm', 'style="border-style:dashed"')).join('')}${verdict ? `<span class="${verdict[0] === '✓' ? 'ok' : 'no'}" style="margin-left:8px">${verdict}</span>` : ''}</div>`;
+  }
+  function rulesHTML() {
+    const T = { r: 0 };
+    return `<div class="rules">
+<h3>Words used in this game</h3>
+<table><tr><th>Word</th><th>Meaning</th></tr>
+<tr><td><strong>Hand / cart</strong></td><td>${FREE ? 'The tiles you hold, drawn from the bag. Keep them in any order and play any of them together.' : 'The tiles you hold. Drawn from the bag in a fixed order you can never change.'}</td></tr>
+<tr><td><strong>Trolley</strong></td><td>The row of face-up tiles, one per player. Your team's trolley tiles can be added to your plays.</td></tr>
+<tr><td><strong>Spot</strong></td><td>Each player's place on the trolley. It holds one tile or is empty.</td></tr>
+<tr><td><strong>Combination / play</strong></td><td>The tiles you put down on one turn: a single, a pair or three of a kind, or a run.</td></tr>
+<tr><td><strong>Trick</strong></td><td>One round of plays, from the first play until everyone else has passed. The last player to play wins it.</td></tr>
+<tr><td><strong>Lead</strong></td><td>To start a trick with any valid play.</td></tr>
+<tr><td><strong>Pass</strong></td><td>To not play. You sit out until the trick ends, but you may fill or swap a trolley tile first.</td></tr>
+<tr><td><strong>Chef's Special</strong></td><td>This game's bomb: ${FREE ? 'four of a number' : 'four of a number or a run of four'}, all from your own hand. Beats any ordinary play.</td></tr>
+<tr><td><strong>Section</strong></td><td>Your team (Jade or Lantern).</td></tr>
+<tr><td><strong>Out</strong></td><td>Your hand is empty; you take no more turns this round.</td></tr>
+</table>
+<h3>The goal</h3>
+<p>You are servers in a dim sum teahouse, split into two sections (<span class="pill">Jade</span> <span class="pill lantern">Lantern</span>). Each round, race to empty your <strong>cart</strong> (your hand) by playing combinations of dishes that match or beat what is on the table. When every cart in one section is empty the round ends and the other section takes penalty points. Three rounds; fewest points wins.</p>
+<h3>Your cart and the trolley</h3>
+<p>${FREE ? 'Your cart is drawn from the bag. Arrange it however you like (the app keeps it sorted) and <strong>play any of your tiles together</strong>.' : 'Your cart is drawn from the bag one tile at a time, each new tile going on the right end of your rack, and <strong>you may never rearrange it</strong>. Tiles you play from it must sit side by side.'} The backs face outward: everyone can see the <em>band</em> of every tile at the table (bamboo steamer 1–3, porcelain plate 4–6, clay bowl 7–9, dessert tray 10–12), just not the exact number.</p>
+<p>Each player has one <strong>trolley spot</strong> with a face-up tile. Your section's trolley tiles (yours and your teammates') may be added to any combination you play, in any position — even a combination made only of trolley tiles. You may never use the other section's. A used trolley tile is not replaced; the spot stays empty until someone in your section fills it while passing.</p>
+<h3>Combinations</h3>
+${ex('Single', [7])}
+${ex('Set (2 or 3 equal)', [5, 5])}
+${ex('Run (2 to 4 in a row)', [3, 4, 5])}
+${FREE ? `<p>Trolley tiles (dashed) can fill a gap in a run:</p>
+${ex('Cart 4 6 + trolley 5', [4, { r: 5 }, 6], '✓ run 4 5 6')}` : `<p>A run's cart tiles must already be in rising or falling order in your cart; trolley tiles (dashed) can fill a gap:</p>
+${ex('Cart 4 6 + trolley 5', [4, { r: 5 }, 6], '✓ run 4 5 6')}
+${ex('Cart 4 6 5', [4, 6, 5], '✕ not in order')}`}
+<h3>Following</h3>
+<p>The leader plays any combination. Each player after them must play a <strong>stronger</strong> one or pass: the same kind and size with an <strong>equal or higher</strong> number (runs compare their top tile). Equal numbers are allowed — a 7 beats a 7. Numbers do not wrap: 12 is never followed by 1.</p>
+${ex('Table: pair of 6s', [6, 6])}
+${ex('Pair of 6s', [6, 6], '✓ equal matches')}
+${ex('Pair of 8s', [8, 8], '✓ higher')}
+${ex('Three 9s', [9, 9, 9], '✕ wrong size')}
+<h3>Chef's Specials</h3>
+${FREE ? `<p><strong>Four of a number</strong>, played entirely from your own cart (no trolley tiles). A Special beats any ordinary combination, whatever its size. To beat a Special, play four of an equal or higher number. A run of four is an ordinary combination, and so is four of a number with a trolley tile mixed in. <strong>No combination may have more than four tiles.</strong></p>` : `<p><strong>Four of a number</strong>, or <strong>a run of four</strong>, played entirely from your own cart (side by side, no trolley tiles). A Special beats any ordinary combination, whatever its size. Specials compare: a set beats a run; then an equal or higher number — a Special can be matched just like an ordinary combination. The same four tiles with a trolley tile mixed in are just an ordinary combination of four. <strong>No combination may have more than four tiles.</strong></p>`}
+${ex('Cart 8 8 8 8', [8, 8, 8, 8], '✓ Special')}
+${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}${FREE ? ex('Cart 2 3 4 5', [2, 3, 4, 5], '✕ ordinary run of 4') : ''}
+<h3>Passing</h3>
+<p>If you do not play, you pass, and you are <strong>out of the trick</strong> until the next one begins (the leader cannot pass). When you pass you may do one of these:</p>
+<p><strong>Fill:</strong> put one cart tile face up on any empty spot of your section's trolley, including a teammate's. If it was your last tile, you are out.</p>
+<p><strong>Swap:</strong> take any one of your section's trolley tiles into your cart${FREE ? '' : ' <em>wherever you like</em>'}, then put any one cart tile face up in that spot.</p>
+<p>Or pass and do nothing.</p>
+<h3>Ending a trick</h3>
+<p>The trick ends when everyone else still in the round has passed. The last player to play wins it and <strong>chooses who in their section leads next</strong> — themselves or any teammate with tiles — without discussing it. A winner who has gone out still chooses a teammate.</p>
+<h3>Going out and scoring</h3>
+<p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of tiles in its <strong>fullest</strong> cart. Trolley tiles do not count. Return every tile to the bag and draw the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
+<h3>Every Server for Themselves (2–6 players)</h3>
+<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
+<table><tr><th>Players</th><th>Numbers</th><th>Drawn</th></tr>${[['Teams of 2 (4p)', 'team', 4], ['Teams of 3 (6p)', 'team', 6], ['Every Server 2', 'solo', 2], ['Every Server 3', 'solo', 3], ['Every Server 4', 'solo', 4], ['Every Server 5', 'solo', 5], ['Every Server 6', 'solo', 6]].map(([l, m, n]) => { const c = E.configFor(m, n, FREE); return `<tr><td>${l}</td><td>1–${c.ranks}</td><td>${c.hand}</td></tr>`; }).join('')}</table>
+<h3>Using this app</h3>
+<p>Tap ${FREE ? 'any tiles' : 'tiles side by side'} in your cart (and any trolley tiles) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley tile and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their tile backs${FREE ? '' : ' in order'}.</p>
+</div>`;
+  }
+  function showRules() {
+    overlay(`<h3>How to play</h3>${rulesHTML()}<div class="row" style="margin-top:12px"><button class="primary" id="btn-rules-close">Close</button></div>`);
+    document.querySelector('.modal').classList.add('wide');
+    $('btn-rules-close').onclick = () => { overlay(''); if (view) renderOverlay(view); };
+  }
+  $('btn-rules').onclick = showRules;
+  $('btn-rules2').onclick = showRules;
+
+  // =====================================================================
+  // TUTORIAL COACH
+  // =====================================================================
+  const coach = { on: false, seen: new Set(), hidden: false, current: null, suggestion: null };
+  function startTutorial() {
+    coach.on = true; coach.seen = new Set(); coach.hidden = false; coach.current = null; coach.lesson = 0;
+    session = new NET.LocalSession('team4', getName(), { tutorial: true, seed: 20261009 });
+    wireSession(); session.begin(); show('s-table');
+  }
+  $('btn-tutorial').onclick = () => {
+    overlay(`<h3>Before we start</h3>
+<p><strong>Never played a shedding game?</strong> Here is the whole idea in four lines:</p>
+<ol style="padding-left:20px;margin:6px 0 10px;line-height:1.5">
+<li><strong>Get rid of your tiles.</strong> Everyone draws a hand of tiles from a bag; the first team to empty theirs wins the round.</li>
+<li><strong>Play in tricks.</strong> One player starts by playing a tile or a small group of tiles. Going around the table, each player must play a <em>stronger</em> group of the same kind and size — a higher pair on a pair, a higher run on a run — or <strong>pass</strong>.</li>
+<li><strong>Last one standing wins the trick.</strong> When everyone else has passed, the tiles are cleared and the winner's team starts the next trick.</li>
+<li><strong>The twist in this game:</strong> ${FREE ? 'your team shares a row of face-up tiles (the <strong>trolley</strong>) that only your team can mix into its plays. Every tile you put out is a play only your partner can make.' : 'your hand stays in the order you drew it — you may only play tiles that sit next to each other — and your team shares a row of face-up tiles (the <strong>trolley</strong>) you can mix into your plays.'}</li>
+</ol>
+<p><strong>The screen:</strong> other players across the top (you see their tile backs), the table in the middle, your own tiles at the bottom. The green coach panel explains each situation as it comes up and can set up its suggested move for you.</p>
+<div class="row" style="margin-top:12px"><button class="jade" id="btn-tut-go">Start the tutorial</button><button class="ghost" id="btn-tut-cancel">Not now</button></div>`);
+    $('btn-tut-go').onclick = () => { overlay(''); startTutorial(); };
+    $('btn-tut-cancel').onclick = () => overlay('');
+  };
+  const TIPS = {
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The coloured backs are what the other players will see.`,
+    welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbour with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
+    trolley: `<strong>The trolley.</strong> Everyone's face-up tile is now showing. The two tiles on your side — yours and your partner Lin's — are your <em>team's</em> trolley. When you play, you may add either of them to your tiles, in any position, to make a bigger or better group. The other team's two tiles are off limits to you. A used trolley tile is not replaced automatically.`,
+    lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles). No play may have more than four tiles. Tiles from your hand must sit side by side; a run's tiles must already be in rising or falling order. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
+    follow: `<strong>Following.</strong> To stay in the trick you must play the <em>same kind and size</em> as what's on the table, with an equal or higher number — a pair of 7s beats a pair of 6s, and a pair of 6s also beats a pair of 6s (equal counts!). Or pass. The list under your hand only shows plays that qualify.`,
+    pass: `<strong>Nothing fits? Pass.</strong> Passing means you sit out until this trick ends. But a pass is also your chance to tidy your hand: <strong>fill</strong> an empty trolley spot with a tile you don't want, or <strong>swap</strong> a trolley tile into your hand (you choose where it goes) and put one of yours out in its place. Look at what your partner's backs suggest they could use.`,
+    bomb_seen: `<strong>That was a Chef's Special</strong> — this game's "bomb". Four of the same number, or a run of four, played entirely from one player's own hand (no trolley tiles). A Special beats any ordinary play, whatever its size. Only another Special beats it: a set beats a run; then an equal or higher number.`,
+    bomb_mine: `<strong>You hold a Chef's Special</strong> — see the ★ in your play list. Keep it to grab the lead back when the other team is winning the trick. Leading with it, or playing it over your own partner, wastes it.`,
+    partner_top: `<strong>Your partner is winning this trick.</strong> Beating your own partner only helps if it empties your hand or sets up a better lead. Usually it's better to pass, and use the pass to fill or swap.`,
+    lead_choice: `<strong>You won the trick.</strong> In this game the winner chooses who on their team leads (starts) the next trick: yourself, or your partner if they still have tiles. Leading is an advantage, so give it to whoever needs it more — usually the fuller hand. No table talk. If you had already emptied your hand, you would still choose your partner.`,
+    out: `<strong>Your hand is empty — you are out.</strong> Your team hasn't finished until Lin's hand is empty too, so watch the backs across the table and see how it plays out. Your trolley tile stays available to her.`,
+    backs: `<strong>Read the table.</strong> Each opponent's row of backs is their hand in order: brown = 1–3, blue = 4–6, red = 7–9. Four of the same colour in a row could be a Special; a run needs colours stepping through the ranges. Your partner's backs hint at which trolley tile would help them.`,
+    round_end: `<strong>Round over.</strong> The team that emptied every hand scores nothing. The other team takes penalty points equal to its <em>fullest</em> hand — the manager judges a section by its slowest server. Three rounds; fewest penalty points wins.`,
+    waiting: `Watch the others play. Dashed borders in the middle mark tiles that came from the trolley.`,
+  };
+  if (FREE) Object.assign(TIPS, {
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag. Your rack sorts itself as you draw, so the order does not matter. Tap the bag to draw. The coloured backs are what the other players will see.`,
+    welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). You can play any of them together. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley, where only your team can use it. A lonely tile, one with no copies and no neighbouring numbers in your hand, is a good choice: you'd struggle to play it, but your partner might not. The coach's pick is pulsing.`,
+    lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles), using any tiles from your hand. No play may have more than four tiles. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
+    pass: `<strong>Nothing fits? Pass.</strong> Passing means you sit out until this trick ends. But a pass is also your chance to tidy your hand: <strong>fill</strong> an empty trolley spot with a tile you don't want, or <strong>swap</strong>: take a trolley tile you need and put one of yours out in its place. Look at what your partner's backs suggest they could use.`,
+    bomb_seen: `<strong>That was a Chef's Special</strong> — this game's "bomb": four of the same number, played entirely from one player's own hand (no trolley tiles). A Special beats any ordinary play, whatever its size. Only four of an equal or higher number beats it.`,
+    backs: `<strong>Read the table.</strong> Each opponent's backs show how many tiles they hold in each number range: brown = 1–3, blue = 4–6, red = 7–9. Lots of one colour could mean a Special is coming. Your partner's backs hint at which trolley tile would help them.`,
+  });
+  const LESSONS = ['draw', 'welcome', 'trolley', 'lead', 'follow', 'pass', 'bomb_seen', 'bomb_mine', 'partner_top', 'lead_choice', 'out', 'backs', 'round_end'];
+  const LESSON_TITLES = { draw: 'Drawing from the bag', welcome: 'Your hand', trolley: 'The trolley', lead: 'Leading', follow: 'Following', pass: 'Passing', bomb_seen: "Chef's Specials", bomb_mine: 'Holding a Special', partner_top: 'Your partner is winning', lead_choice: 'Choosing the leader', out: 'Going out', backs: 'Reading the backs', round_end: 'Scoring' };
+
+  function coachSuggest(v) {
+    if (!(session && session.kind === 'local' && session.tutorial)) return null;
+    const g = session.game(); if (!g) return null;
+    if (v.phase === 'faceup' && !v.players[v.me].picked) { const ds = drawState(v); if (ds.count < v.players[v.me].hand.length) return null; return { kind: 'pick', handIndex: E.botFaceUpPick(g, 0) }; }
+    if (v.phase === 'play' && v.trick.turn === v.me) {
+      const d = E.botDecide(g, 0);
+      if (d.action === 'play') return { kind: 'play', play: d.play };
+      return { kind: 'pass', pass: d.pass };
+    }
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) return { kind: 'lead', leader: E.botChooseLeader(g, 0) };
+    return null;
+  }
+
+  function pickTip(v) {
+    const me = v.players[v.me];
+    const once = (id) => { if (coach.seen.has(id)) return null; coach.seen.add(id); return id; };
+    if (v.phase === 'faceup') {
+      const ds = drawState(v);
+      if (!me.picked && ds.count < (me.hand || []).length) return coach.seen.has('draw') ? 'draw' : once('draw');
+      return coach.seen.has('welcome') ? 'welcome' : once('welcome');
+    }
+    if (v.phase === 'roundEnd' || v.phase === 'gameEnd') return 'round_end';
+    if (v.phase === 'chooseLeader' && v.chooser === v.me) return 'lead_choice';
+    if (v.phase === 'play') {
+      const t = v.trick;
+      if (!coach.seen.has('trolley')) return once('trolley');
+      if (t.plays.some(p => p.combo.bomb) && !coach.seen.has('bomb_seen')) return once('bomb_seen');
+      if (me.out) return coach.seen.has('out') ? 'waiting' : once('out');
+      if (t.turn === v.me) {
+        if (me.hand && E.countBombs(me.hand) > 0 && !coach.seen.has('bomb_mine')) return once('bomb_mine');
+        if (t.plays.length === 0) return coach.seen.has('lead') ? 'lead' : once('lead');
+        const legal = E.legalPlaysFromView(v);
+        if (v.mode === 'team' && v.players[t.topSeat].team === me.team && legal.length && !coach.seen.has('partner_top')) return once('partner_top');
+        if (legal.length === 0) return coach.seen.has('pass') ? 'pass' : once('pass');
+        return coach.seen.has('follow') ? 'follow' : once('follow');
+      }
+      if (v.tricksPlayed >= 1 && !coach.seen.has('backs')) return once('backs');
+      return 'waiting';
+    }
+    return 'waiting';
+  }
+
+  function suggestionText(v, s) {
+    if (!s) return '';
+    if (s.kind === 'pick') return `Coach's pick: put the <strong>${v.players[v.me].hand[s.handIndex]}</strong> face up.`;
+    if (s.kind === 'play') return `Coach's pick: play <strong>${chipLabel(v, s.play)}</strong> (${comboName(s.play.combo)}).`;
+    if (s.kind === 'pass') {
+      const p = s.pass; const me = v.players[v.me];
+      if (p.kind === 'fill') return `Coach's pick: pass and <strong>fill ${pname(v, p.slotSeat)}'s spot with the ${me.hand[p.handIndex]}</strong>.`;
+      if (p.kind === 'swap') return `Coach's pick: pass and <strong>swap — take the ${v.players[p.slotSeat].slot}, put out the ${me.hand[p.handIndex]}</strong>.`;
+      return `Coach's pick: <strong>just pass</strong>.`;
+    }
+    if (s.kind === 'lead') return `Coach's pick: <strong>${s.leader === v.me ? 'lead yourself' : 'hand the lead to ' + pname(v, s.leader)}</strong>.`;
+    return '';
+  }
+
+  function applySuggestion(v, s) {
+    if (!s) return;
+    if (s.kind === 'pick') { pickIdx = s.handIndex; renderMe(v); }
+    else if (s.kind === 'play') { pm = null; sel = { idx: E.playIdx(s.play), slots: s.play.slots.slice() }; setMsg(''); renderMe(v); }
+    else if (s.kind === 'pass') {
+      const p = s.pass;
+      if (p.kind === 'fill') pm = { kind: 'fill', handIndex: p.handIndex, slotSeat: p.slotSeat };
+      else if (p.kind === 'swap') pm = { kind: 'swap', slotSeat: p.slotSeat, handIndex: p.handIndex, insertAt: p.insertAt };
+      else pm = { kind: 'menu' };
+      sel = { idx: [], slots: [] }; renderMe(v);
+    }
+    const el = document.getElementById('t-me'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function renderCoach(v) {
+    const box = $('t-coach');
+    if (!coach.on) { box.style.display = 'none'; return; }
+    box.style.display = 'flex';
+    if (coach.hidden) { box.innerHTML = `<div class="av">?</div><div class="body">Coach is quiet. <button class="ghost" id="coach-show">Show tips</button></div>`; $('coach-show').onclick = () => { coach.hidden = false; renderCoach(v); }; return; }
+    let tip = pickTip(v), extra = null;
+    if (tip === 'trolley' && v.phase === 'play' && v.trick.turn === v.me) extra = pickTip(v);
+    const s = coachSuggest(v);
+    coach.suggestion = s;
+    const sText = suggestionText(v, s);
+    const seenCount = LESSONS.filter(id => coach.seen.has(id)).length;
+    const head = LESSON_TITLES[tip] ? `<div class="lbl" style="color:var(--gold);margin-bottom:4px">Coach · ${LESSON_TITLES[tip]} · lesson ${seenCount} of ${LESSONS.length}</div>` : `<div class="lbl" style="color:var(--gold);margin-bottom:4px">Coach</div>`;
+    box.innerHTML = `<div class="av">C</div><div class="body">${head}${TIPS[tip]}${extra ? '<div style="margin-top:6px">' + TIPS[extra] + '</div>' : ''}${sText ? `<div style="margin-top:6px">${sText}</div>` : ''}<div class="acts">${s && s.kind !== 'lead' ? `<button id="coach-apply">Set up the coach's pick for me</button>` : ''}<button class="ghost" id="coach-hide">Hide coach</button><button class="ghost" id="coach-rules">Full rules</button></div></div>`;
+    const a = $('coach-apply'); if (a) a.onclick = () => applySuggestion(v, s);
+    $('coach-hide').onclick = () => { coach.hidden = true; renderCoach(v); };
+    $('coach-rules').onclick = showRules;
+    // pulse the suggested face-up tile
+    if (s && s.kind === 'pick') { const c = document.querySelector(`#t-me [data-hand="${s.handIndex}"]`); if (c) c.classList.add('hint-pulse'); }
+  }
+
+})();
+
+</script>
+</body>
+</html>
