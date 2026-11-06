@@ -86,7 +86,7 @@ input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-r
 /* ---- table ---- */
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .topbar h2{font-size:26px}
-.score{display:flex;gap:8px;align-items:center;font-weight:700}
+.score{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-weight:700;min-width:0}
 .score .box{background:var(--face);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;color:var(--ink)}
 .others{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:10px}
 .seat{background:var(--face);color:var(--ink);border:2px solid var(--rule-d);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;min-height:120px}
@@ -217,7 +217,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     <p><strong>Following:</strong> same kind and size with an equal or higher number, or a Chef's Special. <strong>Chef's Special:</strong> four of a number or a run of four. A set beats a run; then an equal or higher number. No combination may have more than four tiles.</p>
     <p><strong>The trolley</strong> is the face-up tile in front of each player. Trolley tiles are never played. <strong>Passing</strong> takes you out of the trick; when you pass you may put the tile from either end of your cart on one of your section's trolley spots and slide the tile that was there into your cart wherever you like.</p>
     <p><strong>Trick winner</strong> picks who in their section leads next. The round ends the moment every cart in one section is empty; the other section takes penalty points equal to its fullest cart. Three rounds, fewest points wins.</p>
-    <p><strong>Every Server for Themselves:</strong> no sections; you may swap only with your own and your two neighbours' spots; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
+    <p><strong>Every Server for Themselves:</strong> no sections; you may swap with any player's spot at the table; the trick winner leads; the round ends when any cart is empty and everyone else scores their own cart.</p>
   </div></details>
 </section>
 
@@ -431,8 +431,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     if (g.mode === 'team') {
       for (let i = 0; i < g.N; i++) if (g.players[i].team === g.players[seat].team) out.push(i);
     } else {
-      const set = new Set([seat, (seat + 1) % g.N, (seat + g.N - 1) % g.N]);
-      for (let i = 0; i < g.N; i++) if (set.has(i)) out.push(i);
+      for (let i = 0; i < g.N; i++) out.push(i);        // every spot at the table
     }
     return out;
   }
@@ -1443,7 +1442,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
     const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
     let html = `<div class="hd"><div><strong>${esc(me.name)}</strong> ${team}</div></div>`;
-    html += `<div class="lbl">${SW ? (v.mode === 'team' ? 'Your team\'s trolley · tiles you may swap for when you pass' : 'Trolley tiles you may swap with · yours and your two neighbours\'') : v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · yours and your two neighbours\''}</div>`;
+    html += `<div class="lbl">${SW ? (v.mode === 'team' ? 'Your team\'s trolley · tiles you may swap for when you pass' : 'Trolley tiles you may swap with · every spot at the table') : v.mode === 'team' ? 'Your team\'s trolley · face-up tiles you may add to a play' : 'Trolley tiles you may use · every spot at the table'}</div>`;
 
     // trolley row
     const tseats = myTrolleySeats(v);
@@ -1766,7 +1765,7 @@ ${ex('Run of four', [2, 3, 4, 5], '✓ Special')}
 <h3>Going out and scoring</h3>
 <p>When your cart is empty you are out for the round; your trolley spot stays on the table. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of tiles in its <strong>fullest</strong> cart. Trolley tiles do not count. Return every tile to the bag and draw the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
-<p>No sections. You may swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
+<p>No sections. You may swap with any trolley spot at the table, not just your own. The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
 <table><tr><th>Players</th><th>Numbers</th><th>Drawn</th></tr>${[['Teams of 2 (4p)', 'team', 4], ['Teams of 3 (6p)', 'team', 6], ['Every Server 2', 'solo', 2], ['Every Server 3', 'solo', 3], ['Every Server 4', 'solo', 4], ['Every Server 5', 'solo', 5], ['Every Server 6', 'solo', 6]].map(([l, m, n]) => { const c = E.configFor(m, n, FREE); return `<tr><td>${l}</td><td>1–${c.ranks}</td><td>${c.hand}</td></tr>`; }).join('')}</table>
 <h3>Using this app</h3>
 <p>Tap tiles side by side in your cart then press Play, or tap one of the suggestion chips — they list every legal play; ★ marks a Chef's Special. Press Pass to see the swap option: tap a trolley tile, then an end tile of your cart, then the gap where the trolley tile should go. Other players' carts show their tile backs in order.</p>
@@ -1822,7 +1821,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}${F
 <h3>Going out and scoring</h3>
 <p>When your cart is empty you are out for the round; your trolley spot stays on the table for your section. The round ends the moment every cart in one section is empty, even mid-trick. The other section takes penalty points equal to the number of tiles in its <strong>fullest</strong> cart. Trolley tiles do not count. Return every tile to the bag and draw the next round; the first lead passes one seat to the left. After three rounds the section with the fewest penalty points wins; ties are shared.</p>
 <h3>Every Server for Themselves (2–6 players)</h3>
-<p>No sections. You may use, fill and swap with only three trolley spots: your own and your two neighbours' (with 2 or 3 players, that is everyone's). The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
+<p>No sections. You may use, fill and swap with any trolley spot at the table, not just your own. The trick winner leads. The round ends as soon as any cart is empty; everyone else takes penalty points equal to their own cart. Three rounds, fewest points wins.</p>
 <table><tr><th>Players</th><th>Numbers</th><th>Drawn</th></tr>${[['Teams of 2 (4p)', 'team', 4], ['Teams of 3 (6p)', 'team', 6], ['Every Server 2', 'solo', 2], ['Every Server 3', 'solo', 3], ['Every Server 4', 'solo', 4], ['Every Server 5', 'solo', 5], ['Every Server 6', 'solo', 6]].map(([l, m, n]) => { const c = E.configFor(m, n, FREE); return `<tr><td>${l}</td><td>1–${c.ranks}</td><td>${c.hand}</td></tr>`; }).join('')}</table>
 <h3>Using this app</h3>
 <p>Tap ${FREE ? 'any tiles' : 'tiles side by side'} in your cart (and any trolley tiles) then press Play, or tap one of the suggestion chips — they list every legal play; <strong>*</strong> marks a trolley tile and ★ a Chef's Special. Press Pass to see the fill / swap options. Other players' carts show their tile backs${FREE ? '' : ' in order'}.</p>
