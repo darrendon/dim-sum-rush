@@ -259,7 +259,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 (function (root) {
   'use strict';
 
-  const COPIES = 7;
+  const COPIES = 6; // 72 tiles: 1-12, six of each
+  const FREE_COPIES = 7; // the free-hand test build keeps the older 84-tile set
   const MAX_MELD = 4; // no combination, Chef's Specials included, may have more than 4 cards
 
   function configFor(mode, N, free) {
@@ -274,15 +275,16 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       return [null, null, { ranks: 7, hand: 14 }, { ranks: 9, hand: 14 }, { ranks: 9, hand: 14 }, { ranks: 10, hand: 14 }, { ranks: 12, hand: 13 }][N];
     }
     if (mode === 'team') {
-      if (N === 4) return { ranks: 9, hand: 14 };
-      if (N === 6) return { ranks: 12, hand: 13 };
+      if (N === 4) return { ranks: 9, hand: 13 };
+      if (N === 6) return { ranks: 12, hand: 11 };
       throw new Error('team mode needs 4 or 6 players');
     }
     if (N < 2 || N > 6) throw new Error('2-6 players');
     if (N === 2) return { ranks: 6, hand: 14 };
-    if (N <= 4) return { ranks: 9, hand: 14 };
-    if (N === 5) return { ranks: 12, hand: 14 };
-    return { ranks: 12, hand: 13 };
+    if (N === 3) return { ranks: 9, hand: 14 };
+    if (N === 4) return { ranks: 9, hand: 13 };
+    if (N === 5) return { ranks: 12, hand: 13 };
+    return { ranks: 12, hand: 11 };
   }
 
   function bandOf(r) { return r <= 3 ? 0 : r <= 6 ? 1 : r <= 9 ? 2 : 3; }
@@ -346,10 +348,11 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const cfg = configFor(mode, N, free);
     if (opts.handSize) cfg.hand = opts.handSize;
     if (opts.ranks) cfg.ranks = opts.ranks;
-    if (cfg.hand * N > cfg.ranks * COPIES) throw new Error('not enough tiles');
+    const copies = opts.copies || (free ? FREE_COPIES : COPIES);
+    if (cfg.hand * N > cfg.ranks * copies) throw new Error('not enough tiles');
     const rng = makeRng(opts.seed || (Date.now() & 0xffffffff));
     const g = {
-      mode, N, ranks: cfg.ranks, handSize: cfg.hand,
+      mode, N, ranks: cfg.ranks, handSize: cfg.hand, copies,
       freeHand: free,
       firstBonus: opts.firstBonus || 0, // simulation: points taken OFF the first player out each round
       penaltyCap: opts.penaltyCap || 0, // simulation: most penalty points one round can give
@@ -380,7 +383,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     g.logStart = g.log.length;
     g.round += 1;
     const deck = [];
-    for (let r = 1; r <= g.ranks; r++) for (let c = 0; c < COPIES; c++) deck.push(r);
+    for (let r = 1; r <= g.ranks; r++) for (let c = 0; c < g.copies; c++) deck.push(r);
     for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(g._rng() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
     g.players.forEach(p => { p.hand = []; p.slot = null; p.out = false; p.pick = null; });
     for (let k = 0; k < g.handSize; k++) for (let i = 0; i < g.N; i++) g.players[i].hand.push(deck.pop());
