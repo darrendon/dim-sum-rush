@@ -45,6 +45,7 @@ input,select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-r
 
 /* ---- cards ---- */
 .card.dim{opacity:.4}
+.card.giving{transform:translateY(-16px);box-shadow:0 0 0 3px var(--gold),0 14px 12px rgba(0,0,0,.35);margin:0 6px}
 .card.clickable{cursor:pointer}
 .slot.target{border-color:var(--gold);border-style:solid;background:rgba(242,197,107,.25);cursor:pointer}
 .trolley-card{cursor:pointer}
@@ -170,6 +171,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 .center .play.top .who{color:var(--gold)}
 .center .status{color:#fff}
 .trick{padding:6px 0 10px}
+/* ---- motion: tiles in flight ---- */
+.mo-layer{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:8}
+.mo-fly{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;filter:drop-shadow(0 12px 10px rgba(0,0,0,.38))}
+.mo-in{position:relative;transform-style:preserve-3d;perspective:none}
+.mo-in>*{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.mo-in>.mo-from{position:absolute;left:0;top:0;transform-origin:0 0}
+.seat .st{transform-origin:0 50%}.seat{overflow:clip}   /* the OUT stamp grows inside its seat, never past the page edge */
+@media (prefers-reduced-motion: reduce){.card.just-drawn{animation:none}}
 </style>
 </head>
 <body>
@@ -915,7 +924,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       lastTrick: g.lastTrick || null,
       chooser: g.chooser, leaderOptions: g.phase === 'chooseLeader' ? g.leaderOptions : null,
       firstLeader: g.firstLeader,
-      logTail: g.log.slice(-12),
+      logTail: g.log.slice(-12), logLen: g.log.length,
       tricksPlayed: g.tricksPlayed,
     };
   }
@@ -964,9 +973,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         || (g.phase === 'chooseLeader' && g.players[g.chooser].bot);
       if (!needsBot()) return;
       this.timer = setTimeout(() => {
-        const did = E.botStep(g);
-        if (did) this.emit();
-        this.scheduleBots(g.phase === 'faceup' ? 50 : this.botDelay);
+        const go = () => {
+          if (this.g !== g) return;
+          const did = E.botStep(g);
+          if (did) this.emit();
+          this.scheduleBots(g.phase === 'faceup' ? 50 : this.botDelay);
+        };
+        const M = root.DSR_MOTION;   // let the tiles of the last move land first
+        if (M && M.busy()) M.idle(120).then(go); else go();
       }, delay == null ? this.botDelay : delay);
     }
     act(seat, a) {
@@ -1255,9 +1269,9 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const a = ART.art[r]; const b = E.bandOf(r);
     return `<div class="card b${b} ${cls || ''}" ${attrs || ''}><div class="rk">${r}</div><div class="art"><svg viewBox="${ART.artViewBox || '0 0 260 200'}" aria-hidden="true">${a.svg}</svg></div><div class="lbl"><div class="zh">${esc(a.zh || '')}</div><div class="nm">${esc(a.name)}</div></div></div>`;
   }
-  function backHTML(b, cls) {
+  function backHTML(b, cls, attrs) {
     const k = BANDKEYS[b];
-    return `<span class="back b${b} ${cls || ''}" title="${ART.bands[k].name}"><svg viewBox="4 ${ART.iconCY[k] - 32} 64 64" aria-hidden="true">${ART.icons[k]}</svg></span>`;
+    return `<span class="back b${b} ${cls || ''}" ${attrs || ''} title="${ART.bands[k].name}"><svg viewBox="4 ${ART.iconCY[k] - 32} 64 64" aria-hidden="true">${ART.icons[k]}</svg></span>`;
   }
   function comboName(c) {
     if (!c) return '';
@@ -1366,13 +1380,222 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     $('lobby-hint').textContent = session.kind === 'host' ? 'Use the menus to seat people (teammates sit opposite each other: seats 1 & 3, 2 & 4). Open seats become bots when you start. Friends can rejoin their own seat if they refresh.' : 'Tap "Sit here" on an open seat to move; the host can also move you.';
   }
 
+  // ---------- motion: tiles travel to where they go instead of blinking ----------
+  // Before each render the tiles on screen are measured by where they sit (hand slot, rack slot, trolley spot, table);
+  // after it, the new log entries say what happened, and the tiles that moved fly from their old place to the new one.
+  const MO = (() => {
+    const EASE = 'cubic-bezier(.2,.8,.2,1)', DUR = 640;
+    let pv = null, snap = null, jobs = [], layer = null, K = 1;
+    const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+    function measureK() { // the page may be zoomed: client rects are in zoomed px, styles in css px
+      const d = document.createElement('div'); d.style.cssText = 'position:fixed;left:100px;top:0;width:10px;height:10px;visibility:hidden';
+      document.body.appendChild(d); const k = d.getBoundingClientRect().left / 100; d.remove(); return k > 0 ? k : 1;
+    }
+    const SEL = '#s-table [data-hand],#s-table [data-ih],#s-table [data-giving],#s-table [data-back],#s-table [data-slot],#s-table [data-emptyslot],#s-table [data-oslot],#s-table [data-tp],#s-table [data-seat]';
+    function keyOf(el) {
+      const d = el.dataset;
+      if (d.hand != null) return 'hand:' + d.hand; if (d.ih != null) return 'hand:' + d.ih; if (d.giving != null) return 'giving';
+      if (d.back != null) return 'back:' + d.back; if (d.slot != null) return 'slot:' + d.slot; if (d.emptyslot != null) return 'slot:' + d.emptyslot;
+      if (d.oslot != null) return 'oslot:' + d.oslot; if (d.tp != null) return 'tp:' + d.tp; if (d.seat != null) return 'seat:' + d.seat; return null;
+    }
+    function snapshot() {
+      const m = new Map();
+      document.querySelectorAll(SEL).forEach(el => { const k = keyOf(el); if (!k) return; const r = el.getBoundingClientRect(); if (r.width) m.set(k, { r, el }); });
+      const me = document.querySelector('#t-me .hand, #t-me .insert-row'); if (me) m.set('mehand', { r: me.getBoundingClientRect(), el: me });
+      return m;
+    }
+    function now(key) { // the element for a place in the freshly rendered table
+      const [a, b] = key.split(/:(.*)/s);
+      const sel = a === 'hand' ? `#t-me [data-hand="${b}"]` : a === 'back' ? `[data-back="${b}"]` : a === 'slot' ? `#t-me [data-slot="${b}"],#t-me [data-emptyslot="${b}"]`
+        : a === 'oslot' ? `[data-oslot="${b}"]` : a === 'tp' ? `[data-tp="${b}"]` : a === 'seat' ? `[data-seat="${b}"]` : a === 'mehand' ? '#t-me .hand' : null;
+      return sel ? document.querySelector(sel) : null;
+    }
+    function job(anims, cleanup, free) { const j = { anims, cleanup, done: false, free: !!free }; jobs.push(j);
+      Promise.all(anims.map(a => a.finished)).then(() => end(j), () => {}); return j; }
+    function end(j) { if (j.done) return; j.done = true; try { j.cleanup && j.cleanup(); } catch (e) {} jobs = jobs.filter(x => x !== j); }
+    function ensureLayer() { if (!layer || !layer.isConnected) { layer = document.createElement('div'); layer.className = 'mo-layer'; document.body.appendChild(layer); } }
+    function clean(el) { const c = el.cloneNode(true); c.removeAttribute('id'); c.classList.remove('sel', 'clickable', 'dim', 'hint-pulse', 'just-drawn', 'giving', 'target'); c.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); for (const k of Object.keys(c.dataset)) delete c.dataset[k]; c.style.visibility = ''; return c; }
+    // Fly a tile from rect sr to the element de (or rect o.dr). The flying copy looks like `to` (default: de) and starts
+    // looking like o.from (turned over) when the tile changes face on the way (a back becoming a face, or the reverse).
+    function fly(sr, de, o) {
+      o = o || {}; ensureLayer();
+      const dr = o.dr || de.getBoundingClientRect();
+      const w = document.createElement('div'); w.className = 'mo-fly';
+      const inner = document.createElement('div'); inner.className = 'mo-in';
+      const front = clean(o.to || de); front.style.margin = '0'; front.style.transform = 'none'; inner.appendChild(front); w.appendChild(inner); layer.appendChild(w);
+      const fr = front.getBoundingClientRect(); const fw = fr.width || 1, fh = fr.height || 1;
+      if (o.from) {
+        const b = clean(o.from); b.classList.add('mo-from'); b.style.margin = '0'; inner.appendChild(b);
+        const br = b.getBoundingClientRect(); const bw = br.width || 1, bh = br.height || 1;
+        b.style.transform = `translateX(${fw / K}px) rotateY(180deg) scale(${fw / bw},${fh / bh})`;
+      }
+      const at = (r, lift, grow) => `translate(${r.left / K}px,${(r.top - (lift || 0)) / K}px) scale(${r.width / fw * (grow || 1)},${r.height / fh * (grow || 1)})`;
+      const mid = { left: (sr.left + dr.left) / 2, top: (sr.top + dr.top) / 2, width: (sr.width + dr.width) / 2, height: (sr.height + dr.height) / 2 };
+      const dur = o.dur || DUR, delay = o.delay || 0;
+      const kf = [{ transform: at(sr), opacity: 1, offset: 0 }];
+      if (o.lift !== 0) kf.push({ transform: at(o.lift0 ? sr : mid, o.lift == null ? 34 : o.lift, 1.08), offset: o.lift0 ? .22 : .5 });
+      kf.push({ transform: at(dr, 0, o.grow || 1), opacity: o.fade != null ? o.fade : 1, offset: 1 });
+      const anims = [w.animate(kf, { duration: dur, delay, easing: EASE, fill: 'both' })];
+      if (o.from) anims.push(inner.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(180deg)', offset: .2 }, { transform: 'rotateY(0deg)' }], { duration: dur, delay, easing: 'ease-in-out', fill: 'both' }));
+      const hide = de && o.hide !== false; if (hide) de.style.visibility = 'hidden';
+      job(anims, () => { w.remove(); if (hide) de.style.visibility = ''; if (o.then) o.then(); }, o.free);
+    }
+    // An element already in place slides from its old rect (FLIP).
+    function slide(el, or, o) {
+      if (!el || !or) return; o = o || {};
+      const nr = el.getBoundingClientRect();
+      const dx = (or.left - nr.left) / K, dy = (or.top - nr.top) / K, sx = or.width / (nr.width || 1), sy = or.height / (nr.height || 1);
+      if (Math.abs(dx) < .5 && Math.abs(dy) < .5 && Math.abs(sx - 1) < .01) return;
+      const base = getComputedStyle(el).transform; const b = base === 'none' ? '' : ' ' + base;
+      const scaled = Math.abs(sx - 1) > .01 || Math.abs(sy - 1) > .01;
+      const kf = scaled ? [{ transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})${b}`, transformOrigin: '0 0' }, { transform: base === 'none' ? 'none' : base, transformOrigin: '0 0' }]
+        : [{ transform: `translate(${dx}px,${dy}px)${b}` }, { transform: base === 'none' ? 'none' : base }];
+      job([el.animate(kf, { duration: o.dur || DUR, delay: o.delay || 0, easing: EASE, fill: 'backwards' })]);
+    }
+    function pop(el, delay, bomb) {
+      if (!el) return;
+      const base = getComputedStyle(el).transform; const b = base === 'none' ? '' : ' ' + base;
+      job([el.animate(bomb ? [{ transform: `scale(1)${b}`, filter: 'none' }, { transform: `scale(1.18)${b}`, filter: 'drop-shadow(0 0 10px #F2C56B)', offset: .4 }, { transform: `scale(1)${b}`, filter: 'none' }]
+        : [{ transform: `scale(1)${b}` }, { transform: `scale(1.08)${b}`, offset: .4 }, { transform: `scale(1)${b}` }], { duration: bomb ? 700 : 380, delay: delay || 0, easing: 'ease-out', fill: 'backwards' })]);
+    }
+    function flipIn(el, delay) { // the second copy of a trolley spot turns over as the tile lands on the first
+      if (!el) return; const base = getComputedStyle(el).transform; const b = base === 'none' ? '' : ' ' + base;
+      job([el.animate([{ transform: `perspective(400px) rotateY(90deg)${b}` }, { transform: `perspective(400px) rotateY(0deg)${b}` }], { duration: 300, delay: delay || 0, easing: 'ease-out', fill: 'backwards' })]);
+    }
+    const otherSpot = (k) => k && now(k.startsWith('slot:') ? 'o' + k : k.slice(1));
+    function stamp(el, delay) {
+      if (!el) return;
+      job([el.animate([{ boxShadow: '0 0 0 0 rgba(242,197,107,0)' }, { boxShadow: '0 0 0 6px rgba(242,197,107,.95), 0 0 26px 8px rgba(242,197,107,.7)', offset: .35 }, { boxShadow: '0 0 0 0 rgba(242,197,107,0)' }], { duration: 1300, delay: delay || 0, easing: 'ease-out', fill: 'backwards' })]);
+      const st = el.querySelector('.st'); if (st) job([st.animate([{ transform: 'scale(1.9) rotate(-8deg)', opacity: 0 }, { transform: 'scale(1) rotate(-3deg)', opacity: 1, offset: .55 }, { transform: 'scale(1) rotate(0)', opacity: 1 }], { duration: 650, delay: delay || 0, easing: 'cubic-bezier(.3,1.4,.5,1)', fill: 'backwards' })]);
+    }
+    // ---- reading what changed in a hand ----
+    function removedBlock(O, N, n) { // a block of n neighbours left; returns the old start index
+      for (let i = 0; i + n <= O.length; i++) { let okk = true; for (let j = 0; j < N.length && okk; j++) okk = N[j] === O[j < i ? j : j + n]; if (okk && O.length - n === N.length) return i; }
+      return -1;
+    }
+    function removedAny(O, N) { const out = []; let j = 0; for (let i = 0; i < O.length; i++) { if (j < N.length && O[i] === N[j]) j++; else out.push(i); } return j === N.length ? out : null; }
+    function swapped(O, N, gave, took) {
+      for (let gi = 0; gi < O.length; gi++) { if (O[gi] !== gave) continue; const R = O.slice(0, gi).concat(O.slice(gi + 1));
+        for (let ins = 0; ins <= R.length; ins++) { const T = R.slice(0, ins).concat([took], R.slice(ins)); if (T.every((x, k) => x === N[k]) && T.length === N.length) return { gi, ins }; } }
+      return null;
+    }
+    const near = (a, b) => (a.left + a.width / 2 - b.left - b.width / 2) ** 2 + (a.top + a.height / 2 - b.top - b.height / 2) ** 2;
+    function spotKey(seat, from, olds) { // the trolley spot that shows `seat`'s tile nearest to `from` (it can show twice)
+      const ks = ['slot:' + seat, 'oslot:' + seat].filter(k => olds ? snap.has(k) : now(k));
+      if (!ks.length) return null; if (!from || ks.length === 1) return ks[0];
+      return ks.sort((a, b) => near(olds ? snap.get(a).r : now(a).getBoundingClientRect(), from) - near(olds ? snap.get(b).r : now(b).getBoundingClientRect(), from))[0];
+    }
+    function handPlace(seat, me, i) { return seat === me ? 'hand:' + i : 'back:' + seat + ':' + i; }
+    function seq(old, v, seat) { return seat === v.me ? [old.players[seat].hand || [], v.players[seat].hand || []] : [old.players[seat].backs, v.players[seat].backs]; }
+    // the rest of a hand closes up (or parts) around what left or arrived: newIndex -> oldIndex
+    function settle(seat, v, map) {
+      const n = seat === v.me ? (v.players[seat].hand || []).length : v.players[seat].backs.length;
+      for (let j = 0; j < n; j++) { const oi = map(j); if (oi == null || oi < 0) continue; const ok = snap.get(handPlace(seat, v.me, oi)); slide(now(handPlace(seat, v.me, j)), ok && ok.r); }
+    }
+
+    function before() {
+      // tiles sliding off the table belong to no element and may finish; everything else snaps to its place
+      for (const j of jobs.slice()) { if (j.free) continue; j.anims.forEach(a => { try { a.cancel(); } catch (e) {} }); end(j); }
+      snap = pv && !reduced() ? snapshot() : null;
+    }
+    function after(v) {
+      const old = pv; pv = v;
+      if (!snap || !old || reduced() || old.round !== v.round || old.N !== v.N || old.me !== v.me) { snap = null; return; }
+      if (v.logLen == null || old.logLen == null || v.logLen <= old.logLen || v.logLen - old.logLen > v.logTail.length) { snap = null; return; }
+      K = measureK();
+      const evs = v.logTail.slice(v.logTail.length - (v.logLen - old.logLen));
+      const handEvents = {}; evs.forEach(e => { if (e.seat != null && /play|swap|fill/.test(e.t)) handEvents[e.seat] = (handEvents[e.seat] || 0) + 1; });
+      let outDelay = 0;
+      for (const e of evs) {
+        if (e.t === 'play') {
+          const L = v.trick ? v.trick.plays.map(p => p.seat).lastIndexOf(e.seat) : -1; if (L < 0) continue;
+          const pl = v.trick.plays[L];
+          // earlier plays shrink back and make room
+          if (old.trick && old.trick.plays.length === L) for (let p = 0; p < L; p++) v.trick.plays[p].cards.forEach((c, k) => { const o = snap.get(`tp:${p}:${k}`); slide(now(`tp:${p}:${k}`), o && o.r); });
+          const [O, N] = seq(old, v, e.seat); const nh = pl.cards.filter(c => c.src !== 'slot').length;
+          const single = handEvents[e.seat] === 1;
+          let gone = null;
+          if (single) { if (v.freeHand && e.seat === v.me) gone = removedAny(O, N); else { const i0 = removedBlock(O, N, nh); if (i0 >= 0) gone = Array.from({ length: nh }, (_, k) => i0 + k); } }
+          let hk = 0;
+          pl.cards.forEach((c, k) => {
+            const de = now(`tp:${L}:${k}`); if (!de) return;
+            let src = null, from = null;
+            if (c.src === 'slot') { const sk = spotKey(c.owner, null, true); src = sk && snap.get(sk); }
+            else { const oi = gone && gone[hk++]; src = oi != null ? snap.get(handPlace(e.seat, v.me, oi)) : null; if (src && e.seat !== v.me) from = src.el; }
+            if (!src) src = snap.get('seat:' + e.seat) || (e.seat === v.me ? snap.get('mehand') : null);
+            if (!src) return;
+            const sr = src.r.width > 120 ? { left: src.r.left + src.r.width / 2 - 20, top: src.r.top + src.r.height / 2 - 28, width: 40, height: 56 } : src.r;
+            fly(sr, de, { from, delay: k * 75, lift0: e.seat === v.me, lift: e.seat === v.me ? 46 : 30, then: pl.combo.bomb ? () => pop(de, 0, true) : null });
+          });
+          if (gone && gone.length) { const g0 = gone[0], n = gone.length; settle(e.seat, v, j => (v.freeHand && e.seat === v.me) ? null : j < g0 ? j : j + n); }
+          outDelay = Math.max(outDelay, DUR + pl.cards.length * 75);
+        } else if (e.t === 'swap' || e.t === 'fill') {
+          const [O, N] = seq(old, v, e.seat); const me = e.seat === v.me; const bo = E.bandOf;
+          const r = handEvents[e.seat] !== 1 ? null : e.t === 'fill' ? (() => { const i = removedBlock(O, N, 1); return i >= 0 ? { gi: i, ins: -1 } : null; })()
+            : me ? (v.freeHand ? null : swapped(O, N, e.gave, e.took)) : swapped(O, N, bo(e.gave), bo(e.took));
+          const gaveR = e.t === 'fill' ? e.r : e.gave;
+          // the given tile: from the end of the hand onto the trolley spot
+          const gsrc = me && snap.get('giving') ? snap.get('giving') : r ? snap.get(handPlace(e.seat, v.me, r.gi)) : (snap.get('seat:' + e.seat) || null);
+          const sk = spotKey(e.slotSeat, gsrc && gsrc.r, false); const sde = sk && now(sk);
+          if (gsrc && sde) { fly(gsrc.r, sde, { from: me ? null : (r ? gsrc.el : null), lift: 40 }); flipIn(otherSpot(sk), DUR * .75); }
+          // the taken tile: from the trolley spot into the gap, its neighbours parting to let it in
+          if (e.t === 'swap') {
+            const tk = spotKey(e.slotSeat, gsrc && gsrc.r, true); const tsrc = tk && snap.get(tk);
+            const tde = r ? now(handPlace(e.seat, v.me, r.ins)) : null;
+            if (tsrc && tde) fly(tsrc.r, tde, { from: me ? null : tsrc.el, to: tde, delay: 140, dur: 640, lift: 52 });
+            if (r) settle(e.seat, v, j => { if (j === r.ins) return null; const ri = j < r.ins ? j : j - 1; return ri < r.gi ? ri : ri + 1; });
+          } else if (r) settle(e.seat, v, j => j < r.gi ? j : j + 1);
+          outDelay = Math.max(outDelay, 800);
+        } else if (e.t === 'faceup') {
+          v.players.forEach((p, s) => {
+            const [O, N] = seq(old, v, s); const i = removedBlock(O, N, 1); if (i < 0) return;
+            const src = snap.get(handPlace(s, v.me, i)); const sk = spotKey(s, src && src.r, false); const de = sk && now(sk);
+            if (src && de) { fly(src.r, de, { from: s === v.me ? null : src.el, delay: s * 90 }); flipIn(otherSpot(sk), s * 90 + DUR * .75); }
+            settle(s, v, j => j < i ? j : j + 1);
+          });
+        }
+      }
+      // the table clears: the tiles of a finished trick slide off toward whoever won it
+      const hadTiles = [...snap.keys()].some(k => k.startsWith('tp:'));
+      const cleared = hadTiles && !document.querySelector('#t-center [data-tp]') && evs.some(e => e.t === 'trickEnd' || e.t === 'lead');
+      if (cleared) {
+        const te = evs.find(e => e.t === 'trickEnd'); const w = te ? te.winner : v.lastTrick ? v.lastTrick.winner : null;
+        const tgt = w == null ? null : w === v.me ? now('mehand') : now('seat:' + w);
+        if (tgt) {
+          const tr = tgt.getBoundingClientRect(); let n = 0;
+          [...snap.entries()].filter(([k]) => k.startsWith('tp:')).forEach(([, o]) => {
+            const dr = { left: tr.left + tr.width / 2 - o.r.width * .2, top: tr.top + tr.height / 2 - o.r.height * .2, width: o.r.width * .4, height: o.r.height * .4 };
+            fly(o.r, null, { to: o.el, dr, delay: 140 + (n++) * 35, dur: 580, lift: 18, fade: 0, hide: false, free: true });
+          });
+        }
+      }
+      evs.filter(e => e.t === 'out').forEach(e => stamp(e.seat === v.me ? $('t-me') : now('seat:' + e.seat), outDelay));
+      snap = null;
+    }
+    const busy = () => jobs.length > 0;
+    function idle(extra) { // resolves once every tile has landed (never waits more than 6 s), then `extra` ms more
+      return new Promise(res => { const t0 = Date.now(); (function w() {
+        if (jobs.length && (window.__filming || Date.now() - t0 < 6000)) { setTimeout(w, 50); return; }   // __filming: a frame-stepping recorder
+        if (!extra) { res(); return; }
+        // the pause after landing is itself an animation, so it runs on the page's animation clock
+        try { document.body.animate([{ opacity: 1 }, { opacity: 1 }], { duration: extra }).finished.then(res, res); } catch (e) { setTimeout(res, extra); }
+      })(); });
+    }
+    window.DSR_MOTION = { busy, idle };
+    return { before, after, busy, idle };
+  })();
+
   // ---------- table ----------
   function render() {
     const v = view; if (!v) return;
     const key = `${v.round}-${v.phase}-${v.trick ? v.trick.turn : ''}-${v.tricksPlayed}`;
     if (key !== lastPhaseKey) { sel = { idx: [], slots: [] }; pm = null; pickIdx = -1; setMsg(''); lastPhaseKey = key; }
+    MO.before();
     $('t-title').textContent = `Round ${v.round} of ${v.maxRounds}`;
-    renderScore(v); renderOthers(v); renderCenter(v); renderMe(v); renderLog(v); renderOverlay(v); renderCoach(v);
+    renderScore(v); renderOthers(v); renderCenter(v); renderMe(v); renderLog(v); renderCoach(v);
+    MO.after(v);
+    if ((v.phase === 'roundEnd' || v.phase === 'gameEnd') && MO.busy()) { overlay(''); MO.idle(450).then(() => { if (view === v) renderOverlay(v); }); }
+    else renderOverlay(v);
   }
 
   function renderScore(v) {
@@ -1403,10 +1626,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     $('t-others').innerHTML = order.map(i => {
       const p = v.players[i];
       const turn = v.phase === 'play' && v.trick.turn === i;
-      const backs = p.backs.map(b => backHTML(b)).join('');
+      const backs = p.backs.map((b, k) => backHTML(b, '', `data-back="${i}:${k}"`)).join('');
       const team = v.mode === 'team' ? `<span class="pill ${p.team ? 'lantern' : ''}">${TEAMNAME[p.team]}</span>` : '';
-      const slot = p.slot != null ? cardHTML(p.slot, 'sm') : `<div class="slot sm">empty</div>`;
-      return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}">
+      const slot = p.slot != null ? cardHTML(p.slot, 'sm', `data-oslot="${i}"`) : `<div class="slot sm" data-oslot="${i}">empty</div>`;
+      return `<div class="seat ${teamCls(v, i)} ${turn ? 'turn' : ''} ${p.out ? 'out' : ''}" data-seat="${i}">
         <div class="hd"><span class="nm">${esc(p.name)}${p.bot ? ' <span class="muted">(bot)</span>' : ''}</span>${team}</div>
         <div class="lbl">Hand · ${p.count} tile${p.count === 1 ? '' : 's'}</div>
         <div class="backs rack">${p.count ? backs : '<span class="muted" style="color:#E2CFAE">empty</span>'}</div>
@@ -1426,7 +1649,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     } else if (v.phase === 'roundEnd' || v.phase === 'gameEnd') status = 'Round over.';
     let plays = '';
     if (t && t.plays.length) {
-      plays = `<div class="trick">${t.plays.map((pl, idx) => `<div class="play ${idx === t.plays.length - 1 ? 'top' : ''} ${pl.combo.bomb ? 'bomb' : ''}"><span class="who">${esc(pname(v, pl.seat))} · ${comboName(pl.combo)}${idx === t.plays.length - 1 ? ' · best so far' : ''}</span><div class="cards">${pl.cards.map(c => cardHTML(c.r, idx === t.plays.length - 1 ? '' : 'sm', c.src === 'slot' ? 'style="border-style:dashed"' : '')).join('')}</div></div>`).join('')}</div>`;
+      plays = `<div class="trick">${t.plays.map((pl, idx) => `<div class="play ${idx === t.plays.length - 1 ? 'top' : ''} ${pl.combo.bomb ? 'bomb' : ''}"><span class="who">${esc(pname(v, pl.seat))} · ${comboName(pl.combo)}${idx === t.plays.length - 1 ? ' · best so far' : ''}</span><div class="cards">${pl.cards.map((c, k) => cardHTML(c.r, idx === t.plays.length - 1 ? '' : 'sm', `data-tp="${idx}:${k}"` + (c.src === 'slot' ? ' style="border-style:dashed"' : ''))).join('')}</div></div>`).join('')}</div>`;
     } else if (v.lastTrick && v.phase === 'play') {
       plays = `<div class="muted">Last trick was won by ${esc(pname(v, v.lastTrick.winner))}. The table is clear.</div>`;
     }
@@ -1485,10 +1708,13 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt == null) {
       // choose insert position: show hand without the given tile, with gaps
       const h = hand.slice(); h.splice(pm.handIndex, 1);
+      const giving = cardHTML(hand[pm.handIndex], 'giving', 'data-giving="1" title="this tile goes on the trolley"');
       let row = '<div class="insert-row">';
       for (let i = 0; i <= h.length; i++) {
+        if (i === pm.handIndex && i < h.length) row += giving;
         row += `<div class="gap" data-gap="${i}" title="insert here"></div>`;
-        if (i < h.length) row += cardHTML(h[i], 'dim');
+        if (i < h.length) row += cardHTML(h[i], 'dim', `data-ih="${i < pm.handIndex ? i : i + 1}"`);
+        else if (pm.handIndex >= h.length) row += giving;
       }
       row += '</div>';
       html += `<div class="muted" style="margin-top:8px">Where should the <strong>${v.players[pm.slotSeat].slot}</strong> go in your hand? Tap a gap — anywhere you like. (This is the only way a tile ever joins your hand mid-round.)</div>` + row;
