@@ -1834,7 +1834,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     html += `<div class="actions${myTurn && !pm ? ' playrow' : ''}" id="t-actions">`;
     if (v.phase === 'faceup') {
       if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
-      else html += (pickIdx >= 0 ? `<button class="primary" id="btn-pick">Put this tile on the trolley</button>` : '') + `<span class="hint">Tap a tile (or drag it to your trolley spot) to put it face up. Everyone will see it.</span>`;
+      else html += (pickIdx >= 0 ? `<button class="primary" id="btn-pick">Put this tile on the trolley</button>` : '') + `<span class="hint">Tap a tile (or drag it to your trolley spot), then confirm to put it face up. Everyone will see it.</span>`;
     } else if (myTurn && !pm) {
       const n = sel.idx.length + sel.slots.length;
       html += `<button class="primary" id="btn-play" ${n ? '' : 'disabled'}>Play${n ? ' ' + n : ''}</button>`;
@@ -1935,7 +1935,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
     root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; passIfReady(v); });
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
-    on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
+    on('btn-pick', () => pickFace(pickIdx));
     on('btn-play', () => { const why = playWhy(v); if (why) { refuse(why, $('t-center')); if (window.Tabletop) Tabletop.shake([...document.querySelectorAll('#t-me .rack .sel')]); return; } doPlay(v); });
     const leadNo = (b) => { if (v.trick.plays.length) return false; refuse('You’re leading, and the leader can’t pass. Lead something.', b); return true; };
     on('btn-pass', () => { if (leadNo($('btn-pass'))) return; sel = { idx: [], slots: [] }; doPass({ kind: 'none' }); });
@@ -1957,13 +1957,13 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   // a tile carried onto a trolley spot: your face-up tile at setup, or passing with a fill or a swap
   function spotDrop(v, i, seat, empty) {
     const me = v.players[v.me];
-    if (v.phase === 'faceup') { if (me.picked) return 'You’ve already put a tile face up.'; if (seat !== v.me) return 'Put your face-up tile on your own trolley spot.'; pickFace(i); return true; }
+    if (v.phase === 'faceup') { if (me.picked) return 'You’ve already put a tile face up.'; if (seat !== v.me) return 'Put your face-up tile on your own trolley spot.'; pickIdx = i; renderMe(v); return true; }
     if (v.phase !== 'play') return 'Not now.';
     if (v.trick.turn !== v.me) return 'It’s ' + pname(v, v.trick.turn) + '’s turn.';
     if (!v.trick.plays.length) return 'You’re leading, and the leader can’t pass. Lead something.';
     if (empty) {
       if (SW) return 'In this version you can only swap with a trolley tile, not fill an empty spot.';
-      sel = { idx: [], slots: [] }; pm = null; doPass({ kind: 'fill', handIndex: i, slotSeat: seat }); return true;
+      sel = { idx: [], slots: [] }; pm = { kind: 'fill', handIndex: i, slotSeat: seat }; renderMe(v); return true;
     }
     if (SW && i !== 0 && i !== me.hand.length - 1) return 'Give a tile from either end of your hand.';
     sel = { idx: [], slots: [] };
@@ -1997,7 +1997,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   function onHandTap(v, i) {
     const me = v.players[v.me];
-    if (v.phase === 'faceup') { if (me.picked) return; pickFace(i); return; }
+    if (v.phase === 'faceup') { if (me.picked) return; pickIdx = pickIdx === i ? -1 : i; if (window.Tabletop) Tabletop.sound('pick'); renderMe(v); return; }
     if (pm) {
       if (pm.kind === 'fill') { pm.handIndex = pm.handIndex === i ? null : i; passIfReady(v); }
       else if (pm.kind === 'swap' && pm.slotSeat != null) { if (SW && i !== 0 && i !== me.hand.length - 1) { refuse('Give a tile from either end of your hand.'); return; } pm.handIndex = i; pm.insertAt = FREE ? 0 : null; if (me.hand.length === 1) pm.insertAt = 0; passIfReady(v); }
@@ -2017,12 +2017,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   function onEmptySlotTap(v, i) {
     if (pm && pm.kind === 'fill' && pm.handIndex != null) { pm.slotSeat = pm.slotSeat === i ? null : i; passIfReady(v); }
   }
-  // a fill or a swap goes through as soon as you've said everything it needs: no confirm button
-  function passIfReady(v) {
-    if (pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat != null) return doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
-    if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null) return doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
-    renderMe(v);
-  }
+  // a fill or a swap waits for its confirm button once you've said everything it needs
+  function passIfReady(v) { renderMe(v); }
 
   function renderLog(v) {
     const lines = v.logTail.map(e => {
