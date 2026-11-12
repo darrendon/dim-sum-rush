@@ -266,6 +266,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   #t-legend .help{display:none}
 }
 </style>
+<link rel="stylesheet" href="/assets/css/tabletop.css?v=1">
+<script src="/assets/js/tabletop.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -340,7 +342,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   </div>
   <div id="t-legend"></div>
   <div class="others" id="t-others"></div>
-  <div class="center" id="t-center"></div>
+  <div class="center" id="t-center" data-zone="table"></div>
   <div class="coach" id="t-coach" style="display:none"></div>
   <div class="me" id="t-me"></div>
   <div class="log" id="t-log" style="display:none"></div>
@@ -1333,7 +1335,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   let msg = '', msgErr = false;
   let lastPhaseKey = '';
   let showLog = false;
-  let hints = true; try { hints = localStorage.getItem('dsr-hints') !== 'off'; } catch (e) {}
+  let hints = false; try { hints = localStorage.getItem('dsr-hints2') === 'on'; } catch (e) {}
   const help = (t) => hints ? `<div class="help">${t}</div>` : '';
   const BANDINFO = [['steamer', '1–3'], ['plate', '4–6'], ['bowl', '7–9'], ['sweets', '10–12']];
   function legendHTML() { return `<div class="legend"><span class="muted"><span class="ph-long">Tile backs show the number range:</span><span class="ph-short">Backs:</span></span>${BANDINFO.map(([k, r], b) => `<span class="lg">${backHTML(b)} ${r}</span>`).join('')}</div>`; }
@@ -1422,7 +1424,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   $('btn-log').onclick = () => { showLog = !showLog; $('t-log').style.display = showLog ? 'block' : 'none'; };
   function syncHintBtn() { $('btn-hints').textContent = hints ? 'Hints: on' : 'Hints: off'; }
   syncHintBtn();
-  $('btn-hints').onclick = () => { hints = !hints; try { localStorage.setItem('dsr-hints', hints ? 'on' : 'off'); } catch (e) {} syncHintBtn(); if (view) render(); };
+  $('btn-hints').onclick = () => { hints = !hints; try { localStorage.setItem('dsr-hints2', hints ? 'on' : 'off'); } catch (e) {} syncHintBtn(); if (view) render(); };
   $('btn-start').onclick = () => { session.startGame(); show('s-table'); };
 
   function leave() { if (session) session.leave(); session = null; view = null; coach.on = false; overlay(''); show('s-home'); }
@@ -1522,6 +1524,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (o.lift !== 0) kf.push({ transform: at(o.lift0 ? sr : mid, o.lift == null ? 34 : o.lift, 1.08), offset: o.lift0 ? .22 : .5 });
       kf.push({ transform: at(dr, 0, o.grow || 1), opacity: o.fade != null ? o.fade : 1, offset: 1 });
       const anims = [w.animate(kf, { duration: dur, delay, easing: EASE, fill: 'both' })];
+      if (window.Tabletop && !o.free) setTimeout(() => Tabletop.sound('place'), delay + dur * 0.9);
       if (o.from) anims.push(inner.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(180deg)', offset: .2 }, { transform: 'rotateY(0deg)' }], { duration: dur, delay, easing: 'ease-in-out', fill: 'both' }));
       const hide = de && o.hide !== false; if (hide) de.style.visibility = 'hidden';
       job(anims, () => { w.remove(); if (hide) de.style.visibility = ''; if (o.then) o.then(); }, o.free);
@@ -1821,19 +1824,12 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
       else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this tile on the trolley</button><span class="hint">Tap one tile in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
     } else if (myTurn && !pm) {
-      const legal = E.legalPlaysFromView(v);
-      const cur = currentCombo(v);
-      const canLead = v.trick.plays.length === 0;
-      const legalNow = cur && legal.some(pl => samePlay(pl, sel));
-      html += `<button class="primary" id="btn-play" ${legalNow ? '' : 'disabled'}>${cur && legalNow ? 'Play ' + comboName(cur) : 'Play selected tiles'}</button>`;
-      html += `<button id="btn-pass" ${canLead ? 'disabled title="The leader cannot pass"' : ''}>Pass (sit out this trick)</button>`;
-      html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
-      const selMsg = cur && !legalNow ? (legal.length ? 'That group is valid but does not beat what is on the table.' : 'That does not beat the table.') : sel.idx.length || sel.slots.length ? (cur ? 'Selected: ' + comboName(cur) + '.' : 'Those tiles do not form a valid group (same number, or numbers in a row).') : (canLead ? (FREE ? 'Tap any tiles in your hand, or tap a play from the list below.' : 'Tap tiles that sit next to each other in your hand, or tap a play from the list below.') : 'Tap tiles in your hand, or tap a play from the list below. Nothing fits? Pass.');
-      html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || selMsg)}</div>`;
-      const chips = chipList(v, legal);
-      html += `<div class="lbl" style="margin-top:8px">${legal.length ? 'Plays you can make right now · tap one to select it' : 'No play can beat the table'}</div>`;
-      html += `<div class="chips">` + chips.map((c, k) => ({ c, k })).filter(({ c }, j, all) => { const bombs = all.filter(x => x.c.pl.combo.bomb).length; return c.pl.combo.bomb || all.slice(0, j).filter(x => !x.c.pl.combo.bomb).length < 16 - bombs; }).map(({ c, k }) => `<button class="chip ${c.pl.combo.bomb ? 'bomb' : ''}" data-chip="${k}">${c.label}</button>`).join('') + (chips.length > 16 ? `<span class="hint">+${chips.length - 16} more · select tiles to see any play</span>` : '') + (legal.length === 0 ? `<span class="hint">Press Pass. You can still ${SW ? 'swap a trolley tile' : 'fill or swap a trolley tile'} as you pass.</span>` : '') + `</div>` + (legal.length ? help(SW ? '★ marks a Chef\'s Special, which beats any ordinary play.' : '* means the play uses a trolley tile. ★ marks a Chef\'s Special, which beats any ordinary play.') : '');
-      $('t-me').innerHTML = html; wireMe(v, legal); return;
+      const n = sel.idx.length + sel.slots.length;
+      html += `<button class="primary" id="btn-play" ${n ? '' : 'disabled'}>Play${n ? ' ' + n : ''}</button>`;
+      html += `<button id="btn-pass">Pass (sit out this trick)</button>`;
+      if (n) html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
+      html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || (hints ? (FREE ? 'Tap tiles to slide them up, then press Play or drag them onto the table.' : 'Tap tiles to slide them up, then press Play or drag them onto the table.') : ''))}</div>`;
+      $('t-me').innerHTML = html; wireMe(v, []); return;
     } else if (pm) {
       html += renderPassControls(v);
     } else if (v.phase === 'play') {
@@ -1852,12 +1848,12 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     const filled = tseats.filter(i => v.players[i].slot != null);
     if (pm.kind === 'menu') {
       if (SW) return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may swap one tile with the trolley:</div>
-        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">Put the tile from either end of your hand face up on a trolley spot, and slide the tile that was there into your hand wherever you like. Fixes a gap in a run or breaks up a bad stretch.</span></div>
+        <div class="pm-opt"><button id="btn-pm-swap">Swap with a trolley tile</button><span class="hint">Put the tile from either end of your hand face up on a trolley spot, and slide the tile that was there into your hand wherever you like. Fixes a gap in a run or breaks up a bad stretch.</span></div>
         <div class="pm-opt"><button class="primary" id="btn-pm-none">Just pass</button><span class="hint">Do nothing else.</span></div>
         <button class="ghost" id="btn-pm-cancel">Back</button>`;
       return `<div style="flex-basis:100%"><strong>Passing</strong> takes you out of this trick. Before you do, you may tidy your hand in one of these ways:</div>
-        <div class="pm-opt"><button id="btn-pm-fill" ${empties.length && me.hand.length ? '' : 'disabled'}>Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
-        <div class="pm-opt"><button id="btn-pm-swap" ${filled.length && me.hand.length ? '' : 'disabled'}>Swap with a trolley tile</button><span class="hint">${FREE ? 'Take a trolley tile into your hand and put one of your tiles in its place. Grab the tile you need and drop one you don\'t.' : 'Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.'}</span></div>
+        <div class="pm-opt"><button id="btn-pm-fill">Fill an empty trolley spot</button><span class="hint">Put one tile from your hand face up on an empty spot you may use. Gets rid of a tile you don\'t want.</span></div>
+        <div class="pm-opt"><button id="btn-pm-swap">Swap with a trolley tile</button><span class="hint">${FREE ? 'Take a trolley tile into your hand and put one of your tiles in its place. Grab the tile you need and drop one you don\'t.' : 'Take a trolley tile into your hand — you choose where it goes — and put one of your tiles in its place. Fixes a gap in a run or breaks up a bad stretch.'}</span></div>
         <div class="pm-opt"><button class="primary" id="btn-pm-none">Just pass</button><span class="hint">Do nothing else.</span></div>
         <button class="ghost" id="btn-pm-cancel">Back</button>`;
     }
@@ -1905,25 +1901,33 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   function wireMe(v, legal) {
     const root = $('t-me');
-    root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
+    if (window.Tabletop) {
+      Tabletop.drag($('s-table'), {
+        pieces: '#t-me .rack [data-hand]', zones: '[data-zone]', key: (n) => 'h' + n.dataset.hand,
+        canLift: () => !!view,
+        tap: (p) => { onHandTap(view, +p.data.hand); return true; },
+        drop: (p, z) => {
+          const v = view, i = +p.data.hand;
+          if (z.dataset.zone !== 'table') return { ok: false, quiet: true };
+          if (v.phase !== 'play') return v.phase === 'faceup' ? 'First, put one tile face up on the trolley.' : 'Not now.';
+          if (pm) return 'You’re passing. Finish your pass, or go back.';
+          if (v.trick.turn !== v.me) return 'It’s ' + pname(v, v.trick.turn) + '’s turn.';
+          const was = sel.idx.includes(i); if (!was) sel.idx.push(i);
+          const why = playWhy(v); if (why) { if (!was) sel.idx = sel.idx.filter(x => x !== i); renderMe(v); return why; }
+          doPlay(v); return true;
+        },
+      });
+    } else root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
     root.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotTap(v, +el.dataset.slot));
     root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
     root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; renderMe(v); });
-    const chips = chipList(v, legal);
-    root.querySelectorAll('[data-chip]').forEach(el => el.onclick = () => {
-      const pl = chips[+el.dataset.chip].pl; sel = { idx: E.playIdx(pl), slots: pl.slots.slice() }; setMsg(''); renderMe(v);
-    });
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
     on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
-    on('btn-play', () => {
-      const pl = legal.find(p => samePlay(p, sel)); if (!pl) return;
-      const r = session.act({ type: 'play', play: { idx: sel.idx.slice().sort((a, b) => a - b), slots: pl.slots } });
-      if (r && r.ok === false) setMsg(r.error, true); else { sel = { idx: [], slots: [] }; setMsg(''); }
-    });
-    on('btn-pass', () => { pm = { kind: 'menu' }; sel = { idx: [], slots: [] }; renderMe(v); });
+    on('btn-play', () => { const why = playWhy(v); if (why) { refuse(why, $('t-center')); if (window.Tabletop) Tabletop.shake([...document.querySelectorAll('#t-me .rack .sel')]); return; } doPlay(v); });
+    on('btn-pass', () => { if (v.trick.plays.length === 0) return refuse('You’re leading, and the leader can’t pass. Lead something.', $('btn-pass')); pm = { kind: 'menu' }; sel = { idx: [], slots: [] }; renderMe(v); });
     on('btn-clear', () => { sel = { idx: [], slots: [] }; setMsg(''); renderMe(v); });
-    on('btn-pm-fill', () => { pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
-    on('btn-pm-swap', () => { pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: FREE ? 0 : null }; renderMe(v); });
+    on('btn-pm-fill', () => { const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot == null)) return refuse('There’s no empty trolley spot you can use.', $('btn-pm-fill')); pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
+    on('btn-pm-swap', () => { const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot != null)) return refuse('There’s no trolley tile you can take.', $('btn-pm-swap')); pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: FREE ? 0 : null }; renderMe(v); });
     on('btn-pm-none', () => doPass({ kind: 'none' }));
     on('btn-pm-cancel', () => { pm = pm && pm.kind !== 'menu' ? { kind: 'menu' } : null; renderMe(v); });
     on('btn-pm-confirm', () => {
@@ -1933,7 +1937,31 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   }
   function doPass(pass) {
     const r = session.act({ type: 'pass', pass });
-    if (r && r.ok === false) setMsg(r.error, true); else { pm = null; setMsg(''); }
+    if (r && r.ok === false) refuse(r.error); else { pm = null; setMsg(''); }
+  }
+  function doPlay(v) {
+    const r = session.act({ type: 'play', play: { idx: sel.idx.slice().sort((a, b) => a - b), slots: sel.slots.slice() } });
+    if (r && r.ok === false) refuse(r.error, $('t-center')); else { sel = { idx: [], slots: [] }; setMsg(''); }
+  }
+  // the referee: what's wrong with the tiles you're trying to play
+  function refuse(why, at) { if (window.Tabletop) Tabletop.nope(why, { at }); else setMsg(why, true); }
+  function playWhy(v) {
+    if (v.phase !== 'play') return 'Not now.';
+    if (v.trick.turn !== v.me) return 'It’s ' + pname(v, v.trick.turn) + '’s turn.';
+    const hand = v.players[v.me].hand, ix = sel.idx.slice().sort((a, b) => a - b);
+    if (!ix.length && !sel.slots.length) return 'Pick up the tiles you want to play first.';
+    if (!FREE && ix.some((x, k) => k && x !== ix[k - 1] + 1)) return 'Your cart stays in order, so you can only play tiles that sit next to each other.';
+    const c = currentCombo(v);
+    if (!c) return 'Those tiles don’t make a play. A play is one tile, a set of the same number, or numbers in a row.';
+    const top = v.trick.top;
+    if (top && !E.beats(c, top)) {
+      const mine = comboName(c), theirs = comboName(top);
+      if (top.bomb && !c.bomb) return 'Only a Chef’s Special can beat ' + theirs + '.';
+      if (top.bomb && c.bomb) return mine.replace(/^./, (x) => x.toUpperCase()) + ' isn’t a big enough Special to beat ' + theirs + '.';
+      if (!c.bomb && (c.type !== top.type || c.size !== top.size)) return 'You have to follow what was led: ' + theirs + '. ' + mine.replace(/^./, (x) => x.toUpperCase()) + ' doesn’t match it.';
+      return mine.replace(/^./, (x) => x.toUpperCase()) + ' is lower than ' + theirs + '. You have to match it or go higher.';
+    }
+    return null;
   }
 
   function onHandTap(v, i) {
@@ -1944,17 +1972,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       else if (pm.kind === 'swap' && pm.slotSeat != null) { if (SW && i !== 0 && i !== me.hand.length - 1) { setMsg('Give a tile from either end of your hand.', true); renderMe(v); return; } pm.handIndex = i; pm.insertAt = FREE ? 0 : null; if (me.hand.length === 1) pm.insertAt = 0; renderMe(v); }
       return;
     }
-    if (!(v.phase === 'play' && v.trick.turn === v.me)) return;
-    if (FREE) { const k = sel.idx.indexOf(i); if (k >= 0) sel.idx.splice(k, 1); else sel.idx.push(i); }
-    else {
-      // fixed order: the selection is one block of neighbouring tiles
-      const ix = sel.idx.slice().sort((a, b) => a - b), lo = ix[0], hi = ix[ix.length - 1];
-      if (!ix.length) sel.idx = [i];
-      else if (i === lo - 1 || i === hi + 1) sel.idx.push(i);
-      else if ((i === lo || i === hi) && ix.length > 1) sel.idx = ix.filter(x => x !== i);
-      else if (i === lo && ix.length === 1) sel.idx = [];
-      else sel.idx = [i];
-    }
+    if (!(v.phase === 'play' && v.trick.turn === v.me)) { if (v.phase === 'play') refuse('It’s ' + pname(v, v.trick.turn) + '’s turn.'); return; }
+    { const k = sel.idx.indexOf(i); if (k >= 0) sel.idx.splice(k, 1); else sel.idx.push(i); if (window.Tabletop) Tabletop.sound(k >= 0 ? 'slide' : 'pick'); }
     setMsg(''); renderMe(v);
   }
   function onSlotTap(v, i) {
