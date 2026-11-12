@@ -192,7 +192,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   #s-table .topbar .score .muted{display:none}
   #s-table .topbar .score .box{padding:2px 8px}
   #s-table .topbar .row{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-  #s-table .topbar .row button{padding:8px 4px;font-size:14px}
+  #s-table .topbar .row button{padding:6px 4px;font-size:13.5px;min-height:0}
   .topbar h2{font-size:22px}
   #t-legend .help{display:none}
   .legend{gap:8px;margin-bottom:6px}
@@ -230,8 +230,8 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   .me > .lbl:has(+ .trolley),.me > .trolley{order:5}
   .me > .lbl:has(+ .trolley){margin-top:12px}
   /* while passing (fill or swap), the trolley is part of the move: keep it right above the hand */
-  .me:has([id^="btn-pm-"]) > .lbl:has(+ .trolley),.me:has([id^="btn-pm-"]) > .trolley{order:1}
-  .me:has([id^="btn-pm-"]) > .lbl:has(+ .trolley){margin-top:0}
+  .me.passing > .lbl:has(+ .trolley),.me.passing > .trolley{order:1}
+  .me.passing > .lbl:has(+ .trolley){margin-top:0}
   .me .help{font-size:12.5px;margin:2px 0 4px}
   .hand.rack{padding:14px 7px 10px;gap:10px 3px;min-height:0}
   .hand.rack .card{width:calc((100% - 18px) / 7);height:auto;aspect-ratio:58/82;padding:2px 3px 1px}
@@ -247,6 +247,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   #t-actions > *{grid-column:auto}
   #t-actions > .primary,#t-actions > span,#t-actions > .pm-opt,#t-actions > .muted,#t-actions > .hint,#t-actions > .help,#t-actions > div{grid-column:1/-1}
   #t-actions button{padding:10px 8px}
+  /* your turn: Play and the passes in one or two short rows */
+  #t-actions.playrow{display:flex;flex-wrap:wrap}
+  #t-actions.playrow > button{flex:1 1 0;min-width:0;white-space:nowrap;padding:10px 4px;font-size:14.5px}
+  #t-actions.playrow > .primary{flex:1.3 1 0}
   .chip{min-height:40px;padding:6px 12px}
   .coach{padding:10px 12px;gap:10px}
   .coach .av{width:36px;height:36px;font-size:18px}
@@ -267,7 +271,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 }
 </style>
 <link rel="stylesheet" href="/assets/css/tabletop.css?v=45891ad3">
-<script src="/assets/js/tabletop.js?v=993940f9"></script>
+<script src="/assets/js/tabletop.js?v=bbd86e78"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1332,6 +1336,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
   let pm = null;          // pass-mode state: {kind:'menu'|'fill'|'swap', handIndex, slotSeat, insertAt}
   let pickIdx = -1;       // face-up pick
   let drawn = { round: 0, count: 0 }; // setup: tiles drawn from the bag so far (visual only)
+  let drawTimer = 0;
   let msg = '', msgErr = false;
   let lastPhaseKey = '';
   let showLog = false;
@@ -1750,6 +1755,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   function renderMe(v) {
     const me = v.players[v.me];
+    $('t-me').classList.toggle('passing', !!pm);
     const hand = me.hand || [];
     const myTurn = v.phase === 'play' && v.trick.turn === v.me;
     const team = v.mode === 'team' ? `<span class="pill ${me.team ? 'lantern' : ''}">${TEAMNAME[me.team]}</span>` : '';
@@ -1764,10 +1770,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       if (p.slot != null) {
         const selected = sel.slots.includes(i) || (pm && pm.kind === 'swap' && pm.slotSeat === i);
         const clickable = (myTurn && !pm && !SW) || (pm && pm.kind === 'swap' && pm.slotSeat == null);
-        c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}"`);
+        c = cardHTML(p.slot, 'trolley-card' + (selected ? ' sel' : '') + (clickable ? ' clickable' : ''), `data-slot="${i}" data-zone="spot" data-seat="${i}"`);
       } else {
         const target = pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat == null;
-        c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}">${target ? 'put it here' : 'empty spot'}</div>`;
+        c = `<div class="slot ${target ? 'target' : ''}" data-emptyslot="${i}" data-zone="spot" data-seat="${i}">${target ? 'put it here' : 'empty spot'}</div>`;
       }
       return `<div class="tc">${c}<span>${label}</span></div>`;
     }).join('') + `</div>`;
@@ -1785,11 +1791,17 @@ table.tbl th{background:var(--jade);color:var(--cream)}
       } else {
         html += `<div class="hand rack">` + hand.slice(0, ds.count).map((r, i) => cardHTML(r, i === ds.count - 1 ? 'just-drawn' : '', `data-hand="${i}"`)).join('') + `</div>`;
       }
-      html += `<div class="bagrow"><div class="bag">${bagHTML(left)}</div><div class="col"><button class="primary" id="btn-draw">Draw a tile</button><button class="ghost" id="btn-drawall">Draw the rest</button><span class="hint">${left} tile${left === 1 ? '' : 's'} still to draw from the bag.</span></div></div>`;
+      html += `<div class="bagrow"><div class="bag" id="t-bag" title="Tap to draw the rest at once">${bagHTML(left)}</div><div class="col"><span class="hint">Drawing your tiles from the bag… ${left} to go.</span></div></div>`;
       html += `<div class="msg" id="t-msg"></div>`;
       $('t-me').innerHTML = html;
-      $('btn-draw').onclick = () => { drawn.count = Math.min(hand.length, drawn.count + 1); renderMe(v); renderCoach(v); };
-      $('btn-drawall').onclick = () => { drawn.count = hand.length; renderMe(v); renderCoach(v); };
+      // the tiles come out of the bag by themselves, one at a time; tap the bag to tip out the rest
+      $('t-bag').onclick = () => { drawn.count = hand.length; clearTimeout(drawTimer); drawTimer = 0; renderMe(view); renderCoach(view); };
+      if (!drawTimer) drawTimer = setTimeout(function tick() {
+        drawTimer = 0; const vv = view; if (!vv || vv.phase !== 'faceup') return;
+        const d = drawState(vv), n = (vv.players[vv.me].hand || []).length; if (d.count >= n) return;
+        d.count++; if (window.Tabletop) Tabletop.sound('deal');
+        renderMe(vv); renderCoach(vv);
+      }, ds.count ? 150 : 500);
       return;
     }
     // hand
@@ -1819,14 +1831,14 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     }
 
     // actions
-    html += `<div class="actions" id="t-actions">`;
+    html += `<div class="actions${myTurn && !pm ? ' playrow' : ''}" id="t-actions">`;
     if (v.phase === 'faceup') {
       if (me.picked) html += `<span class="muted">Waiting for the others…</span>`;
-      else html += `<button class="primary" id="btn-pick" ${pickIdx < 0 ? 'disabled' : ''}>Put this tile on the trolley</button><span class="hint">Tap one tile in your hand, then confirm. Everyone will see it; the rest of your hand stays hidden (except the backs).</span>`;
+      else html += (pickIdx >= 0 ? `<button class="primary" id="btn-pick">Put this tile on the trolley</button>` : '') + `<span class="hint">Tap a tile (or drag it to your trolley spot) to put it face up. Everyone will see it.</span>`;
     } else if (myTurn && !pm) {
       const n = sel.idx.length + sel.slots.length;
       html += `<button class="primary" id="btn-play" ${n ? '' : 'disabled'}>Play${n ? ' ' + n : ''}</button>`;
-      html += `<button id="btn-pass">Pass (sit out this trick)</button>`;
+      html += `<button id="btn-pass">Pass</button>` + (SW ? '' : `<button id="btn-pm-fill">Fill &amp; pass</button>`) + `<button id="btn-pm-swap">Swap &amp; pass</button>`;
       if (n) html += `<button class="ghost" id="btn-clear">Clear selection</button>`;
       html += `</div><div class="msg${msgErr ? ' err' : ''}" id="t-msg">${esc(msg || (hints ? (FREE ? 'Tap tiles to slide them up, then press Play or drag them onto the table.' : 'Tap tiles to slide them up, then press Play or drag them onto the table.') : ''))}</div>`;
       $('t-me').innerHTML = html; wireMe(v, []); return;
@@ -1908,6 +1920,7 @@ table.tbl th{background:var(--jade);color:var(--cream)}
         tap: (p) => { onHandTap(view, +p.data.hand); return true; },
         drop: (p, z) => {
           const v = view, i = +p.data.hand;
+          if (z.dataset.zone === 'spot') return spotDrop(v, i, +z.dataset.seat, z.dataset.emptyslot != null);
           if (z.dataset.zone !== 'table') return { ok: false, quiet: true };
           if (v.phase !== 'play') return v.phase === 'faceup' ? 'First, put one tile face up on the trolley.' : 'Not now.';
           if (pm) return 'You’re passing. Finish your pass, or go back.';
@@ -1920,24 +1933,42 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     } else root.querySelectorAll('[data-hand]').forEach(el => el.onclick = () => onHandTap(v, +el.dataset.hand));
     root.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotTap(v, +el.dataset.slot));
     root.querySelectorAll('[data-emptyslot]').forEach(el => el.onclick = () => onEmptySlotTap(v, +el.dataset.emptyslot));
-    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; renderMe(v); });
+    root.querySelectorAll('[data-gap]').forEach(el => el.onclick = () => { pm.insertAt = +el.dataset.gap; passIfReady(v); });
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
     on('btn-pick', () => { const r = session.act({ type: 'pick', handIndex: pickIdx }); if (r && r.ok === false) setMsg(r.error, true); pickIdx = -1; });
     on('btn-play', () => { const why = playWhy(v); if (why) { refuse(why, $('t-center')); if (window.Tabletop) Tabletop.shake([...document.querySelectorAll('#t-me .rack .sel')]); return; } doPlay(v); });
-    on('btn-pass', () => { if (v.trick.plays.length === 0) return refuse('You’re leading, and the leader can’t pass. Lead something.', $('btn-pass')); pm = { kind: 'menu' }; sel = { idx: [], slots: [] }; renderMe(v); });
+    const leadNo = (b) => { if (v.trick.plays.length) return false; refuse('You’re leading, and the leader can’t pass. Lead something.', b); return true; };
+    on('btn-pass', () => { if (leadNo($('btn-pass'))) return; sel = { idx: [], slots: [] }; doPass({ kind: 'none' }); });
     on('btn-clear', () => { sel = { idx: [], slots: [] }; setMsg(''); renderMe(v); });
-    on('btn-pm-fill', () => { const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot == null)) return refuse('There’s no empty trolley spot you can use.', $('btn-pm-fill')); pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
-    on('btn-pm-swap', () => { const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot != null)) return refuse('There’s no trolley tile you can take.', $('btn-pm-swap')); pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: FREE ? 0 : null }; renderMe(v); });
+    on('btn-pm-fill', () => { if (!pm && leadNo($('btn-pm-fill'))) return; sel = { idx: [], slots: [] }; const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot == null)) return refuse('There’s no empty trolley spot you can use.', $('btn-pm-fill')); pm = { kind: 'fill', handIndex: null, slotSeat: null }; renderMe(v); });
+    on('btn-pm-swap', () => { if (!pm && leadNo($('btn-pm-swap'))) return; sel = { idx: [], slots: [] }; const ts = myTrolleySeats(v); if (!ts.some(i => v.players[i].slot != null)) return refuse('There’s no trolley tile you can take.', $('btn-pm-swap')); pm = { kind: 'swap', slotSeat: null, handIndex: null, insertAt: FREE ? 0 : null }; renderMe(v); });
     on('btn-pm-none', () => doPass({ kind: 'none' }));
-    on('btn-pm-cancel', () => { pm = pm && pm.kind !== 'menu' ? { kind: 'menu' } : null; renderMe(v); });
+    on('btn-pm-cancel', () => { pm = null; renderMe(v); });
     on('btn-pm-confirm', () => {
       if (pm.kind === 'fill') doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
       else doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
     });
   }
+  function pickFace(i) { pickIdx = -1; const r = session.act({ type: 'pick', handIndex: i }); if (r && r.ok === false) refuse(r.error); else if (window.Tabletop) Tabletop.sound('flip'); }
   function doPass(pass) {
     const r = session.act({ type: 'pass', pass });
     if (r && r.ok === false) refuse(r.error); else { pm = null; setMsg(''); }
+  }
+  // a tile carried onto a trolley spot: your face-up tile at setup, or passing with a fill or a swap
+  function spotDrop(v, i, seat, empty) {
+    const me = v.players[v.me];
+    if (v.phase === 'faceup') { if (me.picked) return 'You’ve already put a tile face up.'; if (seat !== v.me) return 'Put your face-up tile on your own trolley spot.'; pickFace(i); return true; }
+    if (v.phase !== 'play') return 'Not now.';
+    if (v.trick.turn !== v.me) return 'It’s ' + pname(v, v.trick.turn) + '’s turn.';
+    if (!v.trick.plays.length) return 'You’re leading, and the leader can’t pass. Lead something.';
+    if (empty) {
+      if (SW) return 'In this version you can only swap with a trolley tile, not fill an empty spot.';
+      sel = { idx: [], slots: [] }; pm = null; doPass({ kind: 'fill', handIndex: i, slotSeat: seat }); return true;
+    }
+    if (SW && i !== 0 && i !== me.hand.length - 1) return 'Give a tile from either end of your hand.';
+    sel = { idx: [], slots: [] };
+    pm = { kind: 'swap', slotSeat: seat, handIndex: i, insertAt: FREE || me.hand.length === 1 ? 0 : null };
+    passIfReady(v); return true;
   }
   function doPlay(v) {
     const r = session.act({ type: 'play', play: { idx: sel.idx.slice().sort((a, b) => a - b), slots: sel.slots.slice() } });
@@ -1966,10 +1997,10 @@ table.tbl th{background:var(--jade);color:var(--cream)}
 
   function onHandTap(v, i) {
     const me = v.players[v.me];
-    if (v.phase === 'faceup') { if (me.picked) return; pickIdx = pickIdx === i ? -1 : i; renderMe(v); return; }
+    if (v.phase === 'faceup') { if (me.picked) return; pickFace(i); return; }
     if (pm) {
-      if (pm.kind === 'fill') { pm.handIndex = pm.handIndex === i ? null : i; renderMe(v); }
-      else if (pm.kind === 'swap' && pm.slotSeat != null) { if (SW && i !== 0 && i !== me.hand.length - 1) { setMsg('Give a tile from either end of your hand.', true); renderMe(v); return; } pm.handIndex = i; pm.insertAt = FREE ? 0 : null; if (me.hand.length === 1) pm.insertAt = 0; renderMe(v); }
+      if (pm.kind === 'fill') { pm.handIndex = pm.handIndex === i ? null : i; passIfReady(v); }
+      else if (pm.kind === 'swap' && pm.slotSeat != null) { if (SW && i !== 0 && i !== me.hand.length - 1) { refuse('Give a tile from either end of your hand.'); return; } pm.handIndex = i; pm.insertAt = FREE ? 0 : null; if (me.hand.length === 1) pm.insertAt = 0; passIfReady(v); }
       return;
     }
     if (!(v.phase === 'play' && v.trick.turn === v.me)) { if (v.phase === 'play') refuse('It’s ' + pname(v, v.trick.turn) + '’s turn.'); return; }
@@ -1977,14 +2008,20 @@ table.tbl th{background:var(--jade);color:var(--cream)}
     setMsg(''); renderMe(v);
   }
   function onSlotTap(v, i) {
-    if (pm) { if (pm.kind === 'swap' && pm.slotSeat == null) { pm.slotSeat = i; renderMe(v); } return; }
+    if (pm) { if (pm.kind === 'swap' && pm.slotSeat == null) { pm.slotSeat = i; passIfReady(v); } return; }
     if (SW || !(v.phase === 'play' && v.trick.turn === v.me)) return;
     const k = sel.slots.indexOf(i);
     if (k >= 0) sel.slots.splice(k, 1); else sel.slots.push(i);
     setMsg(''); renderMe(v);
   }
   function onEmptySlotTap(v, i) {
-    if (pm && pm.kind === 'fill' && pm.handIndex != null) { pm.slotSeat = pm.slotSeat === i ? null : i; renderMe(v); }
+    if (pm && pm.kind === 'fill' && pm.handIndex != null) { pm.slotSeat = pm.slotSeat === i ? null : i; passIfReady(v); }
+  }
+  // a fill or a swap goes through as soon as you've said everything it needs: no confirm button
+  function passIfReady(v) {
+    if (pm && pm.kind === 'fill' && pm.handIndex != null && pm.slotSeat != null) return doPass({ kind: 'fill', handIndex: pm.handIndex, slotSeat: pm.slotSeat });
+    if (pm && pm.kind === 'swap' && pm.slotSeat != null && pm.handIndex != null && pm.insertAt != null) return doPass({ kind: 'swap', slotSeat: pm.slotSeat, handIndex: pm.handIndex, insertAt: pm.insertAt });
+    renderMe(v);
   }
 
   function renderLog(v) {
@@ -2190,7 +2227,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}${F
     $('btn-tut-cancel').onclick = () => overlay('');
   };
   const TIPS = {
-    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Tap the bag to draw. The coloured backs are what the other players will see.`,
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag one at a time. Each new tile goes on the <em>right end</em> of your rack, and that is where it stays — you never rearrange your rack during the round. Your tiles come out one by one (tap the bag to tip out the rest). The coloured backs are what the other players will see.`,
     welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). They stay in exactly this order all round — you can never sort them. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley. A tile that doesn't sit next to anything useful (no neighbour with the same or an adjacent number) is a good choice. The coach's pick is pulsing.`,
     trolley: `<strong>The trolley.</strong> Everyone's face-up tile is now showing. The two tiles on your side — yours and your partner Lin's — are your <em>team's</em> trolley. When you play, you may add either of them to your tiles, in any position, to make a bigger or better group. The other team's two tiles are off limits to you. A used trolley tile is not replaced automatically.`,
     lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles). No play may have more than four tiles. Tiles from your hand must sit side by side; a run's tiles must already be in rising or falling order. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
@@ -2217,7 +2254,7 @@ ${ex('Cart 8 8 8 + trolley 8', [8, 8, 8, { r: 8 }], '✕ ordinary set of 4')}${F
     waiting: `Watch the others play. When someone passes, check whether they swapped with the trolley.`,
   });
   if (FREE) Object.assign(TIPS, {
-    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag. Your rack sorts itself as you draw, so the order does not matter. Tap the bag to draw. The coloured backs are what the other players will see.`,
+    draw: `<strong>Drawing your hand.</strong> Everyone fills their rack by pulling tiles out of the bag. Your rack sorts itself as you draw, so the order does not matter. Tap the bag to tip out the rest at once. The coloured backs are what the other players will see.`,
     welcome: `<strong>Your hand.</strong> The tiles on your rack are your hand (the rules call it your <em>cart</em>). You can play any of them together. The coloured backs are what the other players see: the colour tells them roughly how big each tile is, but not the number. <strong>First job:</strong> pick one tile to put face up on the trolley, where only your team can use it. A lonely tile, one with no copies and no neighbouring numbers in your hand, is a good choice: you'd struggle to play it, but your partner might not. The coach's pick is pulsing.`,
     lead: `<strong>Leading a trick.</strong> You start this trick, so you may play anything valid: one tile, a pair or three of a kind (same number), or a run (numbers in a row, 2 to 4 tiles), using any tiles from your hand. No play may have more than four tiles. The list under your hand shows every play you can make right now — tap one to select it. Good habit: lead with something low and awkward, keep strong tiles for later.`,
     pass: `<strong>Nothing fits? Pass.</strong> Passing means you sit out until this trick ends. But a pass is also your chance to tidy your hand: <strong>fill</strong> an empty trolley spot with a tile you don't want, or <strong>swap</strong>: take a trolley tile you need and put one of yours out in its place. Look at what your partner's backs suggest they could use.`,
